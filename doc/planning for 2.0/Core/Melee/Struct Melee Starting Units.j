@@ -13,10 +13,10 @@ library AStructCoreMeleeStartingUnits
 
 
 	/**
-	* Allows you to customly place starting units for players (including custom races).
-	* \todo Get data from AMeleeRace instance.
-	* \sa AMeleeWorkerType, AMeleeRace
-	*/
+	 * Allows you to customly place starting units for players (including custom races).
+	 * \todo Get data from AMeleeRace instance.
+	 * \sa AMeleeWorkerType, AMeleeRace
+	 */
 	struct AMeleeStartingUnits
 		private integer m_townHallUnitTypeId
 		private ASimpleIntegerList m_workerTypes
@@ -125,8 +125,6 @@ library AStructCoreMeleeStartingUnits
 			endif
 		endmethod
 
-		public static method placeRaceForPlayer
-
 		public static method placeForPlayer takes player whichPlayer, location startLocation, boolean doHeroes, boolean doCamera, boolean doPreload returns nothing
 			local AMeleeRace meleeRace = AMeleeRace.playerRace(whichPlayer)
 			if (meleeRace != 0) then
@@ -145,8 +143,8 @@ library AStructCoreMeleeStartingUnits
 		endmethod
 
 		/**
-		* \sa MeleeStartingUnits
-		*/
+		 * \sa MeleeStartingUnits
+		 */
 		public static method placeForAllPlayers takes nothing returns nothing
 			local integer index
 			local player indexPlayer

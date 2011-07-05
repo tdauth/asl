@@ -184,3 +184,9 @@ public method pushFront takes $VALUETYPE$ value returns nothing
 */
 //! textmacro A_SORTED takes STRUCTPREFIX, NAME, BASENAME, ELEMENTTYPE, NULLVALUE, CONDITION
 //! textmacro A_NUMERIC takes STRUCTPREFIX, NAME, BASENAME, ELEMENTTYPE, NULLVALUE
+
+/**
+ * Bidrectional maps contain ordered values ordered by both element types.
+ * Therefore it provides methods such as "findLeft" and "findRight" but "find" (which uses left/first element type as key by default) as well.
+ */
+//! textmacro A_BIMAP takes STRUCTPREFIX, NAME, BASENAME, ELEMENTTYPE1, NULLVALUE1, LESSTHAN1, ELEMENTTYPE2, NULLVALUE2, LESSTHAN2

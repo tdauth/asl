@@ -1,11 +1,13 @@
 /**
-* @author Tamino Dauth
-* @version 2.0
+* ASL 2.0
 */
 library AStructCoreAiOrderQueue
 
-
-	struct AOrderQueue
+	/**
+	* Used on single unit.
+	* @todo add text macro A_QUEUE
+	*/
+	struct AOrderQueue extends AIntegerQueue
 	endstruct
 
 endlibrary

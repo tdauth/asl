@@ -1,14 +1,14 @@
 library AStructCoreEnvironmentUnitSpawn requires AStructCoreContainersHashTable, AStructCoreEnvironmentIdSet
 
 	/**
-	* Can be used for buildings and usual units.
-	* Following properties do not affect buildings:
-	* <ul>
-	* <li>face</li>
-	* <li>is in camp (acquire range)</li>
-	* </ul>
-	* @todo Maybe add spawn on map start support.
-	*/
+	 * Can be used for buildings and usual units.
+	 * Following properties do not affect buildings:
+	 * <ul>
+	 * <li>face</li>
+	 * <li>is in camp (acquire range)</li>
+	 * </ul>
+	 * \todo Maybe add spawn on map start support.
+	 */
 	struct AUnitSpawn
 		private player m_player
 		private location m_location

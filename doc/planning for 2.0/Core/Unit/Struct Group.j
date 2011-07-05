@@ -1,57 +1,64 @@
 library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreUnitMisc
 
-	struct AGroupIterator extends AUnitSetIterator
+	//! runtextmacro A_BIMAP("", " AIntegerUnitBimap", "AUnitContainer", "integer", "0", "IntegerLessThan", "unit", "null", "HandleLessThan")
+
+	struct AGroupIterator extends AIntegerUnitBimapIterator
 	endstruct
 
 	/**
-	* This struct is kind of wrapper for data type \ref group. Since group does not allow
-	* direct accesses to internally stored units it's very annoying to get any group member
-	* which is not the first one.
-	* You'll always have to iterate the whole group, remove the first member and copying it into
-	* another group which should replace your first one in the end.
-	* This process has to go on until you found your required unit.
-	* Another possibility is to use filters but they have to be global functions and therefore
-	* you will either have to attach data anywhere or have to use a global variable.
-	* Instead of using filter functions this struct allows you direct access to a vector
-	* which contains all units.
-	* Additionally it provides various addGroup methods which do use the GroupEnum functions from Jass.
-	* Methods like \ref AGroup#removeUnitsOfPlayer or \ref AGroup#removeAlliesOfUnit are very useful for spell functions.
-	* The only disadvantage of this struct is that it is a little bit slower than using native type group (especially when adding other groups e. g. by using \ref AGroup#addUnitsOfType).
-	*/
-	struct AGroup extends AUnitSet
+	 * This struct is kind of wrapper for data type \ref group. Since group does not allow
+	 * direct accesses to internally stored units it's very annoying to get any group member
+	 * which is not the first one.
+	 * You'll always have to iterate the whole group, remove the first member and copying it into
+	 * another group which should replace your first one in the end.
+	 * This process has to go on until you found your required unit.
+	 * Another possibility is to use filters but they have to be global functions and therefore
+	 * you will either have to attach data anywhere or have to use a global variable.
+	 * Instead of using filter functions this struct allows you direct access to a vector
+	 * which contains all units.
+	 * Additionally it provides various addGroup methods which do use the GroupEnum functions from Jass.
+	 * Methods like \ref AGroup#removeUnitsOfPlayer or \ref AGroup#removeAlliesOfUnit are very useful for spell functions.
+	 * The only disadvantage of this struct is that it is a little bit slower than using native type group (especially when adding other groups e. g. by using \ref AGroup#addUnitsOfType).
+	 */
+	struct AGroup extends  AIntegerUnitBimap
 		// methods
 
 		/**
-		* Adds all units contained by group \p other at the end of group.
-		*/
+		 * Adds all units contained by group \p other at the end of group.
+		 */
 		public method addOther takes thistype other returns nothing
 			call this.spliceOtherBack(other)
 		endmethod
 
 		/**
-		* Removes all units contained by group \p other.
-		*/
+		 * Removes all units contained by group \p other.
+		 */
 		public method removeOther takes thistype other returns nothing
 			call this.removeOther(other)
 		endmethod
 
 		/**
-		* Adds unit \p whichUnit at the end of group.
-		*/
+		 * Adds unit \p whichUnit at the end of group.
+		 */
 		public method addUnit takes unit whichUnit returns nothing
-			call this.pushBack(whichUnit)
+			call this.insert(this.size(), whichUnit)
 		endmethod
 
 		/**
-		* Removes all group entries of unit \p whichUnit.
-		*/
+		 * Removes all group entries of unit \p whichUnit.
+		 */
 		public method removeUnit takes unit whichUnit returns nothing
-			call this.remove(whichUnit)
+			local AIntegerUnitMapIterator iterator = this.findByValue(whichUnit)
+			if (iterator == 0) then
+				return
+			endif
+			call this.erase(iterator)
+			call iterator.destroy()
 		endmethod
 
 		/**
-		* \sa AContainerInterface#empty
-		*/
+		 * \sa AContainerInterface#empty
+		 */
 		public method isEmpty takes nothing returns boolean
 			return this.empty()
 		endmethod
@@ -93,16 +100,16 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 		endmethod
 
 		/**
-		* \sa AContainerInterface#random, GroupPickRandomUnit
-		*/
+		 * \sa AContainerInterface#random, GroupPickRandomUnit
+		 */
 		public method pickRandomUnit takes nothing returns unit
 			return this.random()
 		endmethod
 
 		/**
-		* Creates a new Warcraft-3-like group from the group.
-		* \return Returns a newly created group.
-		*/
+		 * Creates a new Warcraft-3-like group from the group.
+		 * \return Returns a newly created group.
+		 */
 		public method toGroup takes nothing returns group
 			local group whichGroup = CreateGroup()
 			call this.fillGroup(whichGroup)
@@ -110,15 +117,15 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 		endmethod
 
 		/**
-		* \sa AUnitList#forEach
-		*/
+		 * \sa AUnitList#forEach
+		 */
 		public method forGroup takes AUnitListUnaryFunction forFunction returns nothing
 			call this.forEach(forFunction)
 		endmethod
 
 		/**
-		* \sa AGroup#removeFromGroup, AGroup#fillGroup
-		*/
+		 * \sa AGroup#removeFromGroup, AGroup#fillGroup
+		 */
 		public method addToGroup takes group whichGroup returns nothing
 			local AGroupIterator iterator = this.begin()
 			loop
@@ -140,20 +147,20 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 		endmethod
 
 		/**
-		* Fills an existing Warcraft-3-like group with all members of the group.
-		* \note The target group is cleared before!
-		* \param whichGroup Group which is filled with all group members.
-		* \sa AGroup#addToGroup
-		*/
+		 * Fills an existing Warcraft-3-like group with all members of the group.
+		 * \note The target group is cleared before!
+		 * \param whichGroup Group which is filled with all group members.
+		 * \sa AGroup#addToGroup
+		 */
 		public method fillGroup takes group whichGroup returns nothing
 			call GroupClear(whichGroup)
 			call this.addToGroup(whichGroup)
 		endmethod
 
 		/**
-		* Adds all units of group \p whichGroup to the group.
-		* \sa AGroup#addGroupClear, AGroup#addGroupDestroy, AGroup#removeGroup
-		*/
+		 * Adds all units of group \p whichGroup to the group.
+		 * \sa AGroup#addGroupClear, AGroup#addGroupDestroy, AGroup#removeGroup
+		 */
 		public method addGroup takes group whichGroup returns nothing
 			local unit firstOfGroup
 			loop
@@ -494,6 +501,24 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			endloop
 			call iterator.destroy()
 		endmethod
+		
+		public method hasAlliesOfForce takes force whichForce returns boolean
+			local integer i = 0
+			local integer j
+			loop
+				exitwhen (i == this.m_units.size())
+				set j = 0
+				loop
+					if (IsPlayerInForce(Player(j), whichForce) and IsPlayerAlly(Player(j), GetOwningPlayer(this.m_units[i]))) then 
+						return true
+					endif
+					set j = j + 1
+					exitwhen (j == bj_MAX_PLAYERS)
+				endloop
+				set i = i + 1
+			endloop
+			return false
+		endmethod
 
 		public method hasAlliesOfPlayer takes player whichPlayer returns boolean
 			local player owner
@@ -501,7 +526,7 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			loop
 				exitwhen (i == this.m_units.size())
 				set owner = GetOwningPlayer(this.m_units[i])
-				if (IsPlayerAlly(owner, whichPlayer)) then
+				if (IsPlayerAlly(whichPlayer, owner)) then
 					set owner = null
 					return true
 				endif
@@ -517,6 +542,29 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			set owner = null
 			return result
 		endmethod
+		
+		public method removeAlliesOfForce takes force whichForce returns nothing
+			local integer i = 0
+			local integer j
+			local boolean removed = false
+			loop
+				exitwhen (i == this.m_units.size())
+				set j = 0
+				loop
+					if (IsPlayerInForce(Player(j), whichForce) and IsPlayerAlly(Player(j), GetOwningPlayer(this.m_units[i]))) then 
+						call this.m_units.erase(i)
+						set removed = true
+						exitwhen (true)
+					endif
+					set j = j + 1
+					exitwhen (j == bj_MAX_PLAYERS)
+				endloop
+				if (not removed) then
+					set i = i + 1
+				endif
+			endloop
+			return false
+		endmethod
 
 		public method removeAlliesOfPlayer takes player whichPlayer returns nothing
 			local player owner
@@ -524,7 +572,7 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			loop
 				exitwhen (i == this.m_units.size())
 				set owner = GetOwningPlayer(this.m_units[i])
-				if (IsPlayerAlly(owner, whichPlayer)) then
+				if (IsPlayerAlly(whichPlayer, owner)) then
 					call this.m_units.erase(i)
 				else
 					set i = i + 1
@@ -538,6 +586,24 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			call this.removeAlliesOfPlayer(owner)
 			set owner = null
 		endmethod
+		
+		public method hasEnemiesOfForce takes force whichForce returns boolean
+			local integer i = 0
+			local integer j
+			loop
+				exitwhen (i == this.m_units.size())
+				set j = 0
+				loop
+					if (IsPlayerInForce(Player(j), whichForce) and not IsPlayerAlly(Player(j), GetOwningPlayer(this.m_units[i]))) then 
+						return true
+					endif
+					set j = j + 1
+					exitwhen (j == bj_MAX_PLAYERS)
+				endloop
+				set i = i + 1
+			endloop
+			return false
+		endmethod
 
 		public method hasEnemiesOfPlayer takes player whichPlayer returns boolean
 			local player owner
@@ -545,7 +611,7 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			loop
 				exitwhen (i == this.m_units.size())
 				set owner = GetOwningPlayer(this.m_units[i])
-				if (not IsPlayerAlly(owner, whichPlayer)) then
+				if (not IsPlayerAlly(whichPlayer, owner)) then
 					set owner = null
 					return true
 				endif
@@ -561,6 +627,29 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			set owner = null
 			return result
 		endmethod
+		
+		public method removeAlliesOfForce takes force whichForce returns nothing
+			local integer i = 0
+			local integer j
+			local boolean removed = false
+			loop
+				exitwhen (i == this.m_units.size())
+				set j = 0
+				loop
+					if (IsPlayerInForce(Player(j), whichForce) and not IsPlayerAlly(Player(j), GetOwningPlayer(this.m_units[i]))) then 
+						call this.m_units.erase(i)
+						set removed = true
+						exitwhen (true)
+					endif
+					set j = j + 1
+					exitwhen (j == bj_MAX_PLAYERS)
+				endloop
+				if (not removed) then
+					set i = i + 1
+				endif
+			endloop
+			return false
+		endmethod
 
 		public method removeEnemiesOfPlayer takes player whichPlayer returns nothing
 			local player owner
@@ -568,7 +657,7 @@ library AStructCoreUnitGroup requires ATextMacroCoreContainersSet, ALibraryCoreU
 			loop
 				exitwhen (i == this.m_units.size())
 				set owner = GetOwningPlayer(this.m_units[i])
-				if (not IsPlayerAlly(owner, whichPlayer)) then
+				if (not IsPlayerAlly(whichPlayer, owner)) then
 					call this.m_units.erase(i)
 				else
 					set i = i + 1

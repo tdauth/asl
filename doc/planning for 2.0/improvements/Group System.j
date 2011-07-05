@@ -2,17 +2,15 @@
 * TODO: Blizzard.j file contains much more GetUnits... functions (add more constructors and add methods).
 * General changes:
 * - Moved to core module "Unit".
-* - Extends AUnitSet now.
-* - Iterator type AGroupIterator is an alias for AUnitSetIterator.
-* - addGroup has no parameters anymore (we added addGroupClear and addGroupDestroy).
-* - Due to "addToGroup" and "removeFromGroup", "fillGroup" changes its behaviour and clears its target before now!
-* - isInGroup, isDead and isAlive considers now if group is empty
-* - isEqualToGroup returns true if both groups are empty
-* - constructor createWithGroup uses only one parameter now (due to new constructors createWithGroupClear and createWithGroupDestroy).
-*/
-
-/**
-* NEW AGROUP METHODS:
+* - Extends AIntegerUnitBimapList now. Therefore units are indexed by a number (their position in group) and theirselves (handle id for faster searches).
+* - Iterator type AGroupIterator is an alias for AIntegerUnitBimapIterator.
+* - addGroup() has no parameters anymore (we added addGroupClear() and addGroupDestroy()).
+* - Due to addToGroup() and removeFromGroup(), fillGroup() changes its behaviour and clears its target before now!
+* - isInGroup(), isDead() and isAlive() considers now if group is empty
+* - isEqualToGroup() returns true if both groups are empty
+* - constructor createWithGroup() uses only one parameter now (due to new constructors createWithGroupClear() and createWithGroupDestroy()).
+*
+* New methods:
 */
 
 public method addOther takes thistype other returns nothing
@@ -61,7 +59,7 @@ public method isInRegion takes region whichRegion returns boolean
 public method pickRandomUnit takes nothing returns unit
 
 /**
-* New constructors.
+* New constructors:
 */
 public static method createWithGroupClear takes group whichGroup returns thistype
 public static method createWithGroupDestroy takes group whichGroup returns thistype

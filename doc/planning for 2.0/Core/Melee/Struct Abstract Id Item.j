@@ -1,11 +1,11 @@
 library AStructCoreMeleeAbstractIdItem requires AStructCoreMeleeAbstractIdGenerator
 
 	/**
-	* Provides an item of an item set (\ref AIdSet) which can either be a specific or random object id.
-	* Random ids can be influenced by corresponding criteria of the created generator (e. g. a unit's level).
-	* To use your customized id generator structure you should implement a method called setRandom which gets all required filter criteria and sets the generator.
-	* \sa AAbstractIdGenerator, AIdSet, AIdTable
-	*/
+	 * Provides an item of an item set (\ref AIdSet) which can either be a specific or random object id.
+	 * Random ids can be influenced by corresponding criteria of the created generator (e. g. a unit's level).
+	 * To use your customized id generator structure you should implement a method called setRandom which gets all required filter criteria and sets the generator.
+	 * \sa AAbstractIdGenerator, AIdSet, AIdTable
+	 */
 	struct AAbstractIdItem
 		private integer m_id
 		private integer m_chance

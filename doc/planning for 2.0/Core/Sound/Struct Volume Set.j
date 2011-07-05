@@ -1,8 +1,8 @@
 library AStructCoreSoundVolumeSet
 
 	/**
-	* \sa VolumeGroupSetVolume, VolumeGroupReset, VolumeGroupSetVolumeForPlayerBJ, SetCineModeVolumeGroupsImmediateBJ, SetSpeechVolumeGroupsImmediateBJ
-	*/
+	 * \sa VolumeGroupSetVolume, VolumeGroupReset, VolumeGroupSetVolumeForPlayerBJ, SetCineModeVolumeGroupsImmediateBJ, SetSpeechVolumeGroupsImmediateBJ
+	 */
 	struct VolumeSet
 		public static constant integer volumeGroups = SOUND_VOLUMEGROUP_FIRE + 1
 		private real array m_scale[thistype.volumeGroups]

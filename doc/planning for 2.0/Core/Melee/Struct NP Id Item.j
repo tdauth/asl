@@ -1,8 +1,8 @@
 library AStructCoreMeleeNPIdItem requires AStructCoreMeleeAbstractIdItem, AStructCoreMeleeRandomNPIdGenerator
 
 	/**
-	* \sa AItemIdItem, ACreepIdItem
-	*/
+	 * \sa AItemIdItem, ACreepIdItem
+	 */
 	struct ANPIdItem extends AAbstractIdItem
 
 		public method setRandom takes integer chance returns nothing

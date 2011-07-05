@@ -13,10 +13,6 @@ library ATextMacroCoreContainersSet
 
 		endstruct
 	//! endtextmacro
-	
-	private function Comparer takes integer a, integer b returns boolean
-		returns a < b
-	endfunction
 
-	//! runtextmacro A_SET("", "AIntegerSet", "AIntegerContainer", "integer", "0", "Comparer")
+	//! runtextmacro A_SET("", "AIntegerSet", "AIntegerContainer", "integer", "0", "IntegerLessThan")
 endlibrary

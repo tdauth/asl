@@ -7,8 +7,8 @@ library ALibraryCoreSoundMusic
 	endfunction
 
 	/**
-	* http://www.wc3jass.com/viewtopic.php?t=141&sid=13329920bf4c51dc914b774abe5838de
-	*/
+	 * <a href="http://www.wc3jass.com/viewtopic.php?t=141&sid=13329920bf4c51dc914b774abe5838de">Source</a>
+	 */
 	function SetMapMusicForForce takes force whichForce, string musicList, boolean random, integer index returns nothing
 		if (IsPlayerInForce(GetLocalPlayer(), whichForce)) then
 			call SetMapMusic(musicList, random, index)
