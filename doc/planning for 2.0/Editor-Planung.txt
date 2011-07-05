@@ -1,0 +1,27 @@
+
+Auswahl
+    Löschen
+    (ist Einheit, Gegenstand oder Zerstörbares)
+	Drehen
+    (ist Held)
+	Stufe ändern
+	Attribute ändern
+    (ist Portal)
+	Ziel setzen
+	Aktivieren/Deaktivieren
+    (ist Einheit oder Gegenstand)
+	Besitzer wechseln
+Erzeugen
+    Einheiten
+    Gegenstände
+    Zerstörbare
+    Wettereffekte
+    Spezialeffekte
+    Quests
+    Kameras
+    
+Bearbeiten
+    Pinsel
+	Pinselgöße/Pinselradius
+	Quadrat/Kreis
+Zurück zum Spiel

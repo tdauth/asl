@@ -1,0 +1,1 @@
+* ASpell should be unit-based.

@@ -1,0 +1,1 @@
+* ATalkLog should be also player-based.

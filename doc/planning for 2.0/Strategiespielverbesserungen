@@ -1,0 +1,5 @@
+- Button zum Durchschalten laufender Forschungen
+- Button zum Durchschalten ausgebildeteter Einheiten
+- Button zum Durchschalten errichteter Gebäude
+- Informationen über die Anzahl der Arbeiter, die in der Goldmine sammeln
+- AOrderQueue, ASquad and AWall.
