@@ -325,6 +325,12 @@ endif
 		endmethod
 	endstruct
 
+	/**
+	 * Provides access to a virtual-based unit inventory which is highly extensible.
+	 * It can make use of up to six different inventory slots which is limited by Warcraft III's engine but it supports paging splitting everything up into nearly unlimited inventory item pages (maximum positive size of \ref integer).
+	 * Additionally it supports using and only transporting items (like Warcraft's ability does).
+	 * By extending this structure you could support features like custom item types or recepts (for RPGs).
+	 */
 	struct AInventory
 		public static constant integer chargesErrorZero = -1 /// Returned when charges count is 0.
 		public static constant integer chargesErrorRequirement = -2 /// Returned when requirement is not filled.

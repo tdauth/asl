@@ -1,3 +1,12 @@
+2011-07-19 Tamino Dauth <tamino@cdauth.eu>
+* Improved API documentation.
+* Improved trigger editor strings translation.
+
+2011-07-12 Tamino Dauth <tamino@cdauth.eu>
+* Finished new GIT repository file revision.
+* Improved API documentation.
+* Improved trigger editor strings translation.
+
 2011-06-19 Tamino Dauth <tamino@cdauth.eu>
 * Fixed various revision bugs.
 * Interface: Functions "GetPlayerColorRed", "GetPlayerColorGreen" and "GetPlayerColorBlue" are fixed and use static return values now.

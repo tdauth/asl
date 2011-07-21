@@ -34,6 +34,7 @@ globals
 	constant boolean A_FPS_MOVEMENT = false
 	constant real A_MAX_COLLISION_SIZE = 300.0
 	constant integer A_MAX_COLLISION_ITERATIONS = 10
+	constant integer A_SPELL_RESISTANCE_CREEP_LEVEL = 6
 endglobals
 
 //! import "Import Asl.j"
@@ -55,6 +56,7 @@ Alle weiteren benötigten ASL-Dateien werden von ihr ausgehend in einer Art Baum
 A_MAX_COLLISION_SIZE und A_MAX_COLLISION_ITERATIONS werden von Einheitenkollisionsgrößenermittlungsfunktionen verwendet und geben die maximale Kollisionsgröße einer
 Einheit in der Karte und die Anzahl der Durchläufe der Auswertungsfunktionen an.
 Eine Erhöhung der Durchläufe liefert ein genaueres Ergebnis, verlangsamt jedoch gleichzeitig die Funktionen.
+Der Wert A_SPELL_RESISTANCE_CREEP_LEVEL wird von der Funktion IsUnitSpellResistant verwendet. Normalerweise gelten Unholde ab einer bestimmten Stufe zauberresistent.
 
 Die Konstante DEBUG_MODE wird von vJass automatisch im Debug-Modus auf true gesetzt, weshalb man hierbei nichts angeben muss. Speichert man also
 die Karte im Debug-Modus, so werden automatisch alle Debug-Dateien importiert. Anderenfalls nicht. Man sollte als nie das debug-Schlüsselwort
@@ -79,13 +81,13 @@ Oftmals bietet die Entwicklung eigener Systeme im Nachhinein wesentlich mehr Mö
 
 4. Die Systeme
 
-5. Die Objekte (das wc3sdk-Projekt)
+5. Die Objekte (das "archives"-Projekt)
 Die ASL ist Teil des wc3sdk-Projekts, welches nicht nur deren Code zur Verfügung stellt, sondern nebenbei auch noch eine ganze Reihe von Modellen und Texturen, die
-für die Modifikation von Warcraft 3 The Frozen Throne geeignet sind.
+für die Modifikation von Warcraft III: The Frozen Throne geeignet sind.
 Die meisten Modelle und Texturen stammen von Warcraft-Modifikationseiten des Internets und wurden bevor sie zu einem der Projektarchive hinzugefügt wurden, zumindest vorher getestet.
-Da das wc3sdk-Projekt einst hauptsächlich für die sich in der Entwicklung befindlichen Modifikation "Die Macht des Feuers" gedacht war, sind viele Texturen und Modelle noch deutsch benannt.
-Dies wird sich mit der Zeit jedoch ändern, da das wc3sdk-Projekt international zugänglich gemacht werden soll.
-Auch befinden sich einige Dateien wie z. B. die Texturen von einigen Umgebungsmodellen noch nicht im korrekten Verzeichnis. Die Verzeichnisstruktur wurde erst während der Entwicklung entworfen
+Das "archives"-Projekt ist genau wie die ASL ein Teil des wc3sdks. Eigentlich diente es hauptsächlich für die sich in der Entwicklung befindlichen Modifikation "Die Macht des Feuers", weshlab noch viele Texturen und Modelle deutsch benannt sind.
+Dies wird sich mit der Zeit jedoch ändern, da das "archives"-Projekt und auch "Die Macht des Feuers" international zugänglich gemacht werden soll.
+Zudem befinden sich einige Dateien wie z. B. die Texturen von einigen Umgebungsmodellen noch nicht im korrekten Verzeichnis. Die Verzeichnisstruktur wurde erst während der Entwicklung entworfen
 und da die Verschiebung einer Textur, eine notwendige Änderung des Pfades in der zugehörigen Modelldatei mit sich zieht, wird dieser aufwändige Prozess ebenfalls erst mit der Zeit durchgeführt
 werden.
 Kreaturen und Gegenstände wurden, wenn auch inzwischen auf Englisch, hauptsächlich nach ihrer Bedeutung in der Welt von Warcraft bzw. in "Die Macht des Feuers" benannt.

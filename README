@@ -3,11 +3,11 @@ Parts of the current script version are not stable yet!
 This is the JASS and vJass script part of the wc3sdk
 consisting of many useful code files.
 It's called "Advanced Script Library" or just "ASL".
-It contains some useful systems which can be used for creating custom Warcraft 3 TFT projects.
+It contains some useful systems which can be used for creating custom Warcraft III: The Frozen Throne projects.
 Help me to find bugs and give me suggestions on http://sourceforge.net/projects/vjasssdk or by e-mail:
 tamino@cdauth.eu
 
-I've moved the scripts into extern code files since I'm working on a Linux system and the trigger
+I've moved the scripts into extern code files since I'm working on a GNU/Linux system and the trigger
 editor is very bugged if you use it by wine. Additionally some files can be excluded easily
 which decreases map file size.
 
@@ -41,19 +41,21 @@ endglobals
 -- Trigger editor integration:
 Import the following files with their corresponding paths to enable various data types and functions in World Editor's trigger editor:
 
-"archives/Asl/UI/TriggerData.txt"
+"gui/UI/TriggerData.txt"
 Import path:
 "UI\TriggerData.txt"
 
-"archives/Asl_<language id>/UI/TriggerStrings.txt"
+"gui_<language id>/UI/TriggerStrings.txt"
 Import path:
 "UI\TriggerStrings.txt"
 
-"archives/Asl_<language id>/UI/WorldEditStrings.txt"
+gui_<language id>/UI/WorldEditStrings.txt"
 Import path:
 "UI\WorldEditStrings.txt"
 
 Remember that you have to import all ASL code into your map (script) to use those trigger actions and types.
+Currently supported language ids are:
+* de
 
 -- Parser/pjass bug:
 If you're using a huge amount of code (like me) I recommend dropping "pjass" usage and replacing it
@@ -70,4 +72,4 @@ For using Bonus Mod you have to make an entry in the "jasshelper.conf" file for 
 It should always be named "ObjectMerger".
 You have to import file "Systems/BonusMod/Creation Bonus Mod.j" once to create all object editor data required by Bonus Mod code.
 
-Tamino Dauth <tamino@cdauth.eu>, 2011-04-21
+Tamino Dauth <tamino@cdauth.eu>, 2011-07-12

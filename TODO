@@ -2,7 +2,7 @@
 * FIXED: ARevival: Run check in methods enable and disable doesn't work correctly.
 
 2010-11-06 Tamino Dauth <tamino@cdauth.eu>
-* AVideo: Find function which prevents unit portraits from being shown correctly.
+* FIXED: AVideo: Find function which prevents unit portraits from being shown correctly.
 
 2010-11-02 Tamino Dauth <tamino@cdauth.eu>
 * FIXED: AVideo: Skip action isn't called correctly.
@@ -18,7 +18,7 @@
 * DONE (works): AGroup: Test orders since groups are being destroyed immediatly after getting their orders!
 
 2010-09-08 Tamino Dauth <tamino@cdauth.eu>
-* Core: Add text macro A_PAIR, implement pair functions in A_MAP.
+* DEPRECATED: Core: Add text macro A_PAIR, implement pair functions in A_MAP.
 
 2010-09-03 Tamino Dauth <tamino@cdauth.eu>
 * DONE: Core: Add trp(string singular, string plural, integer count) for plural formats.

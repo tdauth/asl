@@ -1,11 +1,11 @@
 library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPointInterface, optional ALibraryCoreDebugMisc, AModuleCoreGeneralSystemStruct, AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreMathsPoint
 
 	/**
-	* Unfortunately there is no known possibility to register generic item death or pickup events.
-	* For this reason there is being created a single timer which checks if any item was moved away from its respawn position.
-	* Instead of having a group of members which have all to be dead or removed, item spawn points have to be created for each item uniquely.
-	* @see ASpawnPoint
-	*/
+	 * Unfortunately there is no known possibility to register generic item death or pickup events.
+	 * For this reason there is being created a single timer which checks if any item was moved away from its respawn position.
+	 * Instead of having a group of members which have all to be dead or removed, item spawn points have to be created for each item uniquely.
+	 * \sa ASpawnPoint
+	 */
 	struct AItemSpawnPoint extends ASpawnPointInterface
 		// static construction members
 		private static real m_time
@@ -99,9 +99,9 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		endmethod
 
 		/**
-		* Since you can't recognize when an item is killed we check its position and life manually.
-		* @return Returns true if the item will be respawned next time.
-		*/
+		 * Since you can't recognize when an item is killed we check its position and life manually.
+		 * \return Returns true if the item will be respawned next time.
+		 */
 		public method willBeRespawned takes nothing returns boolean
 			return (not this.runs() and this.m_isEnabled and (this.m_item == null or IsItemOwned(this.m_item) or GetWidgetLife(this.m_item) <= 0.0 or GetDistanceBetweenPoints(GetItemX(this.m_item), GetItemY(this.m_item), 0.0, this.m_x, this.m_y, 0.0) > thistype.m_removalRange))
 		endmethod
@@ -140,8 +140,8 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		endmethod
 
 		/**
-		* Respawn will be started immediately after creation.
-		*/
+		 * Respawn will be started immediately after creation.
+		 */
 		public static method createWithoutItem takes real x, real y returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_x = x
@@ -185,10 +185,10 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		endmethod
 
 		/**
-		* @param checkRate There's a global timer which checks for items every n seconds. This is required because of the limited engine which doesn't allow you to get "item is being killed" events etc.
-		* @param time This is the value of the time (in seconds) which has to expired until the item is respawned.
-		* @param removalRange This is the value of the range where the item is checked for its removal. If the item is not owned and not dead it could have been dropped somewhere.
-		*/
+		 * \param checkRate There's a global timer which checks for items every n seconds. This is required because of the limited engine which doesn't allow you to get "item is being killed" events etc.
+		 * \param time This is the value of the time (in seconds) which has to expired until the item is respawned.
+		 * \param removalRange This is the value of the range where the item is checked for its removal. If the item is not owned and not dead it could have been dropped somewhere.
+		 */
 		public static method init takes real checkRate, real time, real removalRange returns nothing
 			set thistype.m_time = time
 			set thistype.m_removalRange = removalRange

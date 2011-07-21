@@ -1,8 +1,8 @@
 library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, ALibraryCoreGeneralUnit, AStructCoreStringFormat, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter, AStructSystemsCharacterItemType
 
 	/**
-	* This structure is used to store all item information of one slot in inventory.
-	*/
+	 * This structure is used to store all item information of one slot in inventory.
+	 */
 	struct AInventoryItemData
 		// dynamic members
 		private integer m_itemTypeId
@@ -181,21 +181,22 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	endstruct
 
 	/**
-	* This struct provides an interface to the character's inventory which is based on the default Warcraft 3 The Frozen Throne
-	* inventory with 6 slots.
-	* A unit ability can be used to open and close rucksack.
-	* Rucksack uses the same interface as equipment since there are only 6 available item slots in Warcraft.
-	* Abilities of equipment will be hold when character is opening his rucksack.
-	* Rucksack item abilities do not affect!
-	* You can only use usable items like potions in rucksack which should always have type ITEM_TYPE_CHARGED!
-	* In rucksack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
-	* In equipment there shouldn't be any charges.
-	* If you add an item to character triggers will be run and firstly it will be tried to equip added item to character.
-	* If this doesn't work (e. g. it's not an equipable item) it will be added to rucksack.
-	* You do not have to care if rucksack is being opened at that moment.
-	* @todo Use UnitDropItemSlot instead of item removals.
-	* @todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
-	*/
+	 * This structure provides an interface to the character's inventory which is based on the default Warcraft III: The Frozen Throne
+	 * inventory with 6 slots.
+	 * A unit ability can be used to open and close rucksack.
+	 * Rucksack uses the same interface as equipment since there are only 6 available item slots in Warcraft.
+	 * Abilities of equipment will be hold when character is opening his rucksack.
+	 * Rucksack item abilities do not affect!
+	 * You can only use usable items like potions in rucksack which should always have type \ref ITEM_TYPE_CHARGED!
+	 * In rucksack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
+	 * In equipment there shouldn't be any charges.
+	 * If you add an item to character triggers will be run and firstly it will be tried to equip added item to character.
+	 * If this doesn't work (e. g. it's not an equipable item) it will be added to rucksack.
+	 * You do not have to care if rucksack is being opened at that moment.
+	 * \note Do not forget to create \ref AItemType instances for all equipable item types!
+	 * \todo Use \ref UnitDropItemSlot instead of item removals.
+	 * \todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
+	 */
 	struct AInventory extends AAbstractCharacterSystem
 		// static constant members, useful for GUIs
 		public static constant integer maxEquipmentTypes = 5//AItemType.maxEuqipmentTypes /// @todo vJass bug //AClassCharacterItemType
@@ -326,7 +327,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.totalRucksackItemTypeCharges(itemTypeId) + this.totalEquipmentItemTypeCharges(itemTypeId)
 		endmethod
 
-		/// @return Returns the page of a rucksack item by index.
+		/// \return Returns the page of a rucksack item by index.
 		public static method itemRucksackPage takes integer index returns integer
 			debug if (index >= thistype.maxRucksackItems or index < 0) then
 				debug call thistype.staticPrint("Wrong rucksack index: " + I2S(index) + ".")
@@ -335,7 +336,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return index / thistype.maxRucksackItemsPerPage
 		endmethod
 
-		/// @return Returns the Warcraft inventory slot number by a rucksack item index.
+		/// \return Returns the Warcraft inventory slot number by a rucksack item index.
 		public method rucksackItemSlot takes integer index returns integer
 			debug if (index >= thistype.maxRucksackItems or index < 0) then
 				debug call this.print("Wrong rucksack index: " + I2S(index) + ".")
@@ -398,7 +399,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 		endmethod
 
-		/// @return Returns the rucksack item index by a Warcraft inventory slot number.
+		/// \return Returns the rucksack item index by a Warcraft inventory slot number.
 		public method slotRucksackIndex takes integer slot returns integer
 			debug if (slot >= thistype.maxRucksackItemsPerPage or slot < 0) then
 				debug call this.print("Wrong inventory slot: " + I2S(slot) + ".")
@@ -477,9 +478,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		* Usually you do not have to call this method. The system handles itself.
-		*/
-		public method disable takes nothing returns nothing
+		 * Usually you do not have to call this method. The system handles itself.
+		 */
+		public stub method disable takes nothing returns nothing
 			call super.disable()
 			if (this.m_rucksackIsEnabled) then
 				call this.disableRucksack()
@@ -599,7 +600,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		* Shows the current page in the inventory of the character's unit
 		* In general you do not have to call this method. The system handles itself.
 		*/
-		public method enable takes nothing returns nothing
+		public stub method enable takes nothing returns nothing
 			call super.enable()
 			if (this.m_rucksackIsEnabled) then
 				call this.enableRucksack()
@@ -833,10 +834,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		* Checks requirements of all equipped items. If some requirements aren't met the checked item is dropped.
-		* This should be called whenever character units attributes which are used for item type requirement change.
-		* Note: Now it should work while rucksack is opened, too.
-		*/
+		 * Checks requirements of all equipped items. If some requirements aren't met the checked item is dropped.
+		 * This should be called whenever character units attributes which are used for item type requirement change.
+		 * Note: Now it should work while rucksack is opened, too.
+		 */
 		private method checkEquipment takes nothing returns nothing
 			local AItemType itemType
 			local integer i = 0

@@ -464,7 +464,7 @@ library MyQuestLibrary initializer initFunction requires Asl
 			call this.m_questItem0.setPingRect(gg_rct_peters_zone)
 			set this.m_killedOrcs = 0
 			return this
-		endmethod			
+		endmethod
 	endstruct
 	
 endlibrary

@@ -46,37 +46,38 @@ library AStructSystemsWorldLayer requires AModuleCoreGeneralSystemStruct, AStruc
 		endmethod
 	endstruct
 
-	/// @todo Should be contained by @struct ALayer, vJass bug.
+	/// \todo Should be contained by \ref ALayer, vJass bug.
 	function interface ALayerOnEnterFunction takes unit whichUnit returns nothing
 
-	/// @todo Should be contained by @struct ALayer, vJass bug.
+	/// \todo Should be contained by \ref ALayer, vJass bug.
 	function interface ALayerOnLeaveFunction takes unit whichUnit returns nothing
 
 	/**
-	* Layers can be used to create multiple movable rects for units on the same position of map using
-	* the z-axis.
-	* As you can't do this by using the terrain editor or the Warcraft engine itself this structure
-	* uses the native function SetUnitZ and turns off units pathing (by using
-	* native function SetUnitPathing) to be usable on water and other blocking regions.
-	* Each layer consists of several regions.
-	* Each region has its own specific meaning and all regions should be placed in specific order
-	* that the layer can be used correctly.
-	* This image should describe what each region means to the layer:
-	* @image TODO
-	* As you can see entry regions have to be in another layer region since you need a z value which will be adjusted on the entering unit (when it enters the region, see note below).
-	* Therefore, when a unit enters the layer (entry region) the system will search for the current region with a specified fly height and assign it to the entering unit.
-	* Exit regions have to be at the end of a layer region since otherwise the unit will be reset into the region if it does not enter an exit region.
-	* As already mentioned, when a unit leaves a layer region it will be reset if it did not enter a new one or an exit region!
-	* @note Added regions and units won't be removed from game by the layer at any time! You'll have to take care yourself if you want to prevent memory leaks.
-	* @note Region z values will be adjusted when the unit enters a region and are set relatively to the units current z value. Remember that the unit z values won't be refreshed automatically in one single region. Hence, we recommend to place one region for each different z value.
-	*/
+	 * Layers can be used to create multiple movable rects for units on the same position of map using
+	 * the z-axis.
+	 * As you can't do this by using the terrain editor or the Warcraft engine itself this structure
+	 * uses the native function SetUnitZ and turns off units pathing (by using
+	 * native function \ref SetUnitPathing) to be usable on water and other blocking regions.
+	 * Each layer consists of several regions.
+	 * Each region has its own specific meaning and all regions should be placed in specific order
+	 * that the layer can be used correctly.
+	 * This image should describe what each region means to the layer:
+	 * \todo Add image!
+	 * "\image TODO"
+	 * As you can see entry regions have to be in another layer region since you need a z value which will be adjusted on the entering unit (when it enters the region, see note below).
+	 * Therefore, when a unit enters the layer (entry region) the system will search for the current region with a specified fly height and assign it to the entering unit.
+	 * Exit regions have to be at the end of a layer region since otherwise the unit will be reset into the region if it does not enter an exit region.
+	 * As already mentioned, when a unit leaves a layer region it will be reset if it did not enter a new one or an exit region!
+	 * \note Added regions and units won't be removed from game by the layer at any time! You'll have to take care yourself if you want to prevent memory leaks.
+	 * \note Region z values will be adjusted when the unit enters a region and are set relatively to the units current z value. Remember that the unit z values won't be refreshed automatically in one single region. Hence, we recommend to place one region for each different z value.
+	 */
 	struct ALayer
 		private ALayerOnEnterFunction m_onEnterFunction
 		private ALayerOnLeaveFunction m_onLeaveFunction
 		private ARegionList m_entryRegions
 		private ARegionList m_exitRegions
 		private AIntegerList m_regions // Holds structs of ARegionData.
-		private AIntegerList m_units /// Holds structs of AUnitData.
+		private AIntegerList m_units /// Holds structures of \ref AUnitData.
 		private trigger m_enterTrigger
 		private trigger m_leaveTrigger
 		private trigger m_regionTrigger
@@ -183,8 +184,8 @@ endif
 		endmethod
 
 		/**
-		* Unit has to be refreshed if it already belongs to layer and enters another layer region or when it enters an entry region.
-		*/
+		 * Unit has to be refreshed if it already belongs to layer and enters another layer region or when it enters an entry region.
+		 */
 		private method refreshUnit takes unit whichUnit, ARegionData data returns nothing
 			call SetUnitZ(whichUnit, data.z())
 		endmethod
@@ -205,8 +206,8 @@ endif
 		endmethod
 
 		/**
-		* @return Returns true if unit could properly newly enter the layer. Otherwise it returns false.
-		*/
+		 * \return Returns true if unit could properly newly enter the layer. Otherwise it returns false.
+		 */
 		public method unitEnters takes unit whichUnit returns boolean
 			local ARegionData data = this.unitRegionData(whichUnit)
 			if (data == 0) then
@@ -280,8 +281,8 @@ endif
 		endmethod
 
 		/**
-		* Does not change already added/contained units!
-		*/
+		 * Does not change already added/contained units!
+		 */
 		public method disable takes nothing returns nothing
 			call DisableTrigger(this.m_enterTrigger)
 			call DisableTrigger(this.m_leaveTrigger)
@@ -358,7 +359,7 @@ endif
 			return this.containsUnit(GetTriggerUnit()) and not this.isUnitInExitRegion(GetTriggerUnit()) and not this.regionContainsUnit(GetTriggerUnit())
 		endmethod
 
-		/// @todo Pause Unit/Move unit back correctly.
+		/// \todo Pause Unit/Move unit back correctly.
 		private static method triggerActionBounds takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call SetUnitX(GetTriggerUnit(), GetUnitPolarProjectionX(GetTriggerUnit(), GetUnitFacing(GetTriggerUnit()) - 180.0, 100.0))

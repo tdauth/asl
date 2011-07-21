@@ -4,17 +4,39 @@
 //! import "Core/String/Library Pool.j"
 //! import "Core/String/Library Misc.j"
 
-
 /**
-TODO add docs below!
-native S2I  takes string s returns integer
-native S2R  takes string s returns real
-native GetHandleId takes handle h returns integer
-native SubString takes string source, integer start, integer end returns string
-native StringLength takes string s returns integer
-native StringCase takes string source, boolean upper returns string
-native StringHash takes string s returns integer
-
+ * \fn S2I
+ * Converts string value \p s into integer value.
+ * \param s String value which is converted into integer value.
+ * \return Returns resulting integer value.
+ *
+ * \fn S2R
+ * Converts string value \p s into real value.
+ * \param s String value which is converted into real value.
+ * \return Returns resulting real value.
+ *
+ * \fn StringLength
+ * Returns length of string value \p s as integer value. For example "bla" has length of 3.
+ * \param s String value whichs length is returned.
+ * \return Returns length of string value \p s.
+ *
+ * \fn StringCase
+ * Converts string value \p source into completely upper or lower string and returns the result.
+ * \param source String value which is converted into specified case.
+ * \param upper If this value is true it's converted into completely upper string value. Otherwise it's converted into completely lower string value.
+ * \return Returns resulting string value.
+ *
+ * \fn StringHash
+ * Generates an almost unique integer hash value by the corresponding string value \p s.
+ * Hash values are mostly used as indices (e. g. in arrays or hashtables).
+ * This function has been introduced to grant backwards compatibility to return bug based maps.
+ * \param s String value from which hash value is generated.
+ * \return Returns resulting hash value.
+ * TODO add documentation!
+ * \fn GetLocalizedString
+ * 
+ * \fn GetLocalizedHotkey
+ *
 native GetLocalizedString takes string source returns string
 native GetLocalizedHotkey takes string source returns integer
 */

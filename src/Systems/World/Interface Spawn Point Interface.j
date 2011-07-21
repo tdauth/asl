@@ -1,9 +1,9 @@
 library AInterfaceSystemsWorldSpawnPointInterface
 
 	/**
-	* Abstract spawn point interface which may be useful for generic code.
-	* @see AItemSpawnPoint, ASpawnPoint
-	*/
+	 * Abstract spawn point interface which may be useful for generic code.
+	 * \sa AItemSpawnPoint, ASpawnPoint
+	 */
 	interface ASpawnPointInterface
 		public method remainingTime takes nothing returns real defaults 0.0
 		public method runs takes nothing returns boolean defaults false
