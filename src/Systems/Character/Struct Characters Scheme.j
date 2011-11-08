@@ -1,18 +1,20 @@
 library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSystemStruct, optional ALibraryCoreDebugMisc, ALibraryCoreGeneralPlayer, AStructCoreInterfaceMultiboardBar, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceMultiboard, AStructSystemsCharacterCharacter
 
-	/// @todo Should be contained by \ref ACharactersScheme, vJass bug.
+	/// \todo Should be contained by \ref ACharactersScheme, vJass bug.
 	function interface ACharactersSchemeMaxExperience takes unit hero returns integer
 
 	/**
-	* Characters scheme uses one multiboard to display information about all playing characters.
-	* These information can be:
-	* - name
-	* - class
-	* - level
-	* - experience until next level
-	* - life
-	* - mana
-	*/
+	 * Characters scheme uses one multiboard to display information about all playing characters.
+	 * These information can be:
+	 * <ul>
+	 * <li>player name</li>
+	 * <li>class</li>
+	 * <li>level</li>
+	 * <li>experience until next level</li>
+	 * <li>life</li>
+	 * <li>mana</li>
+	 * </ul>
+	 */
 	struct ACharactersScheme
 		// static start members
 		private static real m_refreshRate

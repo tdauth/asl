@@ -152,6 +152,10 @@ endif
 			return this.m_character != 0
 		endmethod
 
+		public method useThirdPerson takes nothing returns boolean
+			return ACharacter.useViewSystem() and this.character().view().enableAgain()
+		endmethod
+
 		/// Usually you don't have to call this method since talks will be activated by a specific unit order.
 		public method openForCharacter takes ACharacter character returns nothing
 			debug if (this.m_character != 0) then
@@ -169,10 +173,12 @@ endif
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
 			call SetUnitLookAt(character.unit(), "bone_head", this.m_unit, 0.0, 0.0, GetUnitFlyHeight(this.m_unit) + 90.0)
 			call SetUnitLookAt(this.m_unit, "bone_head", character.unit(), 0.0, 0.0, GetUnitFlyHeight(character.unit()) + 90.0)
-			call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamAoa()
-			call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamRot()
-			call AThirdPersonCamera.playerThirdPersonCamera(character.player()).disable()
-			call AThirdPersonCamera.playerThirdPersonCamera(character.player()).enable(character.unit(), 0.0)
+			if (this.useThirdPerson()) then
+				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamAoa()
+				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamRot()
+				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).disable()
+				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).enable(character.unit(), 0.0)
+			endif
 			call AGui.playerGui(character.player()).dialog().clear()
 			call AGui.playerGui(character.player()).dialog().setMessage(GetUnitName(this.m_unit))
 			call this.m_startAction.execute(this) // create buttons
@@ -190,10 +196,12 @@ endif
 			if (thistype.m_hideUserInterface) then
 				call SetUserInterfaceForPlayer(characterUser, true, true)
 			endif
+			/*
 			if (not ACharacter.useViewSystem() or not this.m_character.view().enableAgain()) then
 				call AThirdPersonCamera.playerThirdPersonCamera(characterUser).pause()
 				call ResetToGameCameraForPlayer(characterUser, 0.0)
 			endif
+			*/
 			call this.m_character.setTalk(0)
 			call this.m_character.setMovable(true)
 			set this.m_character = 0

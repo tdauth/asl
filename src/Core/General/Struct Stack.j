@@ -1,5 +1,8 @@
 library AStructCoreGeneralStack requires optional ALibraryCoreDebugMisc
 
+	/**
+	 * \sa containers
+	 */
 	//! textmacro A_STACK takes STRUCTPREFIX, NAME, TYPE, NULLVALUE, STRUCTSPACE, NODESPACE
 		$STRUCTPREFIX$ struct $NAME$DataNode[$NODESPACE$]
 			// construction members

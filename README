@@ -1,19 +1,23 @@
-Parts of the current script version are not stable yet!
-
-This is the JASS and vJass script part of the wc3sdk
-consisting of many useful code files.
-It's called "Advanced Script Library" or just "ASL".
+This is a huge collection of JASS and vJass scripts which is called "Advanced Script Library" or just "ASL".
 It contains some useful systems which can be used for creating custom Warcraft III: The Frozen Throne projects.
-Help me to find bugs and give me suggestions on http://sourceforge.net/projects/vjasssdk or by e-mail:
+
+GIT repository:
+https://gitorious.org/advanced-script-library
+
+Help me to find bugs and give me suggestions using my email:
 tamino@cdauth.eu
 
+Additionally, there is a bug tracker which can be used, as well:
+http://sourceforge.net/tracker/?group_id=252191&atid=1127353
+
 I've moved the scripts into extern code files since I'm working on a GNU/Linux system and the trigger
-editor is very bugged if you use it by wine. Additionally some files can be excluded easily
-which decreases map file size.
+editor is very bugged if you use it with wine.
+Besides some files can be excluded easily by unsetting various global constants which are listed below which decreases the code's size massively.
 
 Installation/Usage:
 
--- IMPORTANT NOTE: JassHelper 0.A.2.A is required since there is an unknown bug in higher version (0.A.2.B) which prevents
+-- IMPORTANT NOTE:
+JassHelper 0.A.2.A is required since there is an unknown bug in higher version (0.A.2.B) which prevents
 code from being compiled correctly.
 
 -- Code integration:
@@ -23,12 +27,11 @@ program before.
 The JassHelper has to lookup folder "src" in this directory. If configured correctly you're able to
 write a simple statement like //! import "Import Asl.j" into your own code or map script.
 
-The following list shows you which constants have to specified in your custom code that ASL works properly:
+The following list shows you which global constants have to be specified in your custom code that ASL works properly:
 globals
 	constant boolean A_RTC = false
 	constant boolean A_JAPI = false
 	constant boolean A_SYSTEMS = true
-	constant boolean A_OBJECTS = false
 	constant boolean A_DEBUG_HANDLES = false // not usable yet!
 	constant boolean A_DEBUG_NATIVES = false
 	constant boolean A_NET = false // not usable yet!
@@ -60,11 +63,11 @@ Currently supported language ids are:
 -- Parser/pjass bug:
 If you're using a huge amount of code (like me) I recommend dropping "pjass" usage and replacing it
 by JassParser (http://www.wc3c.net/showthread.php?t=105235) since there is a memory exhausted bug in
-"pjass".
+"pjass" (http://www.wc3c.net/showpost.php?p=1115263&postcount=154).
 
 -- jAPI and RtC support:
-ASL supports "japi" and "RtC". Just set A_JAPI or A_RTC variables to true.
-If you set A_FPS_MOVEMENT true (which needs A_RTC set to be true, too) the character movement system
+ASL supports "japi" (http://www.wc3c.net/showthread.php?t=79652) and "RtC" (http://www.wc3c.net/showthread.php?t=109255). Just set global constants A_JAPI or A_RTC to value true.
+If you set global constant A_FPS_MOVEMENT to value true (which needs A_RTC set to be true, as well) the character movement system
 should be usable by mouse keys.
 
 -- BonusMod support:
@@ -72,4 +75,4 @@ For using Bonus Mod you have to make an entry in the "jasshelper.conf" file for 
 It should always be named "ObjectMerger".
 You have to import file "Systems/BonusMod/Creation Bonus Mod.j" once to create all object editor data required by Bonus Mod code.
 
-Tamino Dauth <tamino@cdauth.eu>, 2011-07-12
+Tamino Dauth <tamino@cdauth.eu>, 2011-11-04

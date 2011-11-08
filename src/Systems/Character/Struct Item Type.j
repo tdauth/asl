@@ -14,7 +14,8 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 	*/
 	struct AItemType
 		// static constant members
-		public static constant integer equipmentTypeNone = -1 /// Use this as equipment type if it's a rucksack item.
+		/// Use this as equipment type if it's a rucksack item.
+		public static constant integer equipmentTypeNone = -1
 		public static constant integer equipmentTypeHeaddress = 0
 		public static constant integer equipmentTypeArmour = 1
 		public static constant integer equipmentTypePrimaryWeapon = 2

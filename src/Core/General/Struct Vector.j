@@ -2,8 +2,16 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 
 	/**
 	 * \author Tamino Dauth
-	 * Got some inspiration from @link http://www.cplusplus.com/reference/stl and @link http://www.cplusplus.com/reference/stl/vector.
-	 * Vector containers do not use nodes. They use default Warcraft 3 arrays (extended by vJass).
+	 * Got some inspiration from <a href="http://www.cplusplus.com/reference/stl">C++ STL</a> and in detail from <a href="http://www.cplusplus.com/reference/stl/vector">std::vector</a>.
+	 * Vector containers do not use nodes. They use default Warcraft III arrays (extended by vJass).
+	 * Therefore they have a fixed capcity defined when the text macro is run.
+	 * This makes vectors very efficient but limited in their instances count, as well since it must be divided by the maximum size of one single vector (\ref maxInstances()).
+	 * Additionally, only pushing elements to the back of the vector is very effecient. When pushing one element to the front or inserting one element somewhere
+	 * all other elements need to be moved!
+	 * Therefore you should use \ref A_LIST when being unsure if your container can only be increased by pushing elements to the back of it.
+	 * For ordered containers which provide much more faster search methods you can use \ref A_MAP.
+	 * There's a number specialized version of A_VECTOR, as well called \ref A_NUMERIC_VECTOR.
+	 * \sa containers
 	 */
 	//! textmacro A_VECTOR takes STRUCTPREFIX, NAME, ELEMENTTYPE, NULLVALUE, MAXSIZE, STRUCTSPACE, ITERATORSPACE
 
@@ -143,6 +151,13 @@ endif
 
 			public method size takes nothing returns integer
 				return this.m_size
+			endmethod
+
+			/**
+			 * Similar to \ref maxSize().
+			 */
+			public method capacity takes nothing returns integer
+				return $MAXSIZE$
 			endmethod
 
 			/**
@@ -584,7 +599,7 @@ endif
 
 			/// copyBackward
 			/// copyN
-			
+
 			public method countIfNumber takes integer position, integer number, $NAME$UnaryPredicate unaryPredicate returns integer
 				local integer i = position
 				local integer exitValue = position + number
@@ -601,11 +616,11 @@ endif
 				endloop
 				return result
 			endmethod
-			
+
 			public method countIf takes $NAME$UnaryPredicate unaryPredicate returns integer
 				return this.countIfNumber(0, this.m_size, unaryPredicate)
 			endmethod
-			
+
 			/// \todo Implement the following methods
 			/// equal
 			/// equalIf
@@ -903,6 +918,10 @@ endif
 				call this.clear()
 			endmethod
 
+			/**
+			 * The maximum size of a vector type must be defined when its corresponding text macro is run.
+			 * It specifies how many elements each vector of the specific generated vector type can have.
+			 */
 			public static constant method maxSize takes nothing returns integer
 				return $MAXSIZE$
 			endmethod

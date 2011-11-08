@@ -1,14 +1,19 @@
-/// @author Tamino Dauth
+/// \author Tamino Dauth
 library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreGeneralPlayer
 
-	/// @todo Should be a part of @struct ACheat, vJass bug.
+	/// \todo Should be a part of \ref ACheat, vJass bug.
 	function interface ACheatOnCheatAction takes ACheat cheat returns nothing
 
 	/**
-	* ACheat provides a simple cheat functionality. Cheats are string which the player has to enter in chat and which can provide everything the user wants them.
-	* Use the function interface @functioninterface ACheatOnCheatAction to specify your cheat action.
-	* Note that you can use @function GetEventPlayerChatString() to read the whole entered chat string.
-	*/
+	 * ACheat provides simple cheat functionality. Cheats are strings which has to be entered by one player into the chat and which are connected to a user-defined function called "action" using interface \ref ACheatOnCheatAction which is called via .execute() immediately after the cheat was sent to the screen.
+	 *
+	 * Some cheats might have arguments. For example, you could create a cheat  called "setlevel" which
+	 * expects a level value after the cheat expression.
+	 * Since you can create cheats without requiring exact match on entered chat string, arguments can be passed, as well.
+	 * Use \ref thistype#arguments() to get them in your custom function.
+	 *
+	 * \note Note that you can use \ref GetEventPlayerChatString() in the corresponding function to read the whole entered chat string.
+	 */
 	struct ACheat
 		// construction members
 		private string m_cheat
@@ -31,6 +36,12 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 
 		// methods
 
+		/**
+		 * \return Returns the whole entered cheat without the cheat expression itself refered as cheat arguments.
+		 * For example, if player has entered "setlevel 3 all" and "setlevel" is the actual cheat this would return "3 all".
+		 * \note This doesn only works if \ref exactMatch() is false.
+		 * \todo Use more flexible tokenizer. What about cheats which do have some tokens before???
+		 */
 		public method argument takes nothing returns string
 			return SubString(GetEventPlayerChatString(), StringLength(this.m_cheat) + 1, StringLength(GetEventPlayerChatString()))
 		endmethod
@@ -65,10 +76,10 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 		endmethod
 
 		/**
-		* @param cheat The string the player has to enter into the chat.
-		* @param exactMatch If this value is false user does not have to enter the exact string of @param cheat to run the cheat. For example if the cheat string is "setlevel" "setlevel 1000" does also work.
-		* @param action The function which will be called when player enters cheat string.
-		*/
+		 * \param cheat String value a player has to enter into the chat.
+		 * \param exactMatch If this value is false user does not have to enter the exact string of \p cheat to run the cheat. For example if the cheat string is "setlevel" "setlevel 1000" would work, as well.
+		 * \param action The function which will be called when any player enters cheat string. Consider that it is called via .execute() not .evaluate()!
+		 */
 		public static method create takes string cheat, boolean exactMatch, ACheatOnCheatAction action returns thistype
 			local thistype this = thistype.allocate()
 			debug if (cheat == null) then

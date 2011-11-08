@@ -1,5 +1,10 @@
 library AStructCoreInterfacePlayerSelection requires optional ALibraryCoreDebugMisc, AStructCoreGeneralGroup
 
+	/**
+	 * \brief Stores unit selection of one single player per instance.
+	 * Use \ref thistype.store() to store the player's current selection and \ref thistype.restore() to restore it which means that all stored units will be selected only for the corresponding player.
+	 * \author Tamino Dauth
+	 */
 	struct APlayerSelection
 		// construction members
 		private player m_player

@@ -1,21 +1,22 @@
 library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreGeneralUnit
 
 	/**
-	* This struct is kind of wrapper for data type \ref group. Since \ref group does not allow
-	* direct accesses to internally stored units it's very annoying to get any group member
-	* which is not the first one.
-	* You'll always have to iterate the whole group, remove the first member and copying it into
-	* another group which should replace your first one in the end.
-	* This process has to go on until you found your required unit.
-	* Another possibility is to use filters but they have to be global functions and therefore
-	* you will either have to attach data anywhere or have to use a global variable.
-	* Instead of using filter functions this struct allows you direct access to a vector
-	* which contains all units.
-	* Additionally it provides various \ref AGroup#addGroup methods which do use the \ref GroupEnum functions from JASS.
-	* Methods like \ref AGroup#removeUnitsOfPlayer or \ref AGroup#removeAlliesOfUnit are very useful for spell functions.
-	* The only disadvantage of this struct its decreased performance compared to native type \ref group (especially when adding other groups e. g. by using \ref AGroup#addUnitsOfType).
-	* \sa AForce
-	*/
+	 * This structure is a kind of wrapper for data type \ref group. Since \ref group does not allow
+	 * direct accesses to internally stored units it's very annoying to get any group member
+	 * which is not the first one.
+	 * You'll always have to iterate the whole group, remove the first member and copying it into
+	 * another group which should replace your first one in the end.
+	 * This process has to go on until you found your required unit.
+	 * Another possibility is to use filters but they have to be global functions and therefore
+	 * you will either have to attach data anywhere or have to use a global variable.
+	 * Instead of using filter functions this struct allows you direct access to a vector
+	 * which contains all units.
+	 * Additionally it provides various \ref thistype#addGroup methods which do use the \ref GroupEnum functions from JASS.
+	 * Methods like \ref thistype#removeUnitsOfPlayer or \ref thistype#removeAlliesOfUnit are very useful for spell functions.
+	 * The only disadvantage of this struct its decreased performance compared to native type \ref group (especially when adding other groups e. g. by using \ref thistypep#addUnitsOfType).
+	 * \sa AForce
+	 * \sa wrappers
+	 */
 	struct AGroup
 		// members
 		private AUnitVector m_units
@@ -404,7 +405,7 @@ library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreG
 				call this.selectOnly()
 			endif
 		endmethod
-		
+
 		public method countUnitsOfType takes integer unitTypeId returns integer
 			local integer i = 0
 			local integer result = 0

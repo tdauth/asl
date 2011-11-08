@@ -1,20 +1,20 @@
 library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk, AStructSystemsCharacterVideo
 
-	/// @todo Shoud be a static member of @struct AInfo, vJass bug.
+	/// \todo Shoud be a static member of \ref AInfo, vJass bug.
 	function interface AInfoCondition takes AInfo info returns boolean
 
-	/// @todo Shoud be a static member of @struct AInfo, vJass bug.
+	/// \todo Shoud be a static member of \ref AInfo, vJass bug.
 	function interface AInfoAction takes AInfo info returns nothing
 
 	/**
-	* Members of talks are called informations or infos. An info is a single object which informs
-	* the user about something like new quests or important things which happened.
-	* Infos can have their own condition, so player do not always get access to them.
-	* This allows the creator to write nice multiple choice dialogs for different classes or players.
-	* Additionally you're able to make infos permanent, so player can always use or get them if the condition is true.
-	* Since there probably will be some longer speeches of an information they're skipable by pressing a specific key.
-	* This must be explicit enabled when calling the struct initializer (@method AInfo.init).
-	*/
+	 * Members of talks are called informations or infos. An info is a single object which informs
+	 * the user about something like new quests or important things which happened.
+	 * Infos can have their own condition, so player do not always get access to them.
+	 * This allows the creator to write nice multiple choice dialogs for different classes or players.
+	 * Additionally you're able to make infos permanent, so player can always use or get them if the condition is true.
+	 * Since there probably will be some longer speeches of an information they're skipable by pressing a specific key.
+	 * This must be explicit enabled when calling the struct initializer (\ref thistype.init()).
+	 */
 	struct AInfo
 		// static construction members
 		public static boolean m_thirdPersonCamera /// Do not use.
@@ -183,9 +183,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set triggerAction = null
 		endmethod
 
-		public static method init takes boolean thirdPersonCamera, integer skipKey, real skipCheckRate, string speechAnimation, string listenAnimation returns nothing
+		public static method init takes integer skipKey, real skipCheckRate, string speechAnimation, string listenAnimation returns nothing
 			// static construction members
-			set thistype.m_thirdPersonCamera = thirdPersonCamera
 			set thistype.m_skipKey = skipKey
 			set thistype.m_skipCheckRate = skipCheckRate
 			if (skipKey != -1) then
@@ -210,6 +209,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		local unit speaker
 		local unit listener
 		local player speakerOwner
+		local boolean useThirdPerson = info.talk().useThirdPerson()
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
 			set speaker = info.talk().unit()
@@ -240,7 +240,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		call SetCameraFieldForPlayer(user, CAMERA_FIELD_ZOFFSET, GetUnitZ(speaker) + 128.0, 0.0)
 		call SetCameraTargetControllerNoZForPlayer(user, speaker, 0.0, 0.0, false)
 		*/
-		if (AInfo.m_thirdPersonCamera) then
+		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamAoa()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamRot()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(listener, 0.0)
@@ -271,7 +271,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		call waitForVideo(1.0) // do not show any speeches during video
 		call ResetUnitAnimation(speaker)
 		call ResetUnitAnimation(listener)
-		if (AInfo.m_thirdPersonCamera) then
+		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
 		endif
 		set user = null

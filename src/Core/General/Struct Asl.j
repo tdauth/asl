@@ -5,7 +5,7 @@ library AStructCoreGeneralAsl requires optional ALibraryCoreDebugMisc, ALibraryC
 		public static constant string rtcVersion = "1.0"
 		public static constant string japiVersion = "1.0"
 		public static constant string maintainer = "Tamino Dauth"
-		public static constant string website = "http://sourceforge.net/projects/vjasssdk/"
+		public static constant string website = "https://gitorious.org/advanced-script-library"
 
 		private static method create takes nothing returns thistype
 			return 0
@@ -30,10 +30,6 @@ endif
 			return A_JAPI
 		endmethod
 
-		public static constant method useObjects takes nothing returns boolean
-			return A_OBJECTS
-		endmethod
-
 		public static constant method useDebugHandles takes nothing returns boolean
 			return A_DEBUG_HANDLES
 		endmethod
@@ -51,9 +47,6 @@ static if (DEBUG_MODE) then
 			endif
 			if (thistype.useJapi()) then
 				call Print(StringArg(tr("* uses jAPI %s"), thistype.japiVersion))
-			endif
-			if (thistype.useObjects()) then
-				call Print(tr("* uses objects"))
 			endif
 			if (thistype.useDebugHandles()) then
 				call Print(tr("* uses debug handles"))

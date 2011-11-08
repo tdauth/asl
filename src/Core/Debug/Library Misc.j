@@ -367,14 +367,14 @@ endif
 
 		call AHashTable.global().flushHandle(whichTimer)
 	endfunction
-	
+
 	function DebugShowInterface takes boolean flag, real fadeDuration returns nothing
 		if (fadeDuration == 0.0 and flag) then
 			debug call PrintFunctionError("ShowInterface", "Don't use 0.0 for fade duration when enabling flag since it will prevent unit portraits from working correctly.")
 		endif
 	endfunction
 
-/// @todo Seems to prevent map from being able to be started.
+/// \todo Seems to prevent map from being able to be started.
 static if (DEBUG_MODE and A_DEBUG_NATIVES) then
 	hook Player DebugPlayer
 	hook InitGameCache DebugInitGameCache

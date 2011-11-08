@@ -4,12 +4,13 @@ library AStructCoreGeneralNumericVector requires AStructCoreGeneralVector
 	 * Text macro which can generate a numeric container based on a vector structure (usually generated with \ref A_VECTOR).
 	 * Provides various numeric functions which help users to calculate values based on their container elements.
 	 * \todo At the moment many functions don't work because of the corrupted JassHelper implementation.
+	 * \sa containers
 	 */
 	//! textmacro A_NUMERIC_VECTOR takes STRUCTPREFIX, NAME, PARENTNAME, ELEMENTTYPE
 
 		$STRUCTPREFIX$ struct $NAME$ extends $PARENTNAME$
 			public static constant string parentName = "$PARENTNAME$"
-			
+
 			public method max takes nothing returns $ELEMENTTYPE$
 				local integer i = 0
 				local $ELEMENTTYPE$ result = 0

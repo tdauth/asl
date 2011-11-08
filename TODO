@@ -1,3 +1,19 @@
+2011-11-06 Tamino Dauth <tamino@cdauth.eu>
+ A_MAP: Should use more efficient storage so that the middle elements could be detected much faster.
+
+2011-11-05 Tamino Dauth <tamino@cdauth.eu>
+* Structures must accept JASS constants as maximum size so we can define maximum count of container instances for A_VECTOR, A_LIST, A_MAP and A_STACK!
+* Add global option that default containers should be generated. Otherwise there will only be those one which are used by ASL itself!
+* Move ALL tutorial stuff into API documentation which has to be improved massively!!!!
+
+2011-11-04 Tamino Dauth <tamino@cdauth.eu>
+* A_MAP: Test new revisions!
+* Check out if "static if" influences on "//! import" statements.
+	runtextmacro is not called
+	import is called anyway!
+* Check jAPI and RtC support.
+* Check structures AFight and AMovement.
+
 2010-11-25 Tamino Dauth <tamino@cdauth.eu>
 * FIXED: ARevival: Run check in methods enable and disable doesn't work correctly.
 
@@ -248,7 +264,7 @@ die Beendungsfunktion aufgerufen (falls vorhanden). Außerdem wird nach dem inzw
 * Note: Never create add conditions or actions to a trigger which are defined as static methods below the trigger creation.
 
 2009-06-05 Tamino Dauth <tamino@cdauth.eu>
-* Not necessary: Implement a vector for player characters.
+* DEPRECATED: Implement a vector for player characters.
 * DONE: Finish function CopyUnit.
 * DONE: Finish ATalk and AInfo revision.
 
@@ -261,9 +277,6 @@ die Beendungsfunktion aufgerufen (falls vorhanden). Außerdem wird nach dem inzw
 
 2009-05-21 Tamino Dauth <tamino@cdauth.eu>
 * FIXED: File "archives/Creatures/Models/Creatures/Undeads/Zombie.mdx" doesn't work?!
-
-2009-05-11 Tamino Dauth <tamino@cdauth.eu>
-* Added static method channelCondition to struct ASpell.
 
 2009-05-08 Tamino Dauth <tamino@cdauth.eu>
 * Missing functions SetTerrainFogForPlayer and SetTerrainFogExForPlayer?

@@ -1,24 +1,31 @@
 library AStructCoreDebugBenchmark requires AModuleCoreGeneralSystemStruct, AStructCoreGeneralAsl, AStructCoreGeneralVector
 
 	/**
-	* This struct can be used for time measurement of important code parts.
-	* If you're using the japi it uses specific watch natives for exact time measures.
-	* Otherwise it uses the default Warcraft @type timer.
-	* @todo Debugging handles doesn't work for handles which are created during map initialization since @method ABenchmark.onInit and @method ABenchmark.init are called later.
-	*/
+	 * ABenchmark can be used for time measurement of important code parts.
+	 * If you're using the \ref jAPI or \ref RtC it uses specific watch natives for exact time measures.
+	 * Otherwise it uses the default Warcraft \ref timer.
+	 * Each "benchmark timer" has its own identifier which can be defined on construction or using method \ref setIdentifier().
+	 * Using \ref show() or \ref showBenchmarks() for all existing benchmarks you can display the benchmark's results on the screen.
+	 * A benchmark is started with \ref start() and stopped with \ref stop().
+	 * Running benchmarks can be detected using \ref isRunning().
+	 *
+	 * Additionally, ABenchmark can watch some kinds of created and destroyed handle-based objects if \ref A_DEBUG_HANDLES is enabled using vJass's hook feature.
+	 * There are some static methods like \ref showUnits() or \ref units() which can be used to get the number of existing units and for memory leak detection.
+	 * This dynamic storage of handles can be suspended via \ref suspend().
+	 * \todo Debugging handles doesn't work for handles which are created during map initialization since \ref thistype.onInit() and \ref thistype.init() are called later.
+	 */
 	struct ABenchmark
-		//static members
+		// static members
 		private static AIntegerVector m_benchmarks
-//static if (A_DEBUG_HANDLES) then
+static if (A_DEBUG_HANDLES) then
 		private static boolean m_suspend
 		private static AUnitVector m_units
 		private static AItemVector m_items
 		private static ADestructableVector m_destructables
-		private static AEffectVector m_effects
-//endif
-		//dynamic members
+endif
+		// dynamic members
 		private string m_identifier
-		//members
+		// members
 		private boolean m_isRunning
 		private real m_time
 static if (A_JAPI) then
@@ -123,7 +130,6 @@ static if (A_DEBUG_HANDLES) then
 			set thistype.m_units = AUnitVector.create()
 			set thistype.m_items = AItemVector.create()
 			set thistype.m_destructables = ADestructableVector.create()
-			set thistype.m_effects = AEffectVector.create()
 endif
 			call thistype.initialize()
 		endmethod
@@ -140,7 +146,6 @@ static if (A_DEBUG_HANDLES) then
 			call thistype.m_units.destroy()
 			call thistype.m_items.destroy()
 			call thistype.m_destructables.destroy()
-			call thistype.m_effects.destroy()
 endif
 		endmethod
 
@@ -203,6 +208,30 @@ endif
 		endmethod
 
 static if (A_DEBUG_HANDLES) then
+		/**
+		 * \param suspend If this value is true, handle storage is suspended. Otherwise it is resumed.
+		 * \sa thistype#suspend()
+		 */
+		public static method setSuspend takes boolean suspend returns nothing
+			set thistype.m_suspend = suspend
+		endmethod
+
+		public static method suspend takes nothing returns boolean
+			return thistype.m_suspend
+		endmethod
+
+		public static method units takes nothing returns AUnitVector
+			return thistype.m_units
+		endmethod
+
+		public static method items takes nothing returns AItemVector
+			return thistype.m_items
+		endmethod
+
+		public static method destructables takes nothing returns ADestructableVector
+			return thistype.m_destructables
+		endmethod
+
 		private static method createUnit takes player id, integer unitid, real x, real y, real face returns nothing
 			local unit whichUnit
 			if (thistype.initialized() and not thistype.m_suspend) then

@@ -1,9 +1,10 @@
 library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer, optional ALibraryCoreDebugMisc
 
 	/**
-	 * Provides functionality of a double-linked list and therefore reversible.
+	 * Provides functionality of a double-linked list and is therefore reversible.
 	 * \author Tamino Dauth
 	 * Got some inspiration from <a href="http://www.cplusplus.com/reference/stl">C++ STL</a> and <a href="http://www.cplusplus.com/reference/stl/list">C++ STL class list</a>.
+	 * \sa containers
 	 */
 	//! textmacro A_LIST takes STRUCTPREFIX, NAME, ELEMENTTYPE, NULLVALUE, STRUCTSPACE, NODESPACE, ITERATORSPACE
 

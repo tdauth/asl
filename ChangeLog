@@ -1,3 +1,18 @@
+2011-11-07 Tamino Dauth <tamino@cdauth.eu>
+* ATalk/AInfo: Third person camera is only used if enabled. Dropped initialization setting.
+
+2011-11-05 Tamino Dauth <tamino@cdauth.eu>
+* Core: Updated link to ASL repository.
+* ABenchmark: Dropped unsupported effect observation and added methods for suspending handle observation.
+* Improved API documentation.
+
+2011-11-04 Tamino Dauth <tamino@cdauth.eu>
+* A_MAP: Fixed binary searched (didn't start in the middle of each new range).
+* A_MAP: Fixed inserting element (didn't use any binary search to get the element's proper position in the map).
+* A_MAP: Improved API documentation.
+* Core: Extended map debugging.
+* Dropped deprecated A_OBJECTS option.
+
 2011-07-19 Tamino Dauth <tamino@cdauth.eu>
 * Improved API documentation.
 * Improved trigger editor strings translation.
@@ -1043,6 +1058,7 @@
 2009-05-11 Tamino Dauth <tamino@cdauth.eu>
 * Added Rising_Dusk's armor and damage detection system to library ALibraryCoreEnvironmentUnit.
 * Added on damage action functionality to struct ADamageRecorder.
+* Added static method channelCondition to struct ASpell.
 
 2009-05-08 Tamino Dauth <tamino@cdauth.eu>
 * Added file archive/Interface/UserInterfaces/Naga/InventoryCover.blp.

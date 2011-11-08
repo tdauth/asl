@@ -2,10 +2,23 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 
 	/**
 	 * \author Tamino Dauth
-	 * Got some inspiration from <a href="http://www.cplusplus.com/reference/stl">C++ STL</a> and <a href="http://www.cplusplus.com/reference/stl/map">C++ STL class map</a>.
+	 * Got some inspiration from <a href="https://en.wikipedia.org/wiki/Standard_Template_Library">C++ STL</a> and <a href="https://en.wikipedia.org/wiki/Std::map">C++ STL class map</a>.
 	 * Maps are ordered containers which contain pairs of values and their corresponding keys.
+	 * Elements are ordered ascending to their corresponding keys which means that elements with smaller keys will be at the beginning of the map whereas larger keys will be at the end of the map.
+	 * Here's a small example how a single map's elements should be ordered after inserting them:
+	 * \code
+	 * map[2] = 0
+	 * map[3] = 1
+	 * map[1] = 2
+	 * map[4] = 3
+	 * \endcode
+	 * When iterating the map and printing all elements the order would be:
+	 * 2, 0, 1, 3
+	 * because of their ascending key order
+	 * 1, 2, 3, 4
+	 *
 	 * When creating a new instance of \ref A_MAP user can define element and key type.
-	 * E. g. you can create your custom unit map with string keys for accessing units by name:
+	 * For instance, you can create your custom unit map with string keys for accessing units by name:
 	 * \code
 	 * library MyLibrary initializer init
 	 * //! runtextmacro A_MAP("private", "MyUnitMap", "unit", "string", "null", "null", "AStringComparator", "8192", "20000", "8192")
@@ -21,8 +34,9 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 	 * \endcode
 	 * By using methods \ref $STRUCTNAME$.findKey and \ref $STRUCTNAME$.findValue user can get iterator
 	 * which can be used to iterate all contained map elements.
-	 * Using methods \ref thistype.find you can search for elements by a single key which uses binary search since maps are ordered containers which can be much faster than linear search (e. g. unordered lists). 
+	 * Using methods \ref thistype.find you can search for elements by a single key which uses binary search since maps are ordered containers which can be much faster than linear search (e. g. unordered lists).
 	 * \param COMPARATOR Less than comparator for keys to order the map.
+	 * \sa containers
 	 */
 	//! textmacro A_MAP takes STRUCTPREFIX, NAME, ELEMENTTYPE, KEYTYPE, NULLVALUE, KEYNULLVALUE, COMPARATOR, STRUCTSPACE, NODESPACE, ITERATORSPACE
 
@@ -98,14 +112,14 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 
 				return this
 			endmethod
-			
+
 			public static method createWith takes $KEYTYPE$ key, $ELEMENTTYPE$ data returns thistype
 				local thistype this = thistype.allocate()
 				set this.m_next = 0
 				set this.m_previous = 0
 				set this.m_key = key
 				set this.m_data = data
-				
+
 				return this
 			endmethod
 
@@ -196,7 +210,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 
 				return this
 			endmethod
-			
+
 			public static method createWith takes $NAME$Node node returns thistype
 				local thistype this = thistype.allocate()
 				set this.m_node = node
@@ -281,45 +295,57 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			public method empty takes nothing returns boolean
 				return this.m_size == 0
 			endmethod
-			
+
 			/**
 			 * Uses binary search.
 			 */
 			private method findKeyNodeInRange takes $NAME$Node front, $NAME$Node back, $KEYTYPE$ key returns $NAME$Node
-				local $NAME$Node middle = front
-				local integer exitValue
-				local integer start = 0
-				local integer end = 0
-				local integer i = 0
+				local $NAME$Node lower = front
+				local $NAME$Node upper = back
+				local $NAME$Node middle
+				local integer range
+				local integer i
+
 				loop
-					exitwhen (middle == back)
-					set middle = middle.next()
-					set end = end + 1
-				endloop
-				set exitValue = (end + 1) / 2
-				set middle = front
-				loop
-					exitwhen (i == exitValue)
-					set middle = middle.next()
-					set i = i + 1
-				endloop
-				
-				loop
+					// get range size
+					set middle = lower
+					set range = 0
+					loop
+						set range = range + 1
+						exitwhen (middle == upper)
+						set middle = middle.next()
+					endloop
+					// get index of middle
+					set range = (range + 1) / 2
+					// get middle node
+					set middle = lower
+					set i = 0
+					loop
+						exitwhen (i == range)
+						set middle = middle.next()
+						set i = i + 1
+					endloop
+
+					// got result
 					if (middle.key() == key) then
 						return middle
+					// no result and we're at the end
+					elseif (middle == front or middle == back) then
+						return 0
+					// less than, changes to new bounds
 					elseif ($COMPARATOR$(key, middle.key())) then
-						set end = exitValue - 1 
-						set middle = middle.previous()
+						set lower = front
+						set upper = middle.previous()
+					// greater than, changes to new bounds
 					else
-						set start = exitValue + 1
-						set middle = middle.next()
+						set lower = middle.next()
+						set upper = back
 					endif
-					exitwhen (start < end)
 				endloop
-				
+
 				return 0
 			endmethod
-			
+
 			public method findInRange takes $NAME$Iterator first, $NAME$Iterator last, $KEYTYPE$ key returns $ELEMENTTYPE$
 				local $NAME$Node result = this.findKeyNodeInRange(first.node(), last.node(), key)
 				if (result == 0) then
@@ -327,7 +353,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 				endif
 				return result.data()
 			endmethod
-			
+
 			public method find takes $KEYTYPE$ key returns $ELEMENTTYPE$
 				local $NAME$Node result = this.findKeyNodeInRange(this.m_front, this.m_back, key)
 				if (result == 0) then
@@ -335,7 +361,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 				endif
 				return result.data()
 			endmethod
-			
+
 			/**
 			 * Searches the container for key \p key and returns an iterator to it if
 			 * found, otherwise it returns 0.
@@ -381,7 +407,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 				endloop
 				return result
 			endmethod
-			
+
 			public method containsInRange takes $NAME$Iterator first, $NAME$Iterator last, $KEYTYPE$ key returns boolean
 				local $NAME$Node result = this.findKeyNodeInRange(first.node(), last.node(), key)
 				return not (result == 0)
@@ -416,7 +442,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 				endloop
 				return false
 			endmethod
-			
+
 			/**
 			 * \note Iterator must point to an element which indeed belongs to the container (not only the same key).
 			 */
@@ -434,43 +460,75 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			endmethod
 
 			/**
-			 * The list container is extended by inserting a new element with value \p value and key \p key.
-			 * This effectively increases the container size by \p number.
+			 * The map is extended by inserting a new element with value \p value and key \p key.
+			 * This effectively increases the container size by 1.
 			 * The element can't be inserted if key \p key is already used by another one.
 			 * The element's position depends on its key value since it is ordered automatically using \ref $COMPARATOR$ function.
+			 * \note This method should use the equal algorithmic functionality as \ref thistype#findNode() which is based on the binary search which has complexity of O(log n).
 			 */
 			private method insertNode takes $KEYTYPE$ key, $ELEMENTTYPE$ value returns $NAME$Node
 				local $NAME$Node node = $NAME$Node.createWith(key, value)
-				local $NAME$Node nextNode = this.m_back
-				local $NAME$Node tmpNode
+				local $NAME$Node lower = this.m_front
+				local $NAME$Node upper = this.m_back
+				local $NAME$Node middle
+				local integer range
+				local integer i
+
 				loop
-					// less than
-					if ($COMPARATOR$(key, nextNode.key())) then
-						set tmpNode = nextNode.previous()
-						if (tmpNode == 0) then
-							call nextNode.setPrevious(node)
-							if (this.m_front == nextNode) then
-								set this.m_front = node
-							endif
-							exitwhen (true)
-						endif
-					elseif (key == nextNode.key()) then // same key
+					// get range size
+					set middle = lower
+					set range = 0
+					loop
+						set range = range + 1
+						exitwhen (middle == upper)
+						set middle = middle.next()
+					endloop
+					// get index of middle
+					set range = (range + 1) / 2
+					// get middle node
+					set middle = lower
+					set i = 0
+					loop
+						exitwhen (i == range)
+						set middle = middle.next()
+						set i = i + 1
+					endloop
+
+					// same key, do not insert!!!
+					if (middle.key() == key) then
 						call node.destroy()
 						return 0
-					else
-						call nextNode.setNext(node)
-						if (nextNode == this.m_back) then
-							set this.m_back = node
+					// less than, changes to new bounds
+					elseif ($COMPARATOR$(key, middle.key())) then
+						// insert before front node
+						if (middle == this.m_front) then
+							call this.m_front.setPrevious(node)
+							call node.setNext(this.m_front)
+							set this.m_size = this.m_size + 1
+							return node
 						endif
-						exitwhen (true)
+						set lower = this.m_front
+						set upper = middle.previous()
+					// greater than, changes to new bounds
+					else
+						// insert after back node
+						if (middle == this.m_back) then
+							call this.m_back.setNext(node)
+							call node.setPrevious(this.m_back)
+							set this.m_size = this.m_size + 1
+							return node
+						endif
+
+						set lower = middle.next()
+						set upper = this.m_back
 					endif
 				endloop
-				
-				set this.m_size = this.m_size + 1
-				
-				return node
+
+				call node.destroy()
+
+				return 0
 			endmethod
-			
+
 			/**
 			 * \copydoc thistype#insertNode
 			 * \return Returns true if element has been inserted.
@@ -478,7 +536,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			public method insert takes $KEYTYPE$ key, $ELEMENTTYPE$ value returns boolean
 				return this.insertNode(key, value) != 0
 			endmethod
-			
+
 			/**
 			 * \copydoc thistype#insertNode
 			 * \return Returns iterator to created pair which can point to an invalid pair (0) as well.
@@ -634,15 +692,15 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 		endstruct
 
 	//! endtextmacro
-	
+
 	function AIntegerComparator takes integer a, integer b returns boolean
 		return a < b
 	endfunction
-	
+
 	function AHandleComparator takes handle a, handle b returns boolean
 		return GetHandleId(a) < GetHandleId(b)
 	endfunction
-	
+
 	function AStringComparator takes string a, string b returns boolean
 		return StringHash(a) < StringHash(b)
 	endfunction
@@ -654,6 +712,8 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 	 * max instances = 150000 / 1 = 150000 since there is no array member
 	 */
 	//! runtextmacro A_MAP("", "AIntegerMap", "integer", "integer", "0", "0", "AIntegerComparator", "150000", "150000", "8192")
+static if (DEBUG_MODE) then
 	//! runtextmacro A_MAP("", "AUnitMap", "unit", "string", "null", "null", "AStringComparator", "150000", "150000", "8192")
+endif
 
 endlibrary

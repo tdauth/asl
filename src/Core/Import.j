@@ -12,14 +12,11 @@ endif
 //! import "Core/String/Import.j"
 
 /**
-* ASL core covers all core functions, structures and interfaces such as containers, player-only functions, maths stuff, string treatment functions and debugging functions and structures for instance.
-* @see Asl
-* @if A_OBJECTS
-* @see AObjects
-* @endif
-* @if A_SYSTEMS
-* @see ASystems
-* @endif
-*/
+ * ASL core covers all core functions, structures and interfaces such as \ref containers, player-only functions, maths stuff, string treatment and debugging functions and structures and \ref wrappers, for instance.
+ * \sa Asl
+ * \if A_SYSTEMS
+ * \sa ASystems
+ * \endif
+ */
 library ACore requires ACoreAi, optional ACoreDebug, ACoreEnvironment, ACoreGeneral, ACoreInterface, ACoreMaths, optional ACoreNet, ACoreString
 endlibrary

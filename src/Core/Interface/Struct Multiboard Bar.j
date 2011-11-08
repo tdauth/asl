@@ -36,9 +36,9 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 	function interface AMultiboardBarValueFunction takes AMultiboardBar multiboardBar returns real
 
 	/**
-	* Multiboard bars can be used to show values in form of progress bars in the Warcraft 3 TFT multiboard.
-	* They can either be horizontal or vertical and use custom icons.
-	*/
+	 * \brief Multiboard bars display \ref real values in form of progress bars in the Warcraft III: The Frozen Throne multiboard.
+	 * They can either be horizontal or vertical and use custom icons.
+	 */
 	struct AMultiboardBar extends ABarInterface
 		// construction members
 		private multiboard m_multiboard
@@ -113,11 +113,10 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		endmethod
 
 		/**
-		* Sets the function which should return the value of the multiboard bar when it is being refreshed.
-		* If this function is 0 nothing will be called.
-		* Consider that you can also overwrite method AMultiboardBar.onRefresh.
-		* @see AMultiboardBar.onRefresh.
-		*/
+		 * Sets the function which should return the value of the multiboard bar when it is being refreshed.
+		 * If this function is 0 nothing will be called.
+		 * Consider that you can also overwrite method \ref onRefresh().
+		 */
 		public method setValueFunction takes AMultiboardBarValueFunction valueFunction returns nothing
 			set this.m_valueFunction = valueFunction
 		endmethod
@@ -127,11 +126,10 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		endmethod
 
 		/**
-		* Sets the function which should return the maximum value of the multiboard bar when it is being refreshed.
-		* If this function is 0 nothing will be called.
-		* Consider that you can also overwrite method AMultiboardBar.onRefresh.
-		* @see AMultiboardBar.onRefresh.
-		*/
+		 * Sets the function which should return the maximum value of the multiboard bar when it is being refreshed.
+		 * If this function is 0 nothing will be called.
+		 * Consider that you can also overwrite method \ref onRefresh().
+		 */
 		public method setMaxValueFunction takes AMultiboardBarValueFunction maxValueFunction returns nothing
 			set this.m_maxValueFunction = maxValueFunction
 		endmethod
@@ -177,11 +175,14 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		endmethod
 
 		/**
-		* This method is called before the multiboard bar evaluates the coloured part so users can set value and max value in this method instead of using function values.
-		* Usually it calls the function which are refered by the two function pointers of the value and the maximum value function.
-		* If they're 0 nothing will be set.
-		* @see AMultiboardBar.setValue, AMultiboardBar.setMaxValue, AMultiboardBar.setValueFunction, AMultiboardBar.setMaxValueFunction.
-		*/
+		 * This method is called before the multiboard bar evaluates the coloured part so users can set value and max value in this method instead of using function values.
+		 * Usually it calls the function which are refered by the two function pointers of the value and the maximum value function.
+		 * If they're 0 nothing will be set.
+		 * \sa setValue()
+		 * \sa setMaxValue()
+		 * \sa setValueFunction()
+		 * \sa setMaxValueFunction()
+		 */
 		public stub method onRefresh takes nothing returns nothing
 			if (this.m_valueFunction != 0) then
 				set this.m_value = this.m_valueFunction.evaluate(this)
@@ -192,9 +193,9 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		endmethod
 
 		/**
-		* Refreshes multiboard bar.
-		* AMultiboardBar.onRefresh will be called before evaluating the coloured part.
-		*/
+		 * Refreshes multiboard bar.
+		 * AMultiboardBar.onRefresh will be called before evaluating the coloured part.
+		 */
 		public method refresh takes nothing returns nothing
 			local integer i
 			local multiboarditem multiboardItem
@@ -254,7 +255,7 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 			call this.setIcons(0, this.length() - 1, icon, valueIcon)
 		endmethod
 
-		/// @return The index of the first field (column or row) which is not used by the bar (alignment is left to right and up to bottom).
+		/// \return The index of the first field (column or row) which is not used by the bar (alignment is left to right and up to bottom).
 		public method firstFreeField takes nothing returns integer
 			if (this.m_horizontal) then
 				return this.m_column + this.length()
@@ -314,10 +315,10 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		endmethod
 
 		/**
-		* If there aren't enough items in multiboard yet required onces will be added automatically.
-		* @param refreshRate If this value is bigger than 0 multiboard bar will be refreshed.
-		* @param horizontal This value is not dynamic.
-		*/
+		 * If there aren't enough items in multiboard yet required onces will be added automatically.
+		 * \param refreshRate If this value is bigger than 0 multiboard bar will be refreshed.
+		 * \param horizontal This value is not dynamic.
+		 */
 		public static method create takes multiboard whichMultiboard, integer column, integer row, integer length, real refreshRate, boolean horizontal returns thistype
 			local thistype this = thistype.allocate()
 			// construction members

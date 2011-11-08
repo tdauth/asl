@@ -3,11 +3,11 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 	globals
 		private constant integer insertions = 1000
 	endglobals
-	
+static if (DEBUG_MODE) then
 	private function generateValue takes nothing returns integer
 		return GetRandomInt(0, 10000)
 	endfunction
-	
+
 	private function listFindSpeedTest takes AIntegerList list, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("List find speed test")
 		call benchmark.start()
@@ -26,7 +26,7 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 		call benchmark.stop()
 		return benchmark
 	endfunction
-	
+
 	private function mapFindSpeedTest takes AIntegerMap map, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("Map find speed test (key)")
 		call benchmark.start()
@@ -34,7 +34,7 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 		call benchmark.stop()
 		return benchmark
 	endfunction
-	
+
 	private function mapFindValueSpeedTest takes AIntegerMap map, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("Map find speed test (value)")
 		call benchmark.start()
@@ -56,7 +56,7 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 		call benchmark.stop()
 		return benchmark
 	endfunction
-	
+
 	private function vectorFindSpeedTest takes AIntegerVector vector, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("Vector find speed test (index)")
 		call benchmark.start()
@@ -64,7 +64,7 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 		call benchmark.stop()
 		return benchmark
 	endfunction
-	
+
 	private function vectorFindValueSpeedTest takes AIntegerVector vector, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("Vector find speed test (value)")
 		call benchmark.start()
@@ -83,11 +83,13 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 		call benchmark.stop()
 		return benchmark
 	endfunction
+endif
 
 	/**
 	 * Generic container speed comparison and \ref A_FOREACH test.
 	 */
 	function AListDebug takes nothing returns nothing
+static if (DEBUG_MODE) then
 		local AIntegerList list = AIntegerList.create()
 		local AIntegerMap map = AIntegerMap.create()
 		local AIntegerVector vector = AIntegerVector.create()
@@ -95,14 +97,14 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 		call listInsertionsSpeedTest(list)
 		call mapInsertionsSpeedTest(map)
 		call vectorInsertionsSpeedTest(vector)
-		
+
 		call listFindSpeedTest(list, 10)
 		call mapFindSpeedTest(map, 10)
 		call mapFindValueSpeedTest(map, 10)
 		call vectorFindSpeedTest(vector, 10)
 		call vectorFindValueSpeedTest(vector, 10)
-		
-		
+
+
 		debug call Print("A_FOREACH test for list:")
 		//! runtextmacro A_FOREACH("list")
 			// no trigger sleep here since iterator could be changed
@@ -113,10 +115,11 @@ library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBe
 			// no trigger sleep here since iterator could be changed
 			debug call Print("Data: " + I2S(AIntegerListIterator(aIterator).data()))
 		//! runtextmacro A_REVERSE_FOREACH_END()
-		
+
 		call list.destroy()
 		call map.destroy()
 		call vector.destroy()
+endif
 	endfunction
 
 endlibrary

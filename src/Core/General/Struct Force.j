@@ -5,6 +5,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 	 * Simplifies member access by providing an instance of \ref APlayerVector which holds all force members.
 	 * Additionally it provides various methods which provide same functionality as native and BJ functions.
 	 * \sa AGroup
+	 * \sa wrappers
 	 */
 	struct AForce
 		// members
@@ -189,8 +190,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerSelectable
-		*/
+		 * \sa GetPlayerSelectable
+		 */
 		public method isSelectable takes nothing returns boolean
 			local integer i = 0
 			loop
@@ -204,8 +205,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerController
-		*/
+		 * \sa GetPlayerController
+		 */
 		public method hasController takes mapcontrol controller returns boolean
 			local integer i = 0
 			loop
@@ -219,8 +220,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerSlotState
-		*/
+		 * \sa GetPlayerSlotState
+		 */
 		public method hasSlotState takes playerslotstate playerSlotState returns boolean
 			local integer i = 0
 			loop
@@ -234,8 +235,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerTaxRate
-		*/
+		 * \sa GetPlayerTaxRate
+		 */
 		public method hasTaxRate takes player otherPlayer, playerstate whichResource, integer taxRate returns boolean
 			local integer i = 0
 			loop
@@ -249,8 +250,9 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerRacePreference
-		*/
+		 * \sa SetPlayerRacePreference
+		 * \sa thistype#hasRacePreferenceSet
+		 */
 		public method setRacePreference takes racepreference preference returns nothing
 			local integer i = 0
 			loop
@@ -261,9 +263,17 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* \return Returns true if all belonging players have race preference \p preference.
-		* @see IsPlayerRacePrefSet
-		*/
+		 * \return Returns true if all belonging players have race preference \p preference.
+		 * \sa IsPlayerRacePrefSet
+		 * \sa thistype#setRacePreference
+		 * \sa isSetHuman
+		 * \sa isSetOrc
+		 * \sa isSetNightelf
+		 * \sa isSetUndead
+		 * \sa isSetDemon
+		 * \sa isSetRandom
+		 * \sa isSetUserSelectable
+		 */
 		public method hasRacePreferenceSet takes racepreference preference returns boolean
 			local integer i = 0
 			loop
@@ -305,8 +315,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerName
-		*/
+		 * \sa SetPlayerName
+		 */
 		public method setName takes string name returns nothing
 			local integer i = 0
 			loop
@@ -317,8 +327,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerName
-		*/
+		 * \sa GetPlayerName
+		 */
 		public method hasName takes string name returns boolean
 			local integer i = 0
 			loop
@@ -332,8 +342,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsPlayerAlly
-		*/
+		 * \sa IsPlayerAlly
+		 */
 		public method isAlliedToPlayer takes player whichPlayer returns boolean
 			local integer i = 0
 			loop
@@ -347,8 +357,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsPlayerEnemy
-		*/
+		 * \sa IsPlayerEnemy
+		 */
 		public method isHostileToPlayer takes player whichPlayer returns boolean
 			local integer i = 0
 			loop
@@ -362,8 +372,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsPlayerInForce
-		*/
+		 * \sa IsPlayerInForce
+		 */
 		public method isInForce takes force whichForce returns boolean
 			local integer i = 0
 			loop
@@ -377,8 +387,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsPlayerObserver
-		*/
+		 * \sa IsPlayerObserver
+		 */
 		public method isObserver takes nothing returns boolean
 			local integer i = 0
 			loop
@@ -392,8 +402,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsVisibleToPlayer
-		*/
+		 * \sa IsVisibleToPlayer
+		 */
 		public method isVisibleTo takes real x, real y returns boolean
 			local integer i = 0
 			loop
@@ -407,8 +417,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsLocationVisibleToPlayer
-		*/
+		 * \sa IsLocationVisibleToPlayer
+		 */
 		public method isLocationVisibleTo takes location whichLocation returns boolean
 			local integer i = 0
 			loop
@@ -422,8 +432,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsFoggedToPlayer
-		*/
+		 * \sa IsFoggedToPlayer
+		 */
 		public method isFoggedTo takes real x, real y returns boolean
 			local integer i = 0
 			loop
@@ -437,8 +447,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsLocationFoggedToPlayer
-		*/
+		 * \sa IsLocationFoggedToPlayer
+		 */
 		public method isLocationFoggedTo takes location whichLocation returns boolean
 			local integer i = 0
 			loop
@@ -452,8 +462,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsMaskedToPlayer
-		*/
+		 * \sa IsMaskedToPlayer
+		 */
 		public method isMaskedTo takes real x, real y returns boolean
 			local integer i = 0
 			loop
@@ -467,8 +477,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see IsLocationMaskedToPlayer
-		*/
+		 * \sa IsLocationMaskedToPlayer
+		 */
 		public method isLocationMaskedTo takes location whichLocation returns boolean
 			local integer i = 0
 			loop
@@ -482,8 +492,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerRace
-		*/
+		 * \sa GetPlayerRace
+		 */
 		public method hasRace takes race whichRace returns boolean
 			local integer i = 0
 			loop
@@ -521,8 +531,9 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerId
-		*/
+		 * \return Returns true if player with \p id belongs to force. Otherwise it returns false.
+		 * \sa GetPlayerId
+		 */
 		public method hasId takes integer id returns boolean
 			local integer i = 0
 			loop
@@ -536,8 +547,11 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerUnitCount
-		*/
+		 * \return Returns the sum of all players unit counts.
+		 * \sa GetPlayerUnitCount
+		 * \sa thistype#unitTypedCount()
+		 * \sa thistype#structureCount()
+		 */
 		public method unitCount takes boolean includeIncomplete returns integer
 			local integer result = 0
 			local integer i = 0
@@ -550,8 +564,11 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerTypedUnitCount
-		*/
+		 * \return Returns the sum of all players typed unit counts.
+		 * \sa GetPlayerTypedUnitCount
+		 * \sa thistype#unitCount()
+		 * \sa thistype#structureCount()
+		 */
 		public method unitTypedCount takes string unitName, boolean includeIncomplete, boolean includeUpgrades returns integer
 			local integer result = 0
 			local integer i = 0
@@ -564,8 +581,11 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerStructureCount
-		*/
+		 * \return Returns the sum of all players structure counts.
+		 * \sa GetPlayerStructureCount
+		 * \sa thistype#unitCount()
+		 * \sa thistype#unitTypedCount()
+		 */
 		public method structureCount takes boolean includeIncomplete returns integer
 			local integer result = 0
 			local integer i = 0
@@ -578,8 +598,10 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerState
-		*/
+		 * Sets state \p whichPlayerState for all belonging players to \p value.
+		 * \sa SetPlayerState
+		 * \sa thistype#state()
+		 */
 		public method setState takes playerstate whichPlayerState, integer value returns nothing
 			local integer i = 0
 			loop
@@ -590,8 +612,10 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerState
-		*/
+		 * \return Returns the sum of all player state values of state \p whichPlayerState.
+		 * \sa GetPlayerState
+		 * \sa thistype#setState()
+		 */
 		public method state takes playerstate whichPlayerState returns integer
 			local integer result = 0
 			local integer i = 0
@@ -604,8 +628,9 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerScore
-		*/
+		 * \return Returns the sum of all players score of type \p whichPlayerScore.
+		 * \sa GetPlayerScore
+		 */
 		public method score takes playerscore whichPlayerScore returns integer
 			local integer result = 0
 			local integer i = 0
@@ -618,8 +643,9 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerAlliance
-		*/
+		 * \return Only returns true if alliance type \p whichAllianceSetting is true for all belonging players to player \p otherPlayer. Otherwise it returns false.
+		 * \sa GetPlayerAlliance
+		 */
 		public method alliance takes player otherPlayer, alliancetype whichAllianceSetting returns boolean
 			local integer i = 0
 			loop
@@ -633,8 +659,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerHandicap
-		*/
+		 * \sa SetPlayerHandicap
+		 */
 		public method setHandicap takes real handicap returns nothing
 			local integer i = 0
 			loop
@@ -645,8 +671,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerHandicap
-		*/
+		 * \sa GetPlayerHandicap
+		 */
 		public method handicap takes nothing returns real
 			local real result = 0.0
 			local integer i = 0
@@ -659,8 +685,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerHandicapXP
-		*/
+		 * \sa SetPlayerHandicapXP
+		 */
 		public method setHandicapXP takes real handicap returns nothing
 			local integer i = 0
 			loop
@@ -671,8 +697,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerHandicapXP
-		*/
+		 * \sa GetPlayerHandicapXP
+		 */
 		public method handicapXP takes nothing returns real
 			local real result = 0.0
 			local integer i = 0
@@ -685,8 +711,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerTechMaxAllowed
-		*/
+		 * \sa SetPlayerTechMaxAllowed
+		 */
 		public method setTechMaxAllowed takes integer techid, integer maximum returns nothing
 			local integer i = 0
 			loop
@@ -697,8 +723,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerTechMaxAllowed
-		*/
+		 * \sa GetPlayerTechMaxAllowed
+		 */
 		public method techMaxAllowed takes integer techid returns integer
 			local integer result = 0
 			local integer i = 0
@@ -711,8 +737,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see AddPlayerTechResearched
-		*/
+		 * \sa AddPlayerTechResearched
+		 */
 		public method addTechResearched takes integer techid, integer levels returns nothing
 			local integer i = 0
 			loop
@@ -723,8 +749,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerTechResearched
-		*/
+		 * \sa SetPlayerTechResearched
+		 */
 		public method setTechResearched takes integer techid, integer setToLevel returns nothing
 			local integer i = 0
 			loop
@@ -735,8 +761,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerTechResearched
-		*/
+		 * \sa GetPlayerTechResearched
+		 */
 		public method techResearched takes integer techid, boolean specificonly returns boolean
 			local integer i = 0
 			loop
@@ -750,8 +776,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see GetPlayerTechCount
-		*/
+		 * \sa GetPlayerTechCount
+		 */
 		public method techCount takes integer techid, boolean specificonly returns integer
 			local integer result = 0
 			local integer i = 0
@@ -764,8 +790,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerUnitsOwner
-		*/
+		 * \sa SetPlayerUnitsOwner
+		 */
 		public method setUnitsOwner takes integer newOwner returns nothing
 			local integer i = 0
 			loop
@@ -776,8 +802,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see CripplePlayer
-		*/
+		 * \sa CripplePlayer
+		 */
 		public method cripple takes force toWhichPlayers, boolean flag returns nothing
 			local integer i = 0
 			loop
@@ -788,8 +814,8 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		* @see SetPlayerAbilityAvailable
-		*/
+		 * \sa SetPlayerAbilityAvailable
+		 */
 		public method setAbilityAvailable takes integer abilityId, boolean available returns nothing
 			local integer i = 0
 			loop

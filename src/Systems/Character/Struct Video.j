@@ -76,7 +76,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 		endmethod
 	endstruct
-	
+
 	private struct AUnitTypeActorData extends AActorInterface
 		// construction members
 		private player m_owner
@@ -86,25 +86,25 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private real m_face
 		// members
 		private unit m_actor
-		
+
 		// construction members
-		
+
 		public method owner takes nothing returns player
 			return this.m_owner
 		endmethod
-		
+
 		public method unitTypeId takes nothing returns integer
 			return this.m_unitTypeId
 		endmethod
-		
+
 		public method x takes nothing returns real
 			return this.m_x
 		endmethod
-		
+
 		public method y takes nothing returns real
 			return this.m_y
 		endmethod
-		
+
 		public method face takes nothing returns real
 			return this.m_face
 		endmethod
@@ -121,7 +121,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call RemoveUnit(this.m_actor)
 			set this.m_actor = null
 		endmethod
-		
+
 		public method restoreOnActorsLocation takes nothing returns nothing
 			call this.restore()
 		endmethod
@@ -234,17 +234,16 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	function interface AVideoAction takes AVideo video returns nothing
 
 	/**
-	* Provides access to a global video. Global means that the video is played/shown for all character owners.
-	* The ASL character system doesn't support local videos which means videos for each single character owner.
-	* Videos can have initialization, play and stop actions which has to be defined as function interface functions.
-	* User can easily save and restore actors data by using methods @method saveActor and @method restoreActor.
-	* Additionally there is a method called actor which gives user access to an almost exact copy of the "first character".
-	* The first character is always the character of first player in list which still is online. List is starting with player 1 (id 0).
-	* Since you don't use character units (beside the copied one) they will be hidden in video initialization.
-	* Besides all units will be paused so you have to unpause a unit if you want to give orders (like move) to it.
-	* Videos can be skipped by pressing a user-defined key. If at least half of players want to skip a video (have pressed that key) it will be skipped.
-	* @see wait, waitForVideo, waitForCondition, AVideoAction, AVideoCondition
-	*/
+	 * Provides access to a global video. Global means that the video is played/shown for all character owners.
+	 * The ASL character system doesn't support local videos which means videos for each single character owner.
+	 * Videos can have initialization, play and stop actions which has to be defined as function interface functions.
+	 * Additionally there is a method called \ref thistype.actor() which gives user access to an almost exact copy of the "first character".
+	 * The first character is always the character of first player in list which still is online. List is starting with player 1 (id 0).
+	 * Since you don't use character units (beside the copied one) they will be hidden in video initialization.
+	 * Besides all units will be paused so you have to unpause a unit if you want to give orders (like move) to it.
+	 * Videos can be skipped by pressing a user-defined key. If at least half of players want to skip a video (have pressed that key) it will be skipped.
+	 * \sa wait(), waitForVideo(), waitForCondition(), AVideoAction, AVideoCondition
+	 */
 	struct AVideo
 		// static construction members
 		private static integer m_divident
@@ -368,15 +367,15 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/**
-		* In addition to the usual game properties which are stored and restored by function CinematicModeExBJ the following things will be stored by this method and restored by AVideo.stop:
-		* <ul>
-		* <li>if any dialog was shown to a player</li>
-		* <li>player selection</li>
-		* <li>character movability</li>
-		* <li>time of day</li>
-		* </ul>
-		* @see CinematicModeExBJ
-		*/
+		 * In addition to the usual game properties which are stored and restored by function CinematicModeExBJ the following things will be stored by this method and restored by AVideo.stop:
+		 * <ul>
+		 * <li>if any dialog was shown to a player</li>
+		 * <li>player selection</li>
+		 * <li>character movability</li>
+		 * <li>time of day</li>
+		 * </ul>
+		 * \sa CinematicModeExBJ
+		 */
 		public method play takes nothing returns nothing
 			local force playersAll
 			debug if (thistype.m_runningVideo != 0) then
@@ -569,7 +568,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set triggerAction = null
 		endmethod
 
-		/// @param divident This value represents the divident which is used for comparing the number of skipping players with the number of requested skipping players for skipping the video.
+		/// \param divident This value represents the divident which is used for comparing the number of skipping players with the number of requested skipping players for skipping the video.
 		public static method init takes integer divident, real filterDuration, string textPlayerSkips, string textSkip returns nothing
 			local integer i
 			// static construction members
@@ -661,17 +660,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call thistype.m_actorData.pushBack(data)
 			return thistype.m_actorData.backIndex()
 		endmethod
-		
+
 		public static method createUnitActor takes player owner, integer unitTypeId, real x, real y, real face returns integer
 			local AUnitTypeActorData data = AUnitTypeActorData.create(owner, unitTypeId, x, y, face)
 			call thistype.m_actorData.pushBack(data)
 			return thistype.m_actorData.backIndex()
 		endmethod
-		
+
 		public static method createUnitActorAtLocation takes player owner, integer unitTypeId, location whichLocation, real face returns integer
 			return thistype.createUnitActor(owner, unitTypeId, GetLocationX(whichLocation), GetLocationY(whichLocation), face)
 		endmethod
-		
+
 		public static method createUnitActorAtRect takes player owner, integer unitTypeId, rect whichRect, real face returns integer
 			return thistype.createUnitActor(owner, unitTypeId, GetRectCenterX(whichRect), GetRectCenterY(whichRect), face)
 		endmethod
@@ -728,7 +727,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call PolledWait(interval) // synchron waiting, important for multiplayer games
 		endloop
 	endfunction
-	
+
 	private function WaitCondition takes nothing returns boolean
 		return AVideo.skipped()
 	endfunction

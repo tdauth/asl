@@ -2,15 +2,17 @@
 library AStructCoreInterfaceThirdPersonCamera requires AStructCoreInterfaceArrowKeys
 
 	/**
-	* Adds a dynamic third person camera to the game.
-	* Its main purpose is to enable the user a highly configurable camera without the usual
-	* limitations of third person cameras. Using this camera you can basically use any kind
-	* of terrain on your map without caring about the cam falling below the terrain or
-	* clipping parts of the terrain.
-	* Note that you have to initialize AArrowKeys before initializing this struct.
-	* @author Opossum, Tamino Dauth
-	* @link http://www.wc3c.net/showthread.php?t=104786
-	*/
+	 * \brief Adds a dynamic third person camera to the game.
+	 * Its main purpose is to enable the user a highly configurable camera without the usual
+	 * limitations of third person cameras. Using this camera you can basically use any kind
+	 * of terrain on your map without caring about the cam falling below the terrain or
+	 * clipping parts of the terrain.
+	 * Note that you have to initialize \ref AArrowKeys before initializing this structure.
+	 * Thanks to Wc3C.net user Opossum for this great system!
+	 * \author Opossum
+	 * \author Tamino Dauth
+	 * <a href="http://www.wc3c.net/showthread.php?t=104786">Wc3C.net thread</a>
+	 */
 	struct AThirdPersonCamera
 		private static constant real distanceAoaMin = -15.0
 		private static constant real distanceDistanceMin = 300.0
