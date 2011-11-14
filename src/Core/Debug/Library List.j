@@ -38,7 +38,7 @@ static if (DEBUG_MODE) then
 	private function mapFindValueSpeedTest takes AIntegerMap map, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("Map find speed test (value)")
 		call benchmark.start()
-		call map.containsValue(value)
+		call map.contains(value) // value is key
 		call benchmark.stop()
 		return benchmark
 	endfunction
@@ -60,7 +60,7 @@ static if (DEBUG_MODE) then
 	private function vectorFindSpeedTest takes AIntegerVector vector, integer value returns ABenchmark
 		local ABenchmark benchmark = ABenchmark.create("Vector find speed test (index)")
 		call benchmark.start()
-		call vector.at(value)
+		call vector.at(value) // value is index
 		call benchmark.stop()
 		return benchmark
 	endfunction

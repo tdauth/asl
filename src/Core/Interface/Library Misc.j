@@ -54,9 +54,9 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		constant integer AMaxDialogButtons = 12
 	endglobals
 
-	debug function KeyIsValid takes integer key returns boolean
-		debug return key >= AKeyEscape and key <= AKeyLeft
-	debug endfunction
+	function KeyIsValid takes integer key returns boolean
+		return key >= AKeyEscape and key <= AKeyLeft
+	endfunction
 
 	function TriggerRegisterKeyEventForPlayer takes player user, trigger usedTrigger, integer key, boolean press returns event
 		debug if (not KeyIsValid(key)) then
@@ -134,7 +134,7 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		endif
 		return 0
 	endfunction
-	
+
 	function GetPlayerColorRed takes playercolor playerColor returns integer
 		if (playerColor == PLAYER_COLOR_RED) then
 			return 0xFF

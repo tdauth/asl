@@ -296,58 +296,170 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 				return this.m_size == 0
 			endmethod
 
+			private method getMiddle takes $NAME$Node lower, $NAME$Node upper returns $NAME$Node
+				local integer i = 0
+				local integer range = 0
+				local $NAME$Node middle = lower
+				// get range size
+				loop
+					set range = range + 1
+					exitwhen (middle == upper)
+					set middle = middle.next()
+				endloop
+				set range = range / 2 // mid := (min+max) div 2;
+				// get middle node
+				set middle = lower
+				loop
+					exitwhen (i == range)
+					set middle = middle.next()
+					set i = i + 1
+				endloop
+				return middle
+			endmethod
+
 			/**
 			 * Uses binary search.
+			 * \note This method should use the equal algorithmic functionality as \ref thistype#insertNode() which is based on the binary search which has complexity of O(log n).
 			 */
-			private method findKeyNodeInRange takes $NAME$Node front, $NAME$Node back, $KEYTYPE$ key returns $NAME$Node
-				local $NAME$Node lower = front
-				local $NAME$Node upper = back
+			private method findNodeInRange takes $NAME$Node front, $NAME$Node back, $KEYTYPE$ key returns $NAME$Node
 				local $NAME$Node middle
-				local integer range
-				local integer i
-
+				debug call Print("Find!")
+				if (this.empty()) then
+					return 0
+				endif
 				loop
 					// get range size
-					set middle = lower
-					set range = 0
-					loop
-						set range = range + 1
-						exitwhen (middle == upper)
-						set middle = middle.next()
-					endloop
-					// get index of middle
-					set range = (range + 1) / 2
-					// get middle node
-					set middle = lower
-					set i = 0
-					loop
-						exitwhen (i == range)
-						set middle = middle.next()
-						set i = i + 1
-					endloop
+					set middle = this.getMiddle(front, back)
 
 					// got result
 					if (middle.key() == key) then
+						debug call Print("Got result!")
 						return middle
-					// no result and we're at the end
-					elseif (middle == front or middle == back) then
-						return 0
 					// less than, changes to new bounds
 					elseif ($COMPARATOR$(key, middle.key())) then
-						set lower = front
-						set upper = middle.previous()
+						// front > back
+						if (middle == front) then
+							debug call Print("No result!")
+							return 0
+						endif
+						set back = middle.previous()
 					// greater than, changes to new bounds
 					else
-						set lower = middle.next()
-						set upper = back
+						// front > back
+						if (middle == back) then
+							debug call Print("No result!")
+							return 0
+						endif
+						set front = middle.next()
 					endif
 				endloop
 
 				return 0
 			endmethod
 
+			/**
+			 * \return Returns node of the first element that is <b>not less than</b> \p key. If no such element is found, 0 is returned.
+			 */
+			private method lowerBoundNodeInRange takes $NAME$Node front, $NAME$Node back, $KEYTYPE$ key returns $NAME$Node
+				local $NAME$Node middle
+				debug call Print("Find!")
+				if (this.empty()) then
+					return 0
+				endif
+				loop
+					// get range size
+					set middle = this.getMiddle(front, back)
+
+					// got result
+					if (not $COMPARATOR$(middle.key(), key)) then
+						debug call Print("Got result!")
+						return middle
+					// greater than, changes to new bounds
+					else
+						// front > back
+						if (middle == back) then
+							debug call Print("No result!")
+							return 0
+						endif
+						set front = middle.next()
+					endif
+				endloop
+
+				return 0
+			endmethod
+
+			/**
+			 * \return Returns node of the first element that is <b>greater</b> than \p key. If no such element is found, 0 is returned.
+			 */
+			private method upperBoundNodeInRange takes $NAME$Node front, $NAME$Node back, $KEYTYPE$ key returns $NAME$Node
+				local $NAME$Node middle
+				debug call Print("Find!")
+				if (this.empty()) then
+					return 0
+				endif
+				loop
+					// get range size
+					set middle = this.getMiddle(front, back)
+
+					if ($COMPARATOR$(key, middle.key())) then
+						debug call Print("Got result!")
+						return middle
+					// greater than, changes to new bounds
+					else
+						// front > back
+						if (middle == back) then
+							debug call Print("No result!")
+							return 0
+						endif
+						set front = middle.next()
+					endif
+				endloop
+
+				return 0
+			endmethod
+
+			/**
+			 * \copydoc thistype.lowerBoundNodeInRange()
+			 * \note Take care of the resulting iterator's destruction if it's not 0!
+			 */
+			public method lowerBoundInRange takes $NAME$Iterator front, $NAME$Iterator back, $KEYTYPE$ key returns $NAME$Iterator
+				local $NAME$Node result = this.lowerBoundNodeInRange(front.node(), back.node(), key)
+				if (result == 0) then
+					return 0
+				endif
+				return $NAME$Iterator.createWith(result)
+			endmethod
+
+			public method lowerBound takes $KEYTYPE$ key returns $NAME$Iterator
+				local $NAME$Node result = this.lowerBoundNodeInRange(this.m_front, this.m_back, key)
+				if (result == 0) then
+					return 0
+				endif
+				return $NAME$Iterator.createWith(result)
+			endmethod
+
+			/**
+			 * \copydoc thistype.upperBoundNodeInRange()
+			 * \note Take care of the resulting iterator's destruction if it's not 0!
+			 */
+			public method upperBoundInRange takes $NAME$Iterator front, $NAME$Iterator back, $KEYTYPE$ key returns $NAME$Iterator
+				local $NAME$Node result = this.upperBoundNodeInRange(front.node(), back.node(), key)
+				if (result == 0) then
+					return 0
+				endif
+				return $NAME$Iterator.createWith(result)
+			endmethod
+
+			public method upperBound takes $KEYTYPE$ key returns $NAME$Iterator
+				local $NAME$Node result = this.upperBoundNodeInRange(this.m_front, this.m_back, key)
+				if (result == 0) then
+					return 0
+				endif
+				return $NAME$Iterator.createWith(result)
+			endmethod
+
 			public method findInRange takes $NAME$Iterator first, $NAME$Iterator last, $KEYTYPE$ key returns $ELEMENTTYPE$
-				local $NAME$Node result = this.findKeyNodeInRange(first.node(), last.node(), key)
+				local $NAME$Node result = this.findNodeInRange(first.node(), last.node(), key)
 				if (result == 0) then
 					return $NULLVALUE$
 				endif
@@ -355,7 +467,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			endmethod
 
 			public method find takes $KEYTYPE$ key returns $ELEMENTTYPE$
-				local $NAME$Node result = this.findKeyNodeInRange(this.m_front, this.m_back, key)
+				local $NAME$Node result = this.findNodeInRange(this.m_front, this.m_back, key)
 				if (result == 0) then
 					return $NULLVALUE$
 				endif
@@ -365,11 +477,13 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			/**
 			 * Searches the container for key \p key and returns an iterator to it if
 			 * found, otherwise it returns 0.
-			 * \note As container is ordered this uses binary search and is much faster than \ref $STRUCTNAME$.findValue.
+			 * \note As container is ordered this uses binary search.
 			 * \note Take care of the resulting iterator's destruction if it's not 0!
+			 * \sa findKey()
+			 * \sa findInRange()
 			 */
 			public method findKeyInRange takes $NAME$Iterator first, $NAME$Iterator last, $KEYTYPE$ key returns $NAME$Iterator
-				local $NAME$Node result = this.findKeyNodeInRange(first.node(), last.node(), key)
+				local $NAME$Node result = this.findNodeInRange(first.node(), last.node(), key)
 				if (result == 0) then
 					return 0
 				endif
@@ -379,83 +493,42 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			/**
 			 * Searches the container for key \p key and returns an iterator to it if
 			 * found, otherwise it returns 0.
-			 * \note As container is ordered this uses binary search and is much faster than \ref $STRUCTNAME$.findValue.
+			 * \note As container is ordered this uses binary search.
 			 * \note Take care of the resulting iterator's destruction if it's not 0!
+			 * \sa findKeyInRange()
+			 * \sa find()
 			 */
 			public method findKey takes $KEYTYPE$ key returns $NAME$Iterator
-				local $NAME$Node result = this.findKeyNodeInRange(this.m_front, this.m_back, key)
+				local $NAME$Node result = this.findNodeInRange(this.m_front, this.m_back, key)
 				if (result == 0) then
 					return 0
 				endif
 				return $NAME$Iterator.createWith(result)
 			endmethod
 
-			/**
-			 * Slow linear search for value since values are not ordered.
-			 */
-			public method findValue takes $ELEMENTTYPE$ value returns $NAME$Iterator
-				local $NAME$Node node = this.m_front
-				local $NAME$Iterator result = 0
-				loop
-					exitwhen (node == 0)
-					if (node.data() == value) then
-						set result = $NAME$Iterator.create()
-						call result.setNode(node)
-						exitwhen (true)
-					endif
-					set node = node.next()
-				endloop
-				return result
-			endmethod
-
 			public method containsInRange takes $NAME$Iterator first, $NAME$Iterator last, $KEYTYPE$ key returns boolean
-				local $NAME$Node result = this.findKeyNodeInRange(first.node(), last.node(), key)
+				local $NAME$Node result = this.findNodeInRange(first.node(), last.node(), key)
 				return not (result == 0)
 			endmethod
 
 			public method contains takes $KEYTYPE$ key returns boolean
-				local $NAME$Node result = this.findKeyNodeInRange(this.m_front, this.m_back, key)
+				local $NAME$Node result = this.findNodeInRange(this.m_front, this.m_back, key)
 				return not (result == 0)
 			endmethod
 
-			public method countValues takes $ELEMENTTYPE$ value returns integer
-				local $NAME$Node node = this.m_front
-				local integer result = 0
-				loop
-					exitwhen (node == 0)
-					if (node.data() == value) then
-						set result = result + 1
-					endif
-					set node = node.next()
-				endloop
-				return result
-			endmethod
-
-			public method containsValue takes $ELEMENTTYPE$ value returns boolean
-				local $NAME$Node node = this.m_front
-				loop
-					exitwhen (node == 0)
-					if (node.data() == value) then
-						return true
-					endif
-					set node = node.next()
-				endloop
-				return false
-			endmethod
-
 			/**
-			 * \note Iterator must point to an element which indeed belongs to the container (not only the same key).
+			 * \note Iterator must point to an element which belongs to the container (not only the same key).
 			 */
 			public method containsIteratorInRange takes $NAME$Iterator first, $NAME$Iterator last, $NAME$Iterator iterator returns boolean
-				local $NAME$Node result = this.findKeyNodeInRange(this.m_front, this.m_back, iterator.key())
+				local $NAME$Node result = this.findNodeInRange(this.m_front, this.m_back, iterator.key())
 				return iterator.node() == result
 			endmethod
 
 			/**
-			 * \note Iterator must point to an element which indeed belongs to the container (not only the same key).
+			 * \note Iterator must point to an element which belongs to the container (not only the same key).
 			 */
 			public method containsIterator takes $NAME$Iterator iterator returns boolean
-				local $NAME$Node result = this.findKeyNodeInRange(this.m_front, this.m_back, iterator.key())
+				local $NAME$Node result = this.findNodeInRange(this.m_front, this.m_back, iterator.key())
 				return iterator.node() == result
 			endmethod
 
@@ -464,69 +537,34 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			 * This effectively increases the container size by 1.
 			 * The element can't be inserted if key \p key is already used by another one.
 			 * The element's position depends on its key value since it is ordered automatically using \ref $COMPARATOR$ function.
-			 * \note This method should use the equal algorithmic functionality as \ref thistype#findNode() which is based on the binary search which has complexity of O(log n).
+			 * \note This method should use the equal algorithmic functionality as \ref thistype#findNodeInRange() which is based on the binary search which has complexity of O(log n).
 			 */
 			private method insertNode takes $KEYTYPE$ key, $ELEMENTTYPE$ value returns $NAME$Node
 				local $NAME$Node node = $NAME$Node.createWith(key, value)
-				local $NAME$Node lower = this.m_front
-				local $NAME$Node upper = this.m_back
-				local $NAME$Node middle
-				local integer range
-				local integer i
+				local $NAME$Node lower = this.lowerBoundNodeInRange(this.m_front, this.m_back, key)
+				local $NAME$Node tmp
 
-				loop
-					// get range size
-					set middle = lower
-					set range = 0
-					loop
-						set range = range + 1
-						exitwhen (middle == upper)
-						set middle = middle.next()
-					endloop
-					// get index of middle
-					set range = (range + 1) / 2
-					// get middle node
-					set middle = lower
-					set i = 0
-					loop
-						exitwhen (i == range)
-						set middle = middle.next()
-						set i = i + 1
-					endloop
-
-					// same key, do not insert!!!
-					if (middle.key() == key) then
+				if (lower != 0) then
+					if (lower.key() == key) then
+						debug call Print("Same key, do not insert!")
 						call node.destroy()
 						return 0
-					// less than, changes to new bounds
-					elseif ($COMPARATOR$(key, middle.key())) then
-						// insert before front node
-						if (middle == this.m_front) then
-							call this.m_front.setPrevious(node)
-							call node.setNext(this.m_front)
-							set this.m_size = this.m_size + 1
-							return node
-						endif
-						set lower = this.m_front
-						set upper = middle.previous()
-					// greater than, changes to new bounds
-					else
-						// insert after back node
-						if (middle == this.m_back) then
-							call this.m_back.setNext(node)
-							call node.setPrevious(this.m_back)
-							set this.m_size = this.m_size + 1
-							return node
-						endif
-
-						set lower = middle.next()
-						set upper = this.m_back
 					endif
-				endloop
-
-				call node.destroy()
-
-				return 0
+					call node.setNext(lower)
+					set tmp = lower.previous()
+					call lower.setPrevious(node)
+					if (tmp != 0) then
+						call node.setPrevious(tmp)
+						call tmp.setNext(node)
+					endif
+				// is greater than all elements -> push back to keep order
+				else
+					call this.m_back.setNext(node)
+					call node.setPrevious(this.m_back)
+					set this.m_back = node
+				endif
+				set this.m_size = this.m_size + 1
+				return node
 			endmethod
 
 			/**
@@ -549,18 +587,15 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 				local $NAME$Node tmpNode
 				loop
 					exitwhen (first == 0)
-					// check both since it can be front and back at the same time!
-					if (first == this.m_front) then
-						set this.m_front = first.next()
-					endif
-					if (first == this.m_back) then
-						set this.m_back = first.previous()
-					endif
 					if (first.next() != 0) then
 						call first.next().setPrevious(first.previous())
+					else
+						set this.m_back = first.previous()
 					endif
 					if (first.previous() != 0) then
 						call first.previous().setNext(first.next())
+					else
+						set this.m_front = first.next()
 					endif
 					if (first == last) then
 						call first.destroy()
@@ -581,6 +616,30 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 
 			public method erase takes $NAME$Iterator position returns nothing
 				call this.eraseNumber(position, position)
+			endmethod
+
+			/**
+			 * Removes element with \p key which decreases map by 1 if an element was found.
+			 * \return Returns true if an element was found and removed. Otherwise it returns false.
+			 */
+			public method remove takes $KEYTYPE$ key returns boolean
+				local $NAME$Node result = this.findNodeInRange(this.m_front, this.m_back, key)
+				local $NAME$Node tmpNode
+				if (result == 0) then
+					return false
+				endif
+				if (result.previous() != 0) then
+					call result.previous().setNext(result.next())
+				else
+					set this.m_front = result.next()
+				endif
+				if (result.next() != 0) then
+					call result.next().setPrevious(result.previous())
+				else
+					set this.m_back = result.previous()
+				endif
+				set this.m_size = this.m_size + 1
+				return true
 			endmethod
 
 			/// All the elements in the map container are dropped: they are removed from the map container, leaving it with a size of 0.
@@ -646,6 +705,19 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 					set i = i + 1
 				endloop
 				return iterator
+			endmethod
+
+			/**
+			 * Swaps content of map with map \p other.
+			 * \note All iterators do point to the other's content now!
+			 */
+			public method swap takes thistype other returns nothing
+				local $NAME$Node tmp = this.m_front
+				set this.m_front = other.m_front
+				set other.m_front = tmp
+				set tmp = this.m_back
+				set this.m_back = other.m_back
+				set other.m_back = tmp
 			endmethod
 
 			public static method create takes nothing returns thistype

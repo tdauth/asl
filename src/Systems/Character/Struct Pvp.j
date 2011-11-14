@@ -192,9 +192,9 @@ library AStructSystemsCharacterPvp requires ALibraryCoreInterfaceLeaderboard, AL
 		endmethod
 
 		/**
-		* @param enterText tr("%s hat die Arena betreten.")
-		* @param leaveText tr("%s hat die Arena verlassen.")
-		* @param killText tr("%s hat %s getötet.")
+		* \param enterText tr("%s hat die Arena betreten.")
+		* \param leaveText tr("%s hat die Arena verlassen.")
+		* \param killText tr("%s hat %s getötet.")
 		*/
 		public static method init takes boolean useLeaderboard, string leaderboardLabelText, string enterText, string leaveText, string killText returns nothing
 			// static initialization members

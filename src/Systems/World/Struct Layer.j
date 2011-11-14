@@ -147,7 +147,7 @@ library AStructSystemsWorldLayer requires AModuleCoreGeneralSystemStruct, AStruc
 			local ARegionData data = this.regionDataByRegion(whichRegion)
 static if (DEBUG_MODE) then
 			if (data == 0) then
-				call this.print(Format(tr("Region %1% is not contained by layer.")).h(whichRegion).result())
+				call this.print(Format("Region %1% is not contained by layer.").h(whichRegion).result())
 				return
 			endif
 endif

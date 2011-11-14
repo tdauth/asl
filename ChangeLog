@@ -1,3 +1,31 @@
+2011-11-14 Tamino Dauth <tamino@cdauth.eu>
+* ATalk: Completed revision.
+* AInfo: speech() doesn't support unit animations anymore.
+* AInfo: Revised.
+* AInfo: Skipping speech must be initialized via initSpeechSkip() now.
+* Interface: KeyIsValid() isn't a debug only function anymore.
+* AInfo: Completed revision.
+* ATalk: Translated strings are required as text constants now (see README).
+* All translated strings do use global constants now.
+* Exported some pre defined strings into "src/Systems/Debug/Text en.j".
+* Updated README's globals.
+* Added cheat "remove".
+* ARevival: Added dynamic properties showDialog() and showEffect() and dropped static initializer.
+* AShrine: Dropped static initializer and made more dynamic.
+
+2011-11-11 Tamino Dauth <tamino@cdauth.eu>
+* AInfo: Added method index().
+* ATalk: Added method infoHasBeenShownToPlayer().
+* ATalk: Made all static initialization members completely dynamic.
+* Dropped "archives" related stuff from ChangeLog and TODO files.
+
+2011-11-09 Tamino Dauth <tamino@cdauth.eu>
+* A_MAP: Revised binary search and insertion algorithm.
+* A_MAP: Dropped deprecated value based methods.
+* A_MAP: Added lowerBound() and upperBound() methods and related stuff.
+* Added documentation of foreach statements and A_DESTROY.
+* Revised vJass suggestions.
+
 2011-11-07 Tamino Dauth <tamino@cdauth.eu>
 * ATalk/AInfo: Third person camera is only used if enabled. Dropped initialization setting.
 
@@ -272,9 +300,6 @@
 2010-05-30 Tamino Dauth <tamino@cdauth.eu>
 * Revised character inventory system.
 
-2010-05-25 Tamino Dauth <tamino@cdauth.eu>
-* Added various models and textures to archives "Ambient" and "Creatures".
-
 2010-05-24 Tamino Dauth <tamino@cdauth.eu>
 * Added init option likeWarcraft to struct AQuest and changed its message behaviour.
 * Fixed method resize of vector struct of text macro A_VECTOR.
@@ -282,11 +307,7 @@
 
 2010-05-21 Tamino Dauth <tamino@cdauth.eu>
 * Fixed some GUI trigger data.
-* Fixed some models.
 * Fixed some code.
-
-2010-05-21 Tamino Dauth <tamino@cdauth.eu>
-* Added Neratia models (84).
 
 2010-05-19 Tamino Dauth <tamino@cdauth.eu>
 * Revised struct ACheat.
@@ -324,7 +345,6 @@
 2010-05-01 Tamino Dauth <tamino@cdauth.eu>
 * Revised initializer of struct ADamageRecorder.
 * Improved global damage detection of struct ADamageRecorder.
-* Added several spell and item icons to archives.
 * Fixed cheat "setlevel"
 * Added cheat "foodcap".
 * Improved various cheats.
@@ -338,10 +358,8 @@
 * Improved function GetTimeString.
 * Added debugging cheat "timeofday".
 * Dropped camera setup option of struct AInfo and replaced it by "thirdPersonCamera".
-* Added various interface spell and attribute icons.
 
 2010-04-18 Tamino Dauth <tamino@cdauth.eu>
-* Added various item models and icons.
 * Fixed cheats "gold" and "lumber".
 
 2010-04-17 Tamino Dauth <tamino@cdauth.eu>
@@ -357,9 +375,6 @@
 * Fixed cheats "xp" and "damage".
 * Fixed onState method overwriting of structs AQuest and AQuestItem.
 * Added initialization option "hideUserInterface" to struct ATalk.
-
-2010-04-09 Tamino Dauth <tamino@cdauth.eu>
-* Added many spell icons and effects to archive "Spells".
 
 2010-04-08 Tamino Dauth <tamino@cdauth.eu>
 * Added cheats "lumber" and "gold".
@@ -450,7 +465,6 @@
 2010-02-14 Tamino Dauth <tamino@cdauth.eu>
 * Improved struct AGroup.
 * Revised some code parts for supporting [forcemethodevaluate] JassHelper option.
-* Added several icon files to archives "Spells" and "Items".
 
 2010-02-05 Tamino Dauth <tamino@cdauth.eu>
 * Init video actions is called by .evaluate now.
@@ -473,7 +487,6 @@
 * Improved struct ACharactersScheme.
 
 2010-01-01 Tamino Dauth <tamino@cdauth.eu>
-* Added several human and orc creatures models.
 * Fixed AClassSelection user interface bug.
 * Fixed ACharactersScheme free unallocated instance bug.
 * Added global damage detection system which is based on struct ADamageRecorder.
@@ -481,7 +494,6 @@
 2009-12-30 Tamino Dauth <tamino@cdauth.eu>
 * Improved various store and restore methods.
 * Revised initializer of struct ACharactersScheme and added methods for modifying its bar icons.
-* Added several icon files from Wc3C.net for display of multiboard bars.
 
 2009-12-28 Tamino Dauth <tamino@cdauth.eu>
 * Added methods store and restore to several character system structs for storing and restoring characters to and from game caches.
@@ -557,7 +569,6 @@
 
 2009-12-08 Tamino Dauth <tamino@cdauth.eu>
 * Revised file "archives/Asl/UI/TriggerData.txt".
-* Added various ambient extra model files.
 * Fixed various syntax errors.
 
 2009-12-07 Tamino Dauth <tamino@cdauth.eu>
@@ -586,9 +597,6 @@
 * Added more parameters to method init of struct ACharactersScheme.
 * Revised struct ACharactersScheme.
 * Revised struct AVector3.
-
-2009-11-22 Tamino Dauth <tamino@cdauth.eu>
-* Renamed terrain textures.
 
 2009-11-11 Tamino Dauth <tamino@cdauth.eu>
 * Added module AStructModule.
@@ -661,7 +669,6 @@
 * Improved bonus mod and added bonus typs sight range and mana and life regeneration.
 * Removed function AClearUnitBonus.
 * Added function AUnitRemoveBonus.
-* Added icons for ability "Linderung".
 
 2009-09-06 Tamino Dauth <tamino@cdauth.eu>
 * Added several debug hooks for Blizzards natives.
@@ -690,7 +697,6 @@
 * Added function CreateUnitsAtPoint.
 * Added function SmartCameraPan.
 * Talk speeches should for finishing video sequences now.
-* Added several icon and model files to archive Items.
 * Added file "src/Systems/Character/Struct Kill Quest Item.j".
 
 2009-08-13 Tamino Dauth <tamino@cdauth.eu>
@@ -709,7 +715,6 @@
 * Fixed resetting equipment of struct AInventory.
 * Added owner parameter to function SetCinematicSceneForPlayer.
 * Improved index setting when resetting slots of struct AInventory.
-* Added several creature model and icon files to archive Creatures.
 
 2009-08-08 Tamino Dauth <tamino@cdauth.eu>
 * Improved struct AAbstractQuest.
@@ -732,14 +737,6 @@
 * Added Anitarf's arrow key system which is required by Opossum's third person camera system.
 
 2009-08-05 Tamino Dauth <tamino@cdauth.eu>
-* Added file "archives/Spells/Icons/Spells/BTNAbsorbation.blp".
-* Added file "archives/Spells/Icons/Spells/BTNManaShield.blp".
-* Added file "archives/Spells/Icons/Spells/DISBTNAbsorbation.blp".
-* Added file "archives/Spells/Icons/Spells/DISBTNManaShield.blp".
-* Added file "archives/Spells/Icons/Spells/DISPASAbsorbation.blp".
-* Added file "archives/Spells/Icons/Spells/DISPASManaShield.blp".
-* Added file "archives/Spells/Icons/Spells/PASAbsorbation.blp".
-* Added file "archives/Spells/Icons/Spells/PASManaShield.blp".
 * Fixed AAbstractCharacterSystem handling in struct ACharacter.
 * Added methods setEnableAgain and enableAgain to struct AAbstractCharacterSystem.
 * Added function CountPlayingUsers to library ALibraryCoreGeneralPlayer.
@@ -771,10 +768,6 @@
 
 2009-07-31 Tamino Dauth <tamino@cdauth.eu>
 * Revised struct AHashTable.
-
-2009-07-29 Tamino Dauth <tamino@cdauth.eu>
-* Added file "archives/Creatures/Models/Creatures/Humans/Wizard.mdx".
-* Added file "archives/Creatures/Textures/Creatures/Humans/Wizard.blp".
 
 2009-07-27 Tamino Dauth <tamino@cdauth.eu>
 * Improved struct APvp.
@@ -831,11 +824,6 @@
 
 2009-06-26 Tamino Dauth <tamino@cdauth.eu>
 * Fixed Bonus Mod ability creation.
-* Added file "archives/Spells/Models/Effects/Emblaze.mdx".
-* Added file "archives/Spells/Models/Effects/FreezeBuff.mdx".
-* Added file "archives/Spells/Models/Effects/FreezeBuff_Portrait.mdx".
-* Added file "archives/Spells/Icons/Spells/BTNFreeze.blp".
-* Added file "archives/Spells/Icons/Spells/DISBTNFreeze.blp".
 
 2009-06-25 Tamino Dauth <tamino@cdauth.eu>
 * Improved struct AInventory.
@@ -868,33 +856,8 @@
 2009-06-20 Tamino Dauth <tamino@cdauth.eu>
 * Fixed desynchronization bug of struct AGui.
 * Revised struct AClassSelection.
-* Added file "archives/Ambient/Models/Ambient/Grassland/Pechkessel.mdx".
-* Added file "archives/Ambient/Models/Ambient/Grassland/Waffenplatz.mdx".
-* Added file "archives/Ambient/Textures/Ambient/Grassland/Pechkessel.blp".
-* Added file "archives/Ambient/Textures/Ambient/Grassland/PechkesselWeiss.blp".
-* Added file "archives/Ambient/Textures/Ambient/Grassland/WaffenplatzAxt.blp".
-* Added file "archives/Ambient/Textures/Ambient/Grassland/WaffenplatzHolz.blp".
-* Added file "archives/Items/Models/Items/Axt.mdx".
-* Added file "archives/Items/Textures/Items/Axt.blp".
-* Added file "archives/Items/Icons/Items/BTNLightWoodenShield.blp".
-* Added file "archives/Items/Icons/Items/BTNWoodenShield.blp".
-* Added file "archives/Items/Icons/Items/DISBTNLightWoodenShield.blp".
-* Added file "archives/Items/Icons/Items/DISBTNWoodenShield.blp".
 
 2009-06-19 Tamino Dauth <tamino@cdauth.eu>
-* Added file "archives/Spells/Icons/Spells/ATCDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/ATTDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/BTNDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/DISATCDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/DISBTNDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/DISPASDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/PASDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/SSCHDunklerDiener.blp".
-* Added file "archives/Spells/Icons/Spells/UPGUPGDunklerDiener.blp".
-* Added file "archives/Creatures/Models/Creatures/Animals/Deer.mdx".
-* Added file "archives/Creatures/Textures/Creatures/Animals/Deer.blp".
-* Added file "archives/Creatures/Icons/Creatures/Animals/BTNDeer.blp".
-* Added file "archives/Creatures/Icons/Creatures/Animals/DISBTNDeer.blp".
 * Removed file "src/Core/Interface/Struct Interface Hash Table.j".
 * Removed file "src/Systems/Character/Struct Character Hash Table.j".
 * Removed file "src/Systems/World/Struct World Hash Table.j".
@@ -906,13 +869,6 @@
 
 2009-06-17 Tamino Dauth <tamino@cdauth.eu>
 * Improved struct AInventory.
-* Added file "archives/Items/Models/Items/Flute.mdx".
-* Added file "archives/Items/Models/Items/Ring.mdx".
-* Added file "archives/Items/Textures/Items/Ring.blp".
-* Added file "archives/Items/Models/Items/Shield.mdx".
-* Added file "archives/Items/Textures/Items/Shield.blp".
-* Added file "archives/Ambient/Models/Ambient/Grassland/Mill.mdx".
-* Added file "archives/Ambient/Textures/Ambient/Grassland/Mill.blp".
 * Added function TransmissionFromUnitType to library ALibraryCoreInterfaceCinematic.
 
 2009-06-16 Tamino Dauth <tamino@cdauth.eu>
@@ -924,40 +880,24 @@
 2009-06-14 Tamino Dauth <tamino@cdauth.eu>
 * Fixed coordinate treatment of struct AMainWindow.
 * Fixed function ShowTextTagForPlayer.
-* Added file "archives/Creatures/Models/Creatures/Humans/Warrior.mdx".
-* Added file "archives/Creatures/Textures/Creatures/Humans/Warrior0.blp".
-* Added file "archives/Creatures/Textures/Creatures/Humans/Warrior1.blp".
-* Added file "archives/Creatures/Textures/Creatures/Humans/Warrior2.blp".
 * Added number display to struct AClassSelection.
 * Improved video skip functionality of struct AVideo.
 
 2009-06-13 Tamino Dauth <tamino@cdauth.eu>
-* Improved function CopyUnit.
+* Improved function CopyUnit().
 * Added file "src/Core/General/Library Item.j".
-* Added function CopyItem.
+* Added function CopyItem().
 * Revised method copy of struct ACharacter.
-* Renamed folder "archives/Ambient/Models/Ambient/Special" to "archives/Ambient/Models/Ambient/Extra".
-* Added file "archives/Ambient/Models/Extra/Moon.mdx".
-* Added file "archives/Ambient/Models/Extra/Window Rays.mdx".
 * Renamed members and methods of structs AMainWindow, AImage and AText.
-
-2009-06-11 Tamino Dauth <tamino@cdauth.eu>
-* Fixed texture path of file "archives/Items/Models/Items/StabderWeissagung.mdx".
-* Fixed texture path of file "archives/Ambient/Models/Ambient/Grassland/Sky/Tageshimmel.mdx".
-* Fixed texture path of file "archives/Creatures/Models/Creatures/Humans/Maedchen.mdx".
 
 2009-06-10 Tamino Dauth <tamino@cdauth.eu>
 * Improved structs AInfo and ATalk.
-* Fixed texture paths of files "archives/Creatures/Models/Creatures/Humans/Pfarrer.mdx" and "archives/Creatures/Models/Creatures/Humans/Pfarrer_Portrait.mdx".
 
 2009-06-09 Tamino Dauth <tamino@cdauth.eu>
 * Improved structs AAbstractQuest, AQuest and AQuestItem.
 
 2009-06-08 Tamino Dauth <tamino@cdauth.eu>
 * Added function speech to library AStructSystemsCharacterInfo.
-* Added missed texture file "archives/Ambient/Textures/Kiste.blp".
-* Added icon, model and texture files for spell "Konzentration" to archive Spells.
-* Fixed texture path of model file "archives/Creates/Undeads/Zombie.mdx".
 * Revised structs AInfo and ATalk.
 
 2009-06-07 Tamino Dauth <tamino@cdauth.eu>
@@ -973,7 +913,6 @@
 * Added methods isUnitCharacter, panCameraSmart and panCameraSmartToAll to struct ACharacter.
 * Added functions MoveItemToSlot, UseItemOfSlot, UseItemOfSlotOnTarget and UseItemOfSlotOnPoint to library ALibraryCoreGeneralUnit.
 * Added methods add and remove to struct ASpell.
-* Added several item models and icons to archive Items.
 
 2009-06-05 Tamino Dauth <tamino@cdauth.eu>
 * Added method actor to struct AVideo.
@@ -987,8 +926,6 @@
 * Added method contains to struct of text macro A_VECTOR.
 * Added method level, skillPoints and removeSkillPoints to struct ACharacter.
 * Class is set class selection now.
-* Replaced file "archives/Spells/Icons/Spells/BTNEntzuenden.blp".
-* Replaced file "archives/Spells/Icons/Spells/DISBTNEntzuenden.blp".
 
 2009-06-02 Tamino Dauth <tamino@cdauth.eu>
 * Improved list struct of text macro A_LIST.
@@ -1014,12 +951,6 @@
 2009-05-25 Tamino Dauth <tamino@cdauth.eu>
 * Fixed revival dialog bug.
 * Movement doesn't work now when the character is dead.
-* Added file "archives/Spells/Models/Effects/Blitzschlag.mdx".
-* Added file "archives/Spells/Icons/Spells/ATCHeiligeKraft.blp".
-* Added file "archives/Spells/Icons/Spells/BTNHeiligeKraft.blp".
-* Added file "archives/Spells/Icons/Spells/DISATCHeiligeKraft.blp".
-* Added file "archives/Spells/Icons/Spells/DISBTNHeiligeKraft.blp".
-* Added file "archives/Spells/Icons/Spells/DISPASHeiligeKraft.blp".
 
 2009-05-24 Tamino Dauth <tamino@cdauth.eu>
 * Fixed equipment bug of struct AInventory.
@@ -1037,20 +968,9 @@
 * Added function RealArgW.
 * Improved struct AInventory and ACharactersScheme.
 
-2009-05-21 Tamino Dauth <tamino@cdauth.eu>
-* Added file "archives/Ambient/Models/Ambient/Special/Lichtquelle.mdx".
-* Added file "archives/Ambient/Models/Ambient/Special/Feuer.mdx".
-* Added file "archives/Items/Models/Items/EdlerKlerikerhelm.mdx".
-* Added several item model and textures files.
-
 2009-05-20 Tamino Dauth <tamino@cdauth.eu>
 * Added method allyChannelLoopCondition to struct ASpell.
-* Added functions SimError, ParabolaZ, StringMatch and I2Roman.
-* Added file "archives/Spells/Icons/Spells/BTNAnstuermen.blp".
-* Added file "archives/Spells/Icons/Spells/DISBTNAnstuermen.blp".
-* Added file "archives/Spells/Icons/Spells/DISPASAnstuermen.blp".
-* Added file "archives/Spells/Icons/Spells/PASAnstuermen.blp".
-* Added several shield model and texutre files of xXm0RpH3usXx.
+* Added functions SimError(), ParabolaZ(), StringMatch() and I2Roman().
 
 2009-05-12 Tamino Dauth <tamino@cdauth.eu>
 * Added file "src/Core/General/Struct Signal.j".
@@ -1061,20 +981,6 @@
 * Added static method channelCondition to struct ASpell.
 
 2009-05-08 Tamino Dauth <tamino@cdauth.eu>
-* Added file archive/Interface/UserInterfaces/Naga/InventoryCover.blp.
-* Added file archive/Interface/UserInterfaces/Naga/Tile1.blp.
-* Added file archive/Interface/UserInterfaces/Naga/Tile2.blp.
-* Added file archive/Interface/UserInterfaces/Naga/Tile3.blp.
-* Added filearchive/Interface/ UserInterfaces/Naga/Tile4.blp.
-* Added file archive/Interface/UserInterfaces/Naga/TimeIndicatorFrame.blp.
-* Added file archive/Creatures/Icons/Creatures/Orcs/BTNArmbrustschuetze.blp.
-* Added file archive/Creatures/Icons/Creatures/Orcs/BTNKrieger.blp.
-* Added file archive/Creatures/Icons/Creatures/Orcs/DISBTNArmbrustschuetze.blp.
-* Added file archive/Creatures/Icons/Creatures/Orcs/DISBTNKrieger.blp.
-* Added file archive/Creatures/Models/Creatures/Orcs/Armbrustschuetze.mdx.
-* Added file archive/Creatures/Models/Creatures/Orcs/Krieger.mdx.
-* Added file archive/Creatures/Models/Creatures/Orcs/Ramme.mdx.
-* Added file archive/Creatures/Textures/Creatures/Orcs/Ramme.blp.
 * Added file src/Core/Environment/Library Terrain Fog.j.
 * Added functions SetTerrainFogNight(), SetTerrainFogSunny(), SetTerrainFogForrest() and SetTerrainFogFoggy() to library ALibraryCoreEnvironmentTerrainFog.
 * Moved function ResetTerrainFogForPlayer() from library ALibraryCoreEnvironmentTerrain to ALibraryCoreEnvironmentTerrainFog.
@@ -1114,20 +1020,6 @@
 * Renamed method targetLoopCondition() of struct ASpell to enemyTargetLoopCondition().
 * Added methods enemyTargetLoopConditionResistant() and allyTargetLoopCondition() to struct ASpell.
 
-2009-04-18 Tamino Dauth <tamino@cdauth.eu>
-* Added file "Models/Creatures/Demons/Bestienhaeuptling.mdx" to archive Creatures.mpq.
-* Added file "Textures/Creatures/Demons/Bestienhaeuptling.blp" to archive Creatures.mpq.
-* Added file "Icons/Creatures/Demons/BTNBestienhaeuptling.blp" to archive Creatures.mpq.
-* Added file "Icons/Creatures/Demons/DISBTNBestienhaeuptling.blp" to archive Creatures.mpq.
-* Added file "Models/Creatures/Humans/GeistlicheSchwertkaempferin.mdx" to archive Creatures.mpq.
-* Added file "Textures/Creatures/Humans/GeistlicheSchwertkaempferin.blp" to archive Creatures.mpq.
-* Added file "Icons/Creatures/Humans/BTNGeistlicheSchwertkaempferin.blp" to archive Creatures.mpq.
-* Added file "Icons/Creatures/Humans/DISBTNGeistlicheSchwertkaempferin.blp" to archive Creatures.mpq.
-* Added file "Models/Ambient/Grassland/Kiste2.mdx" to archive Ambient.mpq.
-* Added file "Icons/Ambient/Grassland/Kiste2.blp" to archive Ambient.mpq.
-* Renamed file "Models/Ambient/Grassland/Kiste.mdx" in archive Ambient.mpq to "Models/Ambient/Grassland/Kiste1.mdx".
-* Renamed file "Textures/Kiste.mdx" in archive Ambient.mpq to "Textures/Ambient/Grassland/Kiste1.blp".
-
 2009-04-13 Tamino Dauth <tamino@cdauth.eu>
 * Finished method createCircle() of struct AMissile.
 * Added static method createCircleFromUnit() to struct AMissile.
@@ -1152,7 +1044,6 @@
 * Fixed several coordinate bugs of GUI system widget structs.
 * Fixed general debug function war3err functionality.
 * Replaced cheats in library ALibrarySystemsDebugUtilities by ACheat instances.
-* Renamed unit type "Nordmann" to "Nordmann 1" and replaced model file path.
 * Revised struct AInventory.
 * Added function interface AVideoStopAction.
 
@@ -1265,8 +1156,6 @@
 * Added library ALibraryInterfaceCinematicFilter.
 
 2009-02-04 Tamino Dauth <tamino@cdauth.eu>
-* Added files Models/Creatures/Humans/Nordmann2.mdx, Models/Creatures/Humans/Nordmann2_Portrait.mdx and Textures/Creatures/Humans/Nordmann2.blp of Olof Moleman from wc3campaigns.net.
-* Renamed file Models/Creatures/Humans/Nordmann.mdx to Models/Creatures/Humans/Nordmann1.mdx.
 * Added allUnitsAreInRect() method to ACharacter class.
 
 2009-02-02 Tamino Dauth <tamino@cdauth.eu>
@@ -1298,10 +1187,6 @@
 
 2008-11-25 Tamino Dauth <tamino@cdauth.eu>
 * Added methods addSpecialEffect(), addSpellEffect(), addSpellEffectById(), createUnit(), createDestructable(), createDestructableZ(), createItem() and createTrackable() to the ACircle struct.
-
-2008-11-23 Tamino Dauth <tamino@cdauth.eu>
-* Added Dionesiists demon models Demon, Destroyer, Imp2 and Captain to the creatures archive.
-* Model files will be named in English now.
 
 2008-11-14 Tamino Dauth <tamino@cdauth.eu>
 * Added ALibraryGeneralUnit library to the core.

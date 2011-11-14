@@ -1,11 +1,11 @@
 library AStructSystemsGuiDialogButton requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreStringConversion
 
-	/// @todo Should be a part of @struct ADialogButton, vJass bug.
+	/// \todo Should be a part of \ref ADialogButton, vJass bug.
 	function interface ADialogButtonAction takes ADialogButton dialogButton returns nothing
 
 	/**
 	* Dialog buttons will be added to their corresponding dialogs automatically when being created.
-	* @todo Add property "permanent" which indicates that the button is shown on each page of dialog.
+	* \todo Add property "permanent" which indicates that the button is shown on each page of dialog.
 	*/
 	struct ADialogButton
 		// construction members
@@ -51,9 +51,9 @@ library AStructSystemsGuiDialogButton requires optional ALibraryCoreDebugMisc, A
 		// members
 
 		/**
-		* @return Returns the button's index of dialog. Dialog button indices start at 0.
-		* @see ADialogButton.pageIndex
-		*/
+		 * \return Returns the button's index of dialog. Dialog button indices start at 0.
+		 * \sa ADialogButton.pageIndex()
+		 */
 		public method index takes nothing returns integer
 			return this.m_index
 		endmethod
@@ -72,18 +72,18 @@ library AStructSystemsGuiDialogButton requires optional ALibraryCoreDebugMisc, A
 		endmethod
 
 		/**
-		* @return Returns the button's page and not global index. Dialog button page indices start at 0.
-		* @see ADialogButton.index
-		*/
+		 * \return Returns the button's page and not global index. Dialog button page indices start at 0.
+		 * \sa ADialogButton.index()
+		 */
 		public method pageIndex takes nothing returns integer
 			return ModuloInteger(this.m_index, ADialog.maxPageButtons)
 		endmethod
 
 		/**
-		* Usually you do not need this method. It is used by @struct ADialog.
-		* Hightlights shortcuts of dialog buttons white (ffffff) since text normally is
-		* coloured yellow.
-		*/
+		 * Usually you do not need this method. It is used by \ref ADialog.
+		 * Hightlights shortcuts of dialog buttons white (ffffff) since text normally is
+		 * coloured yellow.
+		 */
 		public method addButton takes nothing returns nothing
 			if (not this.m_isQuitButton) then
 				set this.m_button = DialogAddButton(this.m_dialog.dialog.evaluate(), HighlightShortcut(this.m_text, this.m_shortcut, "ffffffff"),  this.m_shortcut)

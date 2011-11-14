@@ -7,131 +7,257 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	function interface AInfoAction takes AInfo info returns nothing
 
 	/**
-	 * Members of talks are called informations or infos. An info is a single object which informs
-	 * the user about something like new quests or important things which happened.
-	 * Infos can have their own condition, so player do not always get access to them.
-	 * This allows the creator to write nice multiple choice dialogs for different classes or players.
-	 * Additionally you're able to make infos permanent, so player can always use or get them if the condition is true.
-	 * Since there probably will be some longer speeches of an information they're skipable by pressing a specific key.
-	 * This must be explicit enabled when calling the struct initializer (\ref thistype.init()).
+	 * Members of talks are called informations or just infos.
+	 * Each info can be imagined like a choice for the character's owner displayed in the talk's dialog.
+	 * Informations can have conditions (\ref AInfoCondition) and actions (\ref AInfoAction) just like triggers.
+	 * If their condition returns false they won't be shown to the user.
+	 * If they are chosen or run automatically (important infos) by or for the user their action is called.
+	 * Permanent infos will be checked each time when displayed and shown if their condition returns true.
+	 * Otherwise (if not permanent) infos which were chosen one time won't be displayed anymore even if their condition would return true.
+	 * This behaviour is implemented since most times it will be useful to offer infos only one time to any character's owner.
+	 * Important infos aren't displayed as choice. If their condition returns true their action is run immediately when they're going to be displayed.
+	 * Use \ref speech() or \ref speech2() to provide talks in info actions.
+	 * \ref initSpeechSkip() can be used to provide skipable speeches.
+	 * \sa ATalk
+	 * \internal Don't move around any info's since they are refered by their indices!
 	 */
 	struct AInfo
-		// static construction members
-		public static boolean m_thirdPersonCamera /// Do not use.
-		public static integer m_skipKey /// Do not use.
-		public static real m_skipCheckRate /// Do not use.
-		public static string m_speechAnimation /// Do not use.
-		public static string m_listenAnimation /// Do not use.
 		// static members
 		private static trigger m_skipTrigger
-		public static boolean array m_playerHasSkipped[12] /// @todo bj_MAX_PLAYERS Do not use.
-		// construction members
-		private ATalk m_talk
+		public static boolean array m_playerHasSkipped[12] /// \todo bj_MAX_PLAYERS Do not use.
+		// dynamic members
 		private boolean m_permanent
 		private boolean m_important
 		private AInfoCondition m_condition
 		private AInfoAction m_action
 		private string m_description
+		// construction members
+		private ATalk m_talk
 		// members
 		private ADialogButton m_dialogButton
-		private integer m_talkIndex
-		private boolean array m_hasBeenShownToCharacter[12] /// @todo bj_MAX_PLAYERS
+		private integer m_talkIndex // store index for faster removal
+		private boolean array m_hasBeenShownToCharacter[12] /// \todo bj_MAX_PLAYERS
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AInfo\"")
 
-		// construction members
+		// dynamic members
 
-		public method talk takes nothing returns ATalk
-			return this.m_talk
+		/**
+		 * Permanent infos won't be hidden if they were displayed already to the character's owner.
+		 * \sa permanent()
+		 */
+		public method setPermanent takes boolean permanent returns nothing
+			set this.m_permanent = permanent
 		endmethod
 
+		/**
+		 * \sa setPermanent()
+		 */
 		public method permanent takes nothing returns boolean
 			return this.m_permanent
 		endmethod
 
+		/**
+		 * Important infos won't be displayed as \ref button in the talk's \ref dialog rather than run immediately when \ref show() is called.
+		 * Therefore you should check important infos seperately when showing multiple infos.
+		 * \sa important()
+		 */
+		public method setImportant takes boolean important returns nothing
+			set this.m_important = important
+		endmethod
+
+		/**
+		 * \sa setImportant()
+		 */
 		public method important takes nothing returns boolean
 			return this.m_important
 		endmethod
 
+		/**
+		 * An info's condition is evaluated whenever it should be displayed using \ref show().
+		 * \sa condition()
+		 */
+		public method setCondition takes AInfoCondition cond returns nothing
+			set this.m_condition = cond
+		endmethod
+
+		/**
+		 * \sa setCondition()
+		 */
 		public method condition takes nothing returns AInfoCondition
 			return this.m_condition
 		endmethod
 
+		/**
+		 * An info's action is executed whenever it should be run using \ref show() or \ref run() (without any checks).
+		 */
+		public method setAction takes AInfoAction action returns nothing
+			set this.m_action = action
+		endmethod
+
+		/**
+		 * \sa setAction()
+		 */
 		public method action takes nothing returns AInfoAction
 			return this.m_action
 		endmethod
 
+		/**
+		 * An info's description is displayed as \ref button text whenever the info is shown in a \ref dialog.
+		 * \sa description()
+		 */
+		public method setDescription takes string description returns nothing
+			set this.m_description = description
+		endmethod
+
+		/**
+		 * \sa setDescription()
+		 */
 		public method description takes nothing returns string
 			return this.m_description
 		endmethod
 
+		// construction members
+
+		/**
+		 * \return Returns the info's corresponding talk which is defined on its construction.
+		 */
+		public method talk takes nothing returns ATalk
+			return this.m_talk
+		endmethod
+
 		// members
 
+		/**
+		 * \return Returns true if the info is shown as \ref button in the talk's dialog.
+		 * \sa dialogButtonIndex()
+		 * \sa show()
+		 */
 		public method isShown takes nothing returns boolean
 			return this.m_dialogButton != 0
 		endmethod
 
+		/**
+		 * \return Returns the corresponding index of the info's \ref button. Returns -1 if the button isn't shown.
+		 * \sa isShown()
+		 * \sa show()
+		 */
 		public method dialogButtonIndex takes nothing returns integer
+			if (not this.isShown()) then
+				return -1
+			endif
 			return this.m_dialogButton.index()
 		endmethod
 
-		public method hasBeenShownToCharacter takes integer playerId returns boolean
-			return this.m_hasBeenShownToCharacter[playerId]
+		/**
+		 * \return Returns true if the info has been shown to the current character in talk.
+		 * \sa hasBeenShownToCharacter()
+		 * \sa hasBeenShownToPlayer()
+		 */
+		public method hasBeenShown takes nothing returns boolean
+			if (this.talk().isClosed()) then
+				return false
+			endif
+			return this.hasBeenShownToCharacter(this.talk().character())
+		endmethod
+
+		/**
+		 * \return Returns true if the info has been shown to \p character.
+		 * \sa hasBeenShown()
+		 * \sa hasBeenShownToPlayer()
+		 */
+		public method hasBeenShownToCharacter takes ACharacter character returns boolean
+			return this.m_hasBeenShownToCharacter[character.userId()]
+		endmethod
+
+		/**
+		 * \return Returns true if the info has been shown to \p whichPlayer.
+		 * \sa hasBeenShown()
+		 * \sa hasBeenShownToCharacter()
+		 */
+		public method hasBeenShownToPlayer takes player whichPlayer returns boolean
+			return this.m_hasBeenShownToCharacter[GetPlayerId(whichPlayer)]
+		endmethod
+
+		/**
+		 * The info's index in its corresponding talk info container.
+		 * \sa talk()
+		 */
+		public method index takes nothing returns integer
+			return this.m_talkIndex
 		endmethod
 
 		// methods
 
+		/**
+		 * Calls the info's action via .execute().
+		 * Afterwards it will be registered as shown for the corresponding player.
+		 * \sa action()
+		 * \sa hasBeenShown()
+		 * \sa show()
+		 */
 		public method run takes nothing returns nothing
-			local unit self = this.m_talk.character().unit()
-			local player user = GetOwningPlayer(self)
-			set this.m_hasBeenShownToCharacter[GetPlayerId(user)] = true
-			call this.m_action.execute(this)
-			set self = null
-			set user = null
+			set this.m_hasBeenShownToCharacter[GetPlayerId(GetOwningPlayer(this.talk().character().unit()))] = true
+			call this.action().execute(this)
 		endmethod
 
 		private static method dialogButtonActionRunInfo takes ADialogButton dialogButton returns nothing
 			local ATalk talk = ACharacter.playerCharacter(dialogButton.dialog().player()).talk()
 			local thistype info = talk.getInfoByDialogButtonIndex(dialogButton.index())
-			call talk.clear()
+			call talk.clear() // NOTE necessary that all infos will return false for isShown()!
 			call info.run()
 		endmethod
 
+		/**
+		 * Shows the information by detecting if it's important, permanent and if it has been shown already.
+		 * \return Returns true if the info's action is run or it's displayed as \ref button. Otherwise it returns false.
+		 * \note As this only adds the button to the corresponding player's dialog you still have to show the dialog. This can be done by calling \ref ATalk.show(). Besides, there are some convenient functions such as \ref ATalk.showRange() which do call some info's show methods as well as \ref ATalk.show().
+		 * \note Since the info's action is executed this won't necessarily return true after the info's action has finished.
+		 * \sa hide()
+		 * \sa run()
+		 */
 		public method show takes nothing returns boolean
-			local unit self = this.m_talk.character().unit()
-			local player user = this.m_talk.character().player()
 			local boolean result = false
-			if (this.m_permanent or not this.m_hasBeenShownToCharacter[GetPlayerId(user)]) then
-				if (this.m_important) then
-					if (this.m_condition == 0 or this.m_condition.evaluate(this)) then
+			if (this.permanent() or not this.hasBeenShown()) then
+				if (this.important()) then
+					if (this.condition() == 0 or this.condition().evaluate(this)) then
 						set result = true
 						call this.run()
 					endif
 				else
-					if (this.m_condition == 0 or this.m_condition.evaluate(this)) then
+					if (this.condition() == 0 or this.condition().evaluate(this)) then
 						set result = true
-						set this.m_dialogButton = AGui.playerGui(user).dialog().addDialogButtonIndex(this.m_description, thistype.dialogButtonActionRunInfo)
+						set this.m_dialogButton = AGui.playerGui(this.talk().character().player()).dialog().addDialogButtonIndex(this.description(), thistype.dialogButtonActionRunInfo)
 					endif
 				endif
 			endif
-			set self = null
-			set user = null
 			return result
 		endmethod
 
+		/**
+		 * \todo This method is intended to hide the displayed \ref button but this cannot be done with any native function.
+		 * \sa show()
+		 */
 		public method hide takes nothing returns nothing
+			// NOTE we cannot remove dialog buttons
 			set this.m_dialogButton = 0
 		endmethod
 
+		/**
+		 * \param talk The info's corresponding talk to which it is added on construction. Use \ref index() to get its assigned index.
+		 * \param description This string is displayed as button text whenenver the info is shown in a \ref dialog.
+		 * \note All properties except \p talk can be changed after construction.
+		 */
 		public static method create takes ATalk talk, boolean permanent, boolean important, AInfoCondition condition, AInfoAction action, string description returns thistype
 			local thistype this = thistype.allocate()
-			// construction members
-			set this.m_talk = talk
+			// dynamic members
 			set this.m_permanent = permanent
 			set this.m_important = important
 			set this.m_condition = condition
 			set this.m_action = action
 			set this.m_description = description
+			// construction members
+			set this.m_talk = talk
 			// members
 			set this.m_dialogButton = 0
 			set this.m_talkIndex = talk.addInfoInstance(this)
@@ -141,68 +267,71 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		public method onDestroy takes nothing returns nothing
 			call this.m_talk.removeInfoInstanceByIndex(this.m_talkIndex)
 		endmethod
-
-		private static method triggerConditionSkip takes nothing returns boolean
-			local player triggerPlayer = GetTriggerPlayer()
-			local boolean result = ACharacter.playerCharacter(triggerPlayer).talk() != 0 and not thistype.m_playerHasSkipped[GetPlayerId(triggerPlayer)]
-			set triggerPlayer = null
-			return result
-		endmethod
-
-		// skipping actions are handled in speech function itself
-		private static method triggerActionSkip takes nothing returns nothing
-			local player triggerPlayer = GetTriggerPlayer()
-			set thistype.m_playerHasSkipped[GetPlayerId(triggerPlayer)] = true
-			set triggerPlayer = null
-		endmethod
-
-		private static method createSkipTrigger takes nothing returns nothing
-			local integer i
-			local player user
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
-			set thistype.m_skipTrigger = CreateTrigger()
-			set i = 0
-			loop
-				exitwhen (i == bj_MAX_PLAYERS)
-				set user = Player(i)
-				if (IsPlayerPlayingUser(user)) then
-					set triggerEvent = TriggerRegisterKeyEventForPlayer(user, thistype.m_skipTrigger, thistype.m_skipKey, true)
-					set triggerEvent = null
-				endif
-				set user = null
-				set i = i + 1
-			endloop
-			set conditionFunction = Condition(function thistype.triggerConditionSkip)
-			set triggerCondition = TriggerAddCondition(thistype.m_skipTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(thistype.m_skipTrigger, function thistype.triggerActionSkip)
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
-		endmethod
-
-		public static method init takes integer skipKey, real skipCheckRate, string speechAnimation, string listenAnimation returns nothing
-			// static construction members
-			set thistype.m_skipKey = skipKey
-			set thistype.m_skipCheckRate = skipCheckRate
-			if (skipKey != -1) then
-				call thistype.createSkipTrigger()
-			endif
-			set thistype.m_speechAnimation = speechAnimation
-			set thistype.m_listenAnimation = listenAnimation
-		endmethod
-
-		public static method cleanUp takes nothing returns nothing
-			call DestroyTrigger(thistype.m_skipTrigger)
-			set thistype.m_skipTrigger = null
-		endmethod
 	endstruct
 
+	globals
+		private integer skipKey
+		private real skipCheckInterval
+		private boolean array playerHasSkipped[12] /// \todo bj_MAX_PLAYERS, vJass bug.
+		private trigger skipTrigger = null
+	endglobals
+
+	private function triggerConditionSkip takes nothing returns boolean
+		return ACharacter.playerCharacter(GetTriggerPlayer()).talk() != 0 and not playerHasSkipped[GetPlayerId(GetTriggerPlayer())]
+	endfunction
+
+	// skipping actions are handled in speech function itself
+	private function triggerActionSkip takes nothing returns nothing
+		set playerHasSkipped[GetPlayerId(GetTriggerPlayer())] = true
+	endfunction
+
 	/**
-	* Methods are often called in their own threads by using .execute automatically -> TriggerSleepAction problem.
-	*/
+	 * Call this function before using \ref speech() to provide skipable talks.
+	 * Whenenver the talk's listening player presses \p key one single \ref speech() call will be skipped.
+	 * As functions cannot be interrupted immediately it needs \p checkInterval for a periodic time interval whenever it's checked if the player has skipped the speech.
+	 * \sa speech()
+	 * \sa speech2()
+	 * \sa ATalk
+	 * \sa AInfo
+	 */
+	function initSpeechSkip takes integer key, real checkInterval returns nothing
+		local integer i
+		if (not KeyIsValid(key)) then
+			debug call PrintFunctionError("initSpeechSkip", "Invalid key " + I2S(key))
+			set key = AKeyEscape
+		endif
+		set skipKey = key
+		set skipCheckInterval = checkInterval
+		if (skipTrigger != null) then
+			return
+		endif
+		set skipTrigger = CreateTrigger()
+		set i = 0
+		loop
+			exitwhen (i == bj_MAX_PLAYERS)
+			set playerHasSkipped[i] = false
+			if (IsPlayerPlayingUser(Player(i))) then
+				call TriggerRegisterKeyEventForPlayer(Player(i), skipTrigger, key, true)
+			endif
+			set i = i + 1
+		endloop
+		call TriggerAddCondition(skipTrigger, Condition(function triggerConditionSkip))
+		call TriggerAddAction(skipTrigger, function triggerActionSkip)
+	endfunction
+
+	/**
+	 * Shows a single speech from whether the character's unit or the talk's unit (NPC).
+	 * If third person system is enabled (\ref ATalk.useThirdPerson()) the camera will target the current spokesperson.
+	 * \param toCharacter If this value is true the NPC is the spokesperson. Otherwise the character is the spokesperson.
+	 * \param text The text which is displayed as cinematic transmission. The spokesperson's name is shown in front of the text, as well.
+	 * \param usedSound If this value is null the speech will take \ref bj_NOTHING_SOUND_DURATION. Otherwise the sound's duration is detected automatically.
+	 * \note The whole speech is visible and audible for the character's owner only!
+	 * \note If the character's talk log is enabled this function will add the corresponding log entry.
+	 * \note Methods are often called in their own threads by using .execute automatically -> \ref TriggerSleepAction() problem. Therefore this is provieded as function not as method.
+	 * \sa initSpeechSkip()
+	 * \sa speech2()
+	 * \sa ATalkLog
+	 */
 	function speech takes AInfo info, boolean toCharacter, string text, sound usedSound returns nothing
 		local real duration
 		local player user = info.talk().character().player()
@@ -222,24 +351,10 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		endif
 		if (usedSound != null) then
 			set duration = GetSoundDurationBJ(usedSound)
+			call PlaySoundForPlayer(user, usedSound)
 		else
 			set duration = bj_NOTHING_SOUND_DURATION
 		endif
-		if (AInfo.m_speechAnimation != null) then
-			call SetUnitAnimation(speaker, AInfo.m_speechAnimation)
-		endif
-		if (AInfo.m_listenAnimation != null) then
-			call SetUnitAnimation(listener, AInfo.m_listenAnimation)
-		endif
-		if (usedSound != null) then
-			call PlaySoundForPlayer(user, usedSound)
-		endif
-		/*
-		call CameraSetupApplyForPlayer(false, AInfo.cameraSetup, user, 0.0)
-		call SetCameraFieldForPlayer(user, CAMERA_FIELD_ROTATION, GetUnitFacing(speaker) - 180.0, 0.0)
-		call SetCameraFieldForPlayer(user, CAMERA_FIELD_ZOFFSET, GetUnitZ(speaker) + 128.0, 0.0)
-		call SetCameraTargetControllerNoZForPlayer(user, speaker, 0.0, 0.0, false)
-		*/
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamAoa()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamRot()
@@ -249,28 +364,26 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		if (info.talk().character().talkLog() != 0) then
 			call info.talk().character().talkLog().addSpeech(info, toCharacter, text, usedSound)
 		endif
-		if (AInfo.m_skipKey == -1) then
+		if (skipTrigger == null) then
 			call TriggerSleepAction(duration)
 		else
-			set AInfo.m_playerHasSkipped[GetPlayerId(user)] = false
+			set playerHasSkipped[GetPlayerId(user)] = false
 			loop
 				exitwhen (duration <= 0.0)
-				if (AInfo.m_playerHasSkipped[GetPlayerId(user)]) then
+				if (playerHasSkipped[GetPlayerId(user)]) then
 					//if (AInfo.skipKey != KEY_ESCAPE) then
 						//call ClearScreenMessagesForPlayer(user) /// @todo Does not do anything.
 					//endif
-					set AInfo.m_playerHasSkipped[GetPlayerId(user)] = false
+					set playerHasSkipped[GetPlayerId(user)] = false
 					call StopSound(usedSound, false, false) // stop sound since speech could have been skipped by player
 					call EndCinematicSceneForPlayer(user)
 					exitwhen (true)
 				endif
-				call TriggerSleepAction(AInfo.m_skipCheckRate)
-				set duration = duration - AInfo.m_skipCheckRate
+				call TriggerSleepAction(skipCheckInterval)
+				set duration = duration - skipCheckInterval
 			endloop
 		endif
 		call waitForVideo(1.0) // do not show any speeches during video
-		call ResetUnitAnimation(speaker)
-		call ResetUnitAnimation(listener)
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
 		endif
@@ -280,6 +393,11 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		set speakerOwner = null
 	endfunction
 
+	/**
+	 * This version uses a sound file path instead of a sound handle and assigns the sound's position to the spokesperson's position.
+	 * \sa initSpeechSkip()
+	 * \sa speech()
+	 */
 	function speech2 takes AInfo info, boolean toCharacter, string text, string soundFilePath returns nothing
 		local sound whichSound = CreateSound(soundFilePath, false, false, true, 12700, 12700, "")
 		if (toCharacter) then

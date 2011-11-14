@@ -10,6 +10,7 @@
 * setlevel - Sets level for selected unit of cheating player.
 * kill - Kills selected units of cheating player.
 * copy - Copies selected units of cheating player.
+* remove - Removes selected units of cheating player.
 * giveall - Resets hit points, mana and all ability cooldowns of selected unit of cheating player.
 * damage - Damages selected unit.
 * xp - Adds experience to selected hero or shows experience information about selected unit.
@@ -46,6 +47,7 @@ static if (DEBUG_MODE) then
 		call Print("setlevel")
 		call Print("kill")
 		call Print("copy")
+		call Print("remove")
 		call Print("giveall")
 		call Print("damage <damage>")
 		call Print("xp <experience>")
@@ -93,10 +95,10 @@ endif
 
 	private function playerState takes string playerStateName, player whichPlayer, integer amount, playerstate whichPlayerState returns nothing
 		if (amount == -1) then
-			debug call Print(IntegerArg(StringArg(tr("You have %i %s."), playerStateName), GetPlayerState(whichPlayer, whichPlayerState)))
+			debug call Print(Format(tr(A_TEXT_PLAYER_STATE_AMOUNT)).s(playerStateName).i(GetPlayerState(whichPlayer, whichPlayerState)).result())
 		else
 			call AdjustPlayerStateBJ(amount, whichPlayer, whichPlayerState)
-			debug call Print(StringArg(IntegerArg(tr("Added %i %s."), amount), playerStateName))
+			debug call Print(Format(tr(A_TEXT_PLAYER_STATE_ADDED)).i(amount).s(playerStateName).result())
 		endif
 	endfunction
 
@@ -108,7 +110,7 @@ endif
 		else
 			set amount = S2I(amountString)
 		endif
-		call playerState(tr("gold"), GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_GOLD)
+		debug call playerState(A_TEXT_PLAYER_STATE_GOLD, GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_GOLD)
 	endfunction
 
 	private function lumber takes ACheat cheat returns nothing
@@ -119,7 +121,7 @@ endif
 		else
 			set amount = S2I(amountString)
 		endif
-		call playerState(tr("lumber"), GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_LUMBER)
+		debug call playerState(A_TEXT_PLAYER_STATE_LUMBER, GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_LUMBER)
 	endfunction
 
 	private function foodcap takes ACheat cheat returns nothing
@@ -130,7 +132,7 @@ endif
 		else
 			set amount = S2I(amountString)
 		endif
-		call playerState(tr("food capacity"), GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_FOOD_CAP)
+		debug call playerState(A_TEXT_PLAYER_STATE_FOOD_CAP, GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_FOOD_CAP)
 	endfunction
 
 	/// @todo Add some information.
@@ -139,21 +141,21 @@ endif
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(triggerPlayer)
 		if (selectedUnit != null) then
 static if (DEBUG_MODE) then
-			call Print(StringArg(tr("Name: %s"), GetUnitName(selectedUnit)))
-			call Print(RealArg(RealArg(tr("Position: (%r | %r)"), GetUnitX(selectedUnit)), GetUnitY(selectedUnit)))
-			call Print(IntegerArg(tr("Level: %i"), GetUnitLevel(selectedUnit)))
-			call Print(RealArg(tr("Acquire Range: %r"), GetUnitAcquireRange(selectedUnit)))
-			call Print(IntegerArg(tr("Current Order: %i"), GetUnitCurrentOrder(selectedUnit)))
+			call Print(Format(A_TEXT_UNIT_NAME).s(GetUnitName(selectedUnit)).result())
+			call Print(Format(A_TEXT_UNIT_POSITION).r(GetUnitX(selectedUnit)).r(GetUnitY(selectedUnit)).result())
+			call Print(Format(A_TEXT_UNIT_LEVEL).i(GetUnitLevel(selectedUnit)).result())
+			call Print(Format(A_TEXT_UNIT_ACQUIRE_RANGE).r(GetUnitAcquireRange(selectedUnit)).result())
+			call Print(Format(A_TEXT_UNIT_CURRENT_ORDER).i(GetUnitCurrentOrder(selectedUnit)).result())
 endif
 			if (IsUnitType(selectedUnit, UNIT_TYPE_HERO)) then
 static if (DEBUG_MODE) then
-				call Print(tr("--------- Hero Data ---------"))
-				call Print(IntegerArg(tr("Level: %i"), GetHeroLevel(selectedUnit)))
-				call Print(IntegerArg(tr("Experience: %i"), GetHeroXP(selectedUnit)))
-				call Print(IntegerArg(tr("Skill points: %i"), GetHeroSkillPoints(selectedUnit)))
-				call Print(IntegerArg(IntegerArg(tr("Strength: %i + %i"), GetHeroStr(selectedUnit, false)), GetHeroStrBonus(selectedUnit)))
-				call Print(IntegerArg(IntegerArg(tr("Agility: %i + %i"), GetHeroAgi(selectedUnit, false)), GetHeroAgiBonus(selectedUnit)))
-				call Print(IntegerArg(IntegerArg(tr("Intelligence: %i + %i"), GetHeroInt(selectedUnit, false)), GetHeroIntBonus(selectedUnit)))
+				call Print(A_TEXT_HERO_DATA)
+				call Print(Format(A_TEXT_HERO_LEVEL).i(GetHeroLevel(selectedUnit)).result())
+				call Print(Format(A_TEXT_HERO_XP).i(GetHeroXP(selectedUnit)).result())
+				call Print(Format(A_TEXT_HERO_SKILL_POINTS).i(GetHeroSkillPoints(selectedUnit)).result())
+				call Print(Format(A_TEXT_HERO_STRENGTH).i(GetHeroStr(selectedUnit, false)).i(GetHeroStrBonus(selectedUnit)).result())
+				call Print(Format(A_TEXT_HERO_AGILITY).i(GetHeroAgi(selectedUnit, false)).i(GetHeroAgiBonus(selectedUnit)).result())
+				call Print(Format(A_TEXT_HERO_INTELLIGENCE).i(GetHeroInt(selectedUnit, false)).i(GetHeroIntBonus(selectedUnit)).result())
 endif
 			endif
 			set selectedUnit = null
@@ -178,9 +180,9 @@ endif
 				if (suspend) then
 					call SuspendHeroXP(hero, true)
 				endif
-				debug call Print(IntegerArg(tr("Set level to %i."), level))
+				debug call Print(Format(A_TEXT_SET_LEVEL).i(level).result())
 			debug else
-				debug call Print(tr("Selected unit is not a hero."))
+				debug call Print(A_TEXT_NO_HERO)
 			endif
 			set hero = null
 		endif
@@ -188,7 +190,7 @@ endif
 	endfunction
 
 	private function KillUnitFunction takes nothing returns nothing
-		debug call Print(Format(tr("Killing unit \"%1%\".")).u(GetEnumUnit()).result())
+		debug call Print(Format(A_TEXT_KILL_UNIT).u(GetEnumUnit()).result())
 		call KillUnit(GetEnumUnit())
 	endfunction
 
@@ -203,7 +205,7 @@ endif
 	endfunction
 
 	private function CopyUnitFunction takes nothing returns nothing
-		debug call Print(Format(tr("Copying unit \"%1%\".")).u(GetEnumUnit()).result())
+		debug call Print(Format(A_TEXT_COPY_UNIT).u(GetEnumUnit()).result())
 		call CopyUnit(GetEnumUnit(), GetUnitX(GetEnumUnit()), GetUnitY(GetEnumUnit()), GetUnitFacing(GetEnumUnit()), bj_UNIT_STATE_METHOD_ABSOLUTE)
 	endfunction
 
@@ -211,6 +213,20 @@ endif
 		local player triggerPlayer = GetTriggerPlayer()
 		local group selectedUnits = GetUnitsSelectedAll(triggerPlayer)
 		call ForGroup(selectedUnits, function CopyUnitFunction)
+		call DestroyGroup(selectedUnits)
+		set selectedUnits = null
+		set triggerPlayer = null
+	endfunction
+
+	private function RemoveUnitFunction takes nothing returns nothing
+		debug call Print(Format(A_TEXT_REMOVE_UNIT).u(GetEnumUnit()).result())
+		call RemoveUnit(GetEnumUnit())
+	endfunction
+
+	private function remove takes ACheat cheat returns nothing
+		local player triggerPlayer = GetTriggerPlayer()
+		local group selectedUnits = GetUnitsSelectedAll(triggerPlayer)
+		call ForGroup(selectedUnits, function RemoveUnitFunction)
 		call DestroyGroup(selectedUnits)
 		set selectedUnits = null
 		set triggerPlayer = null
@@ -261,15 +277,15 @@ endif
 					if (suspend) then
 						call SuspendHeroXP(selectedUnit, true)
 					endif
-					debug call Print(IntegerArg(tr("Added %i experience."), experience))
+					debug call Print(Format(A_TEXT_ADDED_XP).i(experience).result())
 				else
-					debug call Print(tr("Selected unit is not a hero."))
+					debug call Print(A_TEXT_NO_HERO)
 				endif
 			elseif (IsUnitType(selectedUnit, UNIT_TYPE_HERO)) then
-				debug call Print(IntegerArg(IntegerArg(tr("%i/%i experience."), GetHeroXP(selectedUnit)), GetHeroMaxXP(selectedUnit)))
-				debug call Print(IntegerArg(tr("%i unit experience."), GetUnitXP(selectedUnit)))
+				debug call Print(Format(A_TEXT_HERO_XP_PART).i(GetHeroXP(selectedUnit)).i(GetHeroMaxXP(selectedUnit)).result())
+				debug call Print(Format(A_TEXT_UNIT_XP).i(GetUnitXP(selectedUnit)).result())
 			else
-				debug call Print(IntegerArg(tr("%i unit experience."), GetUnitXP(selectedUnit)))
+				debug call Print(Format(A_TEXT_UNIT_XP).i(GetUnitXP(selectedUnit)).result())
 			endif
 			set selectedUnit = null
 		endif
@@ -281,7 +297,7 @@ endif
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(triggerPlayer)
 		if (selectedUnit != null) then
 			call SetUnitPathing(selectedUnit, true)
-			debug call Print(tr("Enabled unit pathing."))
+			debug call Print(A_TEXT_UNIT_PATHING_ENABLE)
 			set selectedUnit = null
 		endif
 		set triggerPlayer = null
@@ -292,7 +308,7 @@ endif
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(triggerPlayer)
 		if (selectedUnit != null) then
 			call SetUnitPathing(selectedUnit, false)
-			debug call Print(tr("Disabled unit pathing."))
+			debug call Print(A_TEXT_UNIT_PATHING_DISABLE)
 			set selectedUnit = null
 		endif
 		set triggerPlayer = null
@@ -304,16 +320,16 @@ endif
 		if (selectedUnit != null) then
 			set orderString = cheat.argument()
 			if (orderString == null) then
-				debug call Print(StringArg(StringArg(tr("%s's order: %s"), GetUnitName(selectedUnit)), OrderId2String(GetUnitCurrentOrder(selectedUnit))))
+				debug call Print(Format(A_TEXT_ORDER).s(GetUnitName(selectedUnit)).s(OrderId2String(GetUnitCurrentOrder(selectedUnit))).result())
 			elseif (IsStringAlphabetical(orderString)) then
-				debug call Print(StringArg(StringArg(tr("Order %s: %s"), GetUnitName(selectedUnit)), orderString))
+				debug call Print(Format(A_TEXT_ORDER).s(GetUnitName(selectedUnit)).s(orderString).result())
 				call IssueImmediateOrder(selectedUnit, orderString)
 			else
-				debug call Print(StringArg(StringArg(tr("Order %s: %s"), GetUnitName(selectedUnit)), OrderId2String(S2I(orderString))))
+				debug call Print(Format(A_TEXT_ORDER).s(GetUnitName(selectedUnit)).s(OrderId2String(GetUnitCurrentOrder(selectedUnit))).result())
 				call IssueImmediateOrderById(selectedUnit, S2I(orderString))
 			endif
 		else
-			debug call Print(tr("No unit is selected."))
+			debug call Print(A_TEXT_EMPTY_SELECTION)
 		endif
 	endfunction
 
@@ -324,17 +340,17 @@ endif
 		elseif (argument == "continue") then
 			call SuspendTimeOfDay(false)
 		else
-			debug call Print(StringArg(tr("Current time of day: %s"), GetTimeOfDayString()))
+			debug call Print(Format(A_TEXT_TIME_OF_DAY).s(GetTimeOfDayString()).result())
 		endif
 	endfunction
 
 	private function benchmarks takes ACheat cheat returns nothing
-		debug call Print(tr("Showing all benchmarks:"))
+		debug call Print(A_TEXT_SHOW_BENCHMARKS)
 		call ABenchmark.showBenchmarks()
 	endfunction
 
 	private function clearbenchmarks takes ACheat cheat returns nothing
-		debug call Print(tr("Clearing all benchmarks."))
+		debug call Print(A_TEXT_CLEAR_BENCHMARKS)
 		call ABenchmark.clearAll()
 	endfunction
 
@@ -342,13 +358,13 @@ endif
 static if (DEBUG_MODE) then
 		local string identifier = cheat.argument()
 		if (StringLength(identifier) == 0) then
-			call Print(tr("Enabling all identifiers."))
+			call Print(A_TEXT_ENABLE_IDENTIFIERS)
 			call EnableAllPrintIdentifiers()
 		elseif (IsPrintIdentifierDisabled(identifier)) then
-			call Print(StringArg(tr("Enabling identifier \"%s\"."), identifier))
+			call Print(Format(A_TEXT_ENABLE_IDENTIFIER).s(identifier).result())
 			call EnablePrintIdentifier(identifier)
 		else
-			call Print(StringArg(tr("Identifier \"%s\" is not disabled."), identifier))
+			call Print(Format(A_TEXT_ENABLE_IDENTIFIER_ERROR).s(identifier).result())
 		endif
 endif
 	endfunction
@@ -359,10 +375,10 @@ static if (DEBUG_MODE) then
 		if (StringLength(identifier) == 0) then
 			call PrintDisabledIdentifiers()
 		elseif (IsPrintIdentifierEnabled(identifier)) then
-			call Print(StringArg(tr("Disabling identifier \"%s\"."), identifier))
+			call Print(Format(A_TEXT_DISABLE_IDENTIFIER).s(identifier).result())
 			call DisablePrintIdentifier(identifier)
 		else
-			call Print(StringArg(tr("Identifier \"%s\" is not enabled."), identifier))
+			call Print(Format(A_TEXT_DISABLE_IDENTIFIER_ERROR).s(identifier).result())
 		endif
 endif
 	endfunction
@@ -430,6 +446,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("setlevel", false, setlevel)
 		call ACheat.create("kill", true, kill)
 		call ACheat.create("copy", true, copy)
+		call ACheat.create("remove", true, remove)
 		call ACheat.create("giveall", true, giveall)
 		call ACheat.create("damage", false, damage)
 		call ACheat.create("xp", false, xp)

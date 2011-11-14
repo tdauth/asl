@@ -39,7 +39,20 @@ globals
 	constant real A_MAX_COLLISION_SIZE = 500.0 // used by function GetUnitCollisionSize
 	constant integer A_MAX_COLLISION_SIZE_ITERATIONS = 10 // used by function GetUnitCollisionSize
 	constant integer A_SPELL_RESISTANCE_CREEP_LEVEL = 6 // used by function IsUnitSpellResistant
+	// used by function GetTimeString()
+	constant string A_TEXT_TIME_VALUE = tr("0%1%")
+	constant string A_TEXT_TIME_PAIR = GetLocalizedString("%1%:%2%")
+	// used by ATalk
+	constant string A_TEXT_EXIT = GetLocalizedString("Exit")
+	constant string A_TEXT_BACK = GetLocalizedString("Back")
+	constant string A_TEXT_TARGET_TALKS_ALREADY = GetLocalizedString("Target is already talking.")
+	// used by ADialog
+	constant string A_TEXT_DIALOG_BUTTON = GetLocalizedString("[%1%] %2%")
 endglobals
+
+If you're using debug mode and ASL's debug utilities (ASystemsDebug) you'll have to defined lots of cheat strings.
+For default English strings you can import a pre-defined file using:
+//! import "Systems/Debug/Text en.j"
 
 -- Trigger editor integration:
 Import the following files with their corresponding paths to enable various data types and functions in World Editor's trigger editor:

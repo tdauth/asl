@@ -1,15 +1,15 @@
 library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralVector, ALibraryCoreInterfaceCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceTextTag, ALibraryCoreInterfaceMisc, ALibraryCoreEnvironmentSound, ALibraryCoreMathsRect, AStructSystemsGuiGui, AStructSystemsGuiStyle
 
-	/// @todo Should be a static function interface of @struct AMainWindow, vJass bug.
+	/// \todo Should be a static function interface of \ref AMainWindow, vJass bug.
 	function interface AMainWindowOnShowCondition takes AMainWindow mainWindow returns boolean
 
-	/// @todo Should be a static function interface of @struct AMainWindow, vJass bug.
+	/// \todo Should be a static function interface of \ref AMainWindow, vJass bug.
 	function interface AMainWindowOnShowAction takes AMainWindow mainWindow returns nothing
 
-	/// @todo Should be a static function interface of @struct AMainWindow, vJass bug.
+	/// \todo Should be a static function interface of \ref AMainWindow, vJass bug.
 	function interface AMainWindowOnHideCondition takes AMainWindow mainWindow returns boolean
 
-	/// @todo Should be a static function interface of @struct AMainWindow, vJass bug.
+	/// \todo Should be a static function interface of \ref AMainWindow, vJass bug.
 	function interface AMainWindowOnHideAction takes AMainWindow mainWindow returns nothing
 
 	struct AMainWindow

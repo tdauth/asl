@@ -7,12 +7,9 @@ endif
 //! import "Systems/World/Import.j"
 
 /**
-* Requests all sub systems of the ASL.
-* Each system covers a specific range like character treatment or graphical user interfaces.
-* @see Asl, ACore
-* @if A_OBJECTS
-* @see AObjects
-* @endif
-*/
+ * Requests all sub systems of the ASL.
+ * Each system covers a specific range like character treatment or graphical user interfaces.
+ * \sa Asl, ACore
+ */
 library ASystems requires ASystemsCharacter, optional ASystemsDebug, ASystemsBonusMod, ASystemsGui, ASystemsWorld
 endlibrary

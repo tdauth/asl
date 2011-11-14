@@ -1,5 +1,15 @@
+2011-11-14 Tamino Dauth <tamino@cdauth.eu>
+* AInfo: hasBeenShownToCharacter() warning - parameter has been changed!
+
+2011-11-11 Tamino Dauth <tamino@cdauth.eu>
+* DONE: ATalk: Drop static initialization members -> make completely dynamic.
+* DONE: AInfo: Has to be revised, too!!!
+
+2011-11-09 Tamino Dauth <tamino@cdauth.eu>
+* A_MAP: Add range versions of remove().
+
 2011-11-06 Tamino Dauth <tamino@cdauth.eu>
- A_MAP: Should use more efficient storage so that the middle elements could be detected much faster.
+ A_MAP: Should use more efficient storage so that the middle elements could be detected much faster (at the moment they are detected by iterating all elements  - linear complexity).
 
 2011-11-05 Tamino Dauth <tamino@cdauth.eu>
 * Structures must accept JASS constants as maximum size so we can define maximum count of container instances for A_VECTOR, A_LIST, A_MAP and A_STACK!
@@ -8,7 +18,7 @@
 
 2011-11-04 Tamino Dauth <tamino@cdauth.eu>
 * A_MAP: Test new revisions!
-* Check out if "static if" influences on "//! import" statements.
+* DONE: Check out if "static if" influences on "//! import" statements.
 	runtextmacro is not called
 	import is called anyway!
 * Check jAPI and RtC support.
@@ -311,9 +321,7 @@ Tamino Dauth <tamino@cdauth.eu>
 * Character selection select action should be called (probably it is causing many bugs).
 * InsertLineBreaks is bugged! When it is debugged use it in Gui.showInfoDialog()!
 * Since there is gexxo's FirstOfGroupSave() function you have to replace all FirstOfGroup() calls which are used on groups which contain units which can be removed during the game.
-* Rename all model files into English.
 * DONE: Check size member of AContainer struct.
-* FIXED: Missing many grassland model files?!
 
 Notes:
 * When you use a talk button, the action of the button won't be runned and it does not wait for finishing the transmission.

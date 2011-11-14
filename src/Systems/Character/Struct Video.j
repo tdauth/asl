@@ -230,7 +230,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 	endstruct
 
-	/// @todo Should be a part of @struct AVideo, vJass bug.
+	/// \todo Should be a part of \ref AVideo, vJass bug.
 	function interface AVideoAction takes AVideo video returns nothing
 
 	/**
@@ -388,9 +388,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			/// @todo disable experience gain of all characters?
 			call thistype.savePlayerData()
 			set thistype.m_timeOfDay = GetTimeOfDay()
-			if (ATalk.initialized() and ATalk.disableEffectsInCinematicMode()) then
-				call ATalk.hideAllEffects()
-			endif
+			call ATalk.hideAllEffects()
 			call ClearSelection()
 			call ACharacter.setAllMovable(false)
 			call ACharacter.showAll(false)
@@ -429,9 +427,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call CinematicModeBJ(false, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> m_waitTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
 			//call CinematicModeExBJ(true, playersAll, 0.0)
 			set playersAll = null
-			if (ATalk.initialized() and ATalk.disableEffectsInCinematicMode()) then
-				call ATalk.showAllEffects()
-			endif
+			call ATalk.showAllEffects()
 			call ResetToGameCamera(0.0)
 			if (thistype.m_actor != 0) then
 				call thistype.m_actor.restore()

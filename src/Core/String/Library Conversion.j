@@ -192,14 +192,14 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 
 		return result
 	endfunction
-	
+
 	/**
-	* Converts specific number of seconds into a string with minutes and hours.
-	* Examples:
-	* 45 seconds - 45
-	* 120 seconds - 02:00
-	* 7200 seconds - 02:00:00
-	*/
+	 * Converts specific number of seconds into a string with minutes and hours.
+	 * Examples:
+	 * 45 seconds - 45
+	 * 120 seconds - 02:00
+	 * 7200 seconds - 02:00:00
+	 */
 	function GetTimeString takes integer seconds returns string
 		local integer minutes = seconds / 60
 		local integer hours = minutes / 60
@@ -210,23 +210,23 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 		if (seconds >= 10) then
 			set result = I2S(seconds)
 		else
-			set result = Format(tr("0%1%")).i(seconds).result()
+			set result = Format(tr(A_TEXT_TIME_VALUE)).i(seconds).result()
 		endif
 		if (minutes > 0 or hours > 0) then
 			if (minutes >= 10) then
 				set formatString = I2S(minutes)
 			else
-				set formatString = Format(tr("0%1%")).i(minutes).result()
+				set formatString = Format(tr(A_TEXT_TIME_VALUE)).i(minutes).result()
 			endif
-			call Format(tr("%1%:%2%")).s(formatString).s(result).result()
+			call Format(tr(A_TEXT_TIME_PAIR)).s(formatString).s(result).result()
 		endif
 		if (hours > 0) then
 			if (hours >= 10) then
 				set formatString = I2S(hours)
 			else
-				set formatString = Format(tr("0%1%")).i(hours).result()
+				set formatString = Format(tr(A_TEXT_TIME_VALUE)).i(hours).result()
 			endif
-			call Format(tr("%1%:%2%")).s(formatString).s(result).result()
+			call Format(tr(A_TEXT_TIME_PAIR)).s(formatString).s(result).result()
 		endif
 		return result
 	endfunction

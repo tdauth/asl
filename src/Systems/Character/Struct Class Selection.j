@@ -1,12 +1,12 @@
 library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreGeneralPlayer, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceMultiboard, AStructSystemsCharacterCharacter, AStructSystemsCharacterClass
 
-	/// @todo Should be part of @struct AClassSelection, vJass bug.
+	/// \todo Should be part of \ref AClassSelection, vJass bug.
 	function interface AClassSelectionSelectClassAction takes ACharacter character, AClass class, boolean last returns nothing
 
-	/// @todo Should be part of @struct AClassSelection, vJass bug.
+	/// \todo Should be part of \ref AClassSelection, vJass bug.
 	function interface AClassSelectionCharacterCreationAction takes AClassSelection classSelection, unit whichUnit returns ACharacter
 
-	/// @todo Should be part of @struct AClassSelection, vJass bug.
+	/// \todo Should be part of \ref AClassSelection, vJass bug.
 	function interface AClassSelectionStartGameAction takes nothing returns nothing
 
 	struct AClassSelection

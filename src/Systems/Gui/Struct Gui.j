@@ -1,25 +1,25 @@
 library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralVector, ALibraryCoreGeneralPlayer, AStructCoreInterfacePlayerSelection, ALibraryCoreInterfaceCamera, ALibraryCoreInterfaceMisc, ALibraryCoreStringConversion
 
-	/// @todo Should be a static member of @struct AGui, vJass bug.
+	/// \todo Should be a static member of \ref AGui, vJass bug.
 	/// This is the generic shortcut function interface.
 	/// @param id Id of the object which belongs to the function call.
 	function interface AGuiOnPressShortcutAction takes integer id returns nothing
 
-	/// @todo Should be a static member of @struct AGui, vJass bug.
+	/// \todo Should be a static member of \ref AGui, vJass bug.
 	/// If you want to use an explicit gui action use this.
 	function interface AGuiOnPressGuiShortcutAction takes AGui gui returns nothing
 
 	/**
-	* Represents the graphical user interface which can be used by all playing players.
-	* Each player can have exactly one GUI.
-	* A GUI contains main windows which are user-defined areas on the map. That's necessary because
-	* trackables, textes and images are map-placed objects and trackables aren't removable.
-	* When you destroy an instance all docked main windows will be destroy automatically.
-	* Besides user can access a single @struct ADialog instance by using method @method dialog.
-	* There also is a simple implemention of shortcuts by creating an unit with shortcut abilities.
-	* Unfortunately a unit can only have 12 different abilities so you can't use all ASCII keys.
-	* Maybe shortcut abilities will be added dynamically (by checking which shortcuts are really necessary) in future.
-	*/
+	 * Represents the graphical user interface which can be used by all playing players.
+	 * Each player can have exactly one GUI.
+	 * A GUI contains main windows which are user-defined areas on the map. That's necessary because
+	 * trackables, textes and images are map-placed objects and trackables aren't removable.
+	 * When you destroy an instance all docked main windows will be destroy automatically.
+	 * Besides user can access a single \ref ADialog instance by using method @method dialog.
+	 * There also is a simple implemention of shortcuts by creating an unit with shortcut abilities.
+	 * Unfortunately a unit can only have 12 different abilities so you can't use all ASCII keys.
+	 * Maybe shortcut abilities will be added dynamically (by checking which shortcuts are really necessary) in future.
+	 */
 	struct AGui
 		// static constant members
 		public static constant integer shortcutArrowUpDown = 0 //these are the special shortcuts
@@ -64,9 +64,9 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		// dynamic members
 
 		/**
-		* Each shortcut (including special shortcuts) can have its own action.
-		* Additionally you can add shortcuts to widgets that they'll get the widgets action automatically.
-		*/
+		 * Each shortcut (including special shortcuts) can have its own action.
+		 * Additionally you can add shortcuts to widgets that they'll get the widgets action automatically.
+		 */
 		public method setOnPressShortcutAction takes integer shortcut, AGuiOnPressShortcutAction onPressShortcutAction, integer id returns nothing
 			if ((shortcut >= 0) and (shortcut < thistype.m_maxSpecialShortcuts)) then
 				call this.createSpecialShortcutTrigger.evaluate(shortcut)
@@ -76,9 +76,9 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		endmethod
 
 		/**
-		* Convenience method.
-		* Assigns a function to a shortcut. The function gets the AGui instance as argument.
-		*/
+		 * Convenience method.
+		 * Assigns a function to a shortcut. The function gets the AGui instance as argument.
+		 */
 		public method setOnPressGuiShortcutAction takes integer shortcut, AGuiOnPressGuiShortcutAction onPressGuiShortcutAction returns nothing
 			call this.setOnPressShortcutAction(shortcut, onPressGuiShortcutAction, this)
 		endmethod
@@ -101,7 +101,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 
 		// convenience methods
 
-		/// @return Returns if a dialog or main window is shown to the user.
+		/// \return Returns if a dialog or main window is shown to the user.
 		public method isShown takes nothing returns boolean
 			return this.m_shownMainWindow != 0 or this.m_dialog.isDisplayed()
 		endmethod
@@ -161,7 +161,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 
 		/// Convenience method.
 		/// Shows a simple dialog with an OK button.
-		/// @param message Displayed message.
+		/// \param message Displayed message.
 		public method showInfoDialog takes string message returns nothing
 			call this.m_dialog.clear()
 			call this.m_dialog.setMessage(message)
@@ -172,7 +172,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		/**
 		* If you dock a main window it will be destroyed when the GUI will be destroyed.
 		* @return Container index.
-		* @todo Friend relation to @struct AMainWindow. In general you do not need to use this method.
+		* @todo Friend relation to \ref AMainWindow. In general you do not need to use this method.
 		*/
 		public method dockMainWindow takes AMainWindow mainWindow returns integer
 			call this.m_mainWindows.pushBack(mainWindow)
@@ -181,13 +181,13 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 
 		/**
 		* Undocks a main window from GUI. If a main window is undocked there won't be any relationships between it and the GUI anymore.
-		* @todo Friend relation to @struct AMainWindow. In general you do not need to use this method.
+		* @todo Friend relation to \ref AMainWindow. In general you do not need to use this method.
 		*/
 		public method undockMainWindowByIndex takes integer index returns nothing
 			call this.m_mainWindows.erase(index)
 		endmethod
 
-		/// @todo Friend relation to @struct AMainWindow, do not use!
+		/// @todo Friend relation to \ref AMainWindow, do not use!
 		public method hideShownMainWindowAndSetNew takes AMainWindow mainWindow returns nothing
 			if (this.m_shownMainWindow != 0) then
 				call this.m_shownMainWindow.hide.evaluate()
@@ -195,7 +195,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 			set this.m_shownMainWindow = mainWindow
 		endmethod
 
-		/// @todo Friend relation to @struct AMainWindow, do not use!
+		/// @todo Friend relation to \ref AMainWindow, do not use!
 		public method resetShownMainWindow takes nothing returns nothing
 			set this.m_shownMainWindow = 0
 		endmethod

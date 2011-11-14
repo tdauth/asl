@@ -156,7 +156,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		*/
 		public method addExtendedDialogButtonIndex takes string text, boolean isQuitButton, boolean doScoreScreen, ADialogButtonAction action returns ADialogButton
 			local integer shortcut = ModuloInteger(this.m_dialogButtons.size(), thistype.maxPageButtons) // faster than ADialog.pageIndex() + 1
-			return this.addExtendedDialogButton(Format(tr("[%1%] %2%")).i(shortcut).s(text).result(), '0' + shortcut, isQuitButton, doScoreScreen, action)
+			return this.addExtendedDialogButton(Format(A_TEXT_DIALOG_BUTTON).i(shortcut).s(text).result(), '0' + shortcut, isQuitButton, doScoreScreen, action)
 		endmethod
 
 		public method addDialogButton takes string text, integer shortcut, ADialogButtonAction action returns ADialogButton

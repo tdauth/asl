@@ -32,13 +32,20 @@ library AInterfaceCoreGeneralContainer
 		AIteratorInterface aIterator = 0
 	endglobals
 
-	/// There should not be any TriggerSleepAction call in foreach block.
+	/**
+	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
+	 * \sa foreach
+	 */
 	//! textmacro A_FOREACH takes CONTAINERVARIABLE
 		set aIterator = $CONTAINERVARIABLE$.begin()
 		loop
 			exitwhen (not aIterator.isValid())
 	//! endtextmacro
 
+	/**
+	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
+	 * \sa foreach
+	 */
 	//! textmacro A_FOREACH_2 takes VARIABLE, CONTAINERVARIABLE, ITERATORTYPE
 		set aIterator = $CONTAINERVARIABLE$.begin()
 		loop
@@ -46,20 +53,30 @@ library AInterfaceCoreGeneralContainer
 			set $VARIABLE$ = $CONTAINERVARIABLE$(aIterator).data()
 	//! endtextmacro
 
-	/// There should not be any TriggerSleepAction call in foreach block.
+	/**
+	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
+	 * \sa foreach
+	 */
 	//! textmacro A_FOREACH_END
 			call aIterator.next()
 		endloop
 		call aIterator.destroy()
 	//! endtextmacro
 
-	/// There should not be any TriggerSleepAction call in foreach block.
+	/**
+	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
+	 * \sa foreach
+	 */
 	//! textmacro A_REVERSE_FOREACH takes CONTAINERVARIABLE
 		set aIterator = $CONTAINERVARIABLE$.end()
 		loop
 			exitwhen (not aIterator.isValid())
 	//! endtextmacro
 
+	/**
+	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
+	 * \sa foreach
+	 */
 	//! textmacro A_REVERSE_FOREACH_2 takes VARIABLE, CONTAINERVARIABLE, ITERATORTYPE
 		set aIterator = $CONTAINERVARIABLE$.end()
 		loop
@@ -67,7 +84,10 @@ library AInterfaceCoreGeneralContainer
 			set $VARIABLE$ = $CONTAINERVARIABLE$(aIterator).data()
 	//! endtextmacro
 
-	/// There should not be any TriggerSleepAction call in foreach block.
+	/**
+	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
+	 * \sa foreach
+	 */
 	//! textmacro A_REVERSE_FOREACH_END
 			call aIterator.previous()
 		endloop
@@ -75,6 +95,7 @@ library AInterfaceCoreGeneralContainer
 	//! endtextmacro
 
 	/// Use this to clean up integer containers which store struct instances which has to be destroyed before removing them from container.
+	/// \sa foreach
 	//! textmacro A_DESTROY takes CONTAINERVARIABLE, MEMBERTYPE
 		loop
 			exitwhen ($CONTAINERVARIABLE$.empty())
