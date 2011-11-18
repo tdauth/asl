@@ -57,6 +57,10 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			return this.m_showEffect
 		endmethod
 
+		public method showDialog takes nothing returns boolean
+			return this.m_timerDialog != null
+		endmethod
+
 		public method setShowDialog takes boolean show returns nothing
 			if (show == this.showDialog()) then
 				return
@@ -68,10 +72,6 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 				call DestroyTimerDialog(this.m_timerDialog)
 				set this.m_timerDialog = null
 			endif
-		endmethod
-
-		public method showDialog takes nothing returns boolean
-			return this.m_timerDialog != null
 		endmethod
 
 		// methods

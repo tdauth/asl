@@ -1,4 +1,4 @@
-library AStructSystemsGuiFrameBar requires ALibraryCoreDebugMisc, AStructSystemsGuiWidget
+library AStructSystemsGuiFrameBar requires ALibraryCoreDebugMisc, AStructSystemsGuiImage, AStructSystemsGuiMainWindow
 
 	struct AFrameBar extends AImage
 		public static constant integer styleTop = 0

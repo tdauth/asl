@@ -462,21 +462,19 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_skipped = true
 			call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
+			call BJDebugMsg("Before on skip")
 			call this.onSkipAction.evaluate()
-			call this.stop.execute() // execute, since it uses TriggerSleepAction calls
+			call BJDebugMsg("After on skip")
+			call this.stop()
 		endmethod
 
 		/**
-		* Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
-		* You can overwrite this method in your custom derived structure to avoid this default behaviour.
-		* This method is called every time a player skips the video.
-		*/
-		public stub method onSkip takes integer skipablePlayers returns boolean
-			if (thistype.m_skippingPlayers >= skipablePlayers / thistype.m_divident) then
-				call this.skip()
-				return true
-			endif
-			return false
+		 * Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
+		 * You can overwrite this method in your custom derived structure to avoid this default behaviour.
+		 * This method is called every time a player skips the video.
+		 */
+		public stub method onSkipCondition takes integer skipablePlayers returns boolean
+			return thistype.m_skippingPlayers >= skipablePlayers / thistype.m_divident
 		endmethod
 
 		public static method create takes nothing returns thistype
@@ -514,7 +512,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set i = i + 1
 			endloop
 
-			return thistype.m_runningVideo.onSkip.evaluate(skipablePlayers)
+			if (thistype.m_runningVideo.onSkipCondition.evaluate(skipablePlayers)) then
+				call thistype.m_runningVideo.skip()
+				return true
+			endif
+			return false
 		endmethod
 
 		public static method transmissionFromUnitType takes integer unitType, player owner, string name, string text, sound playedSound returns nothing

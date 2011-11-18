@@ -1,5 +1,5 @@
 /// Do not use this library, it is unfinished!
-library AStructSystemsCharacterView requires AStructCoreGeneralHashTable, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreMathsUnit, AStructSystemsCharacterAbstractCharacterSystem
+library AStructSystemsCharacterView requires AStructCoreGeneralHashTable, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreMathsUnit, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter
 
 	struct AView extends AAbstractCharacterSystem
 

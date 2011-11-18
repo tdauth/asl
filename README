@@ -16,9 +16,10 @@ Besides some files can be excluded easily by unsetting various global constants 
 
 Installation/Usage:
 
--- IMPORTANT NOTE:
+-- JassHelper:
 JassHelper 0.A.2.A is required since there is an unknown bug in higher version (0.A.2.B) which prevents
 code from being compiled correctly.
+Options [forcemethodevaluate] and [noimplicitthis] are supported!
 
 -- Code integration:
 Use file "src/Import Asl.j" to import all required scripts.
@@ -53,6 +54,8 @@ endglobals
 If you're using debug mode and ASL's debug utilities (ASystemsDebug) you'll have to defined lots of cheat strings.
 For default English strings you can import a pre-defined file using:
 //! import "Systems/Debug/Text en.j"
+
+WARNING: Apparently, GetLocalizedString() in constant strings crashes the game in map selection!
 
 -- Trigger editor integration:
 Import the following files with their corresponding paths to enable various data types and functions in World Editor's trigger editor:

@@ -1,4 +1,4 @@
-library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer, optional ALibraryCoreDebugMisc
+library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 
 	/**
 	 * Provides functionality of a double-linked list and is therefore reversible.
@@ -546,7 +546,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer, optional
 
 			public method operator< takes thistype other returns boolean
 				debug if (this == other) then
-					debug call Print("Same list.")
+					debug call BJDebugMsg("Same list.")
 				debug endif
 				return this.m_size < other.m_size
 			endmethod

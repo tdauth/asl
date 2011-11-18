@@ -1,4 +1,4 @@
-library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc, AStructSystemsCharacterAbstractQuest, AStructSystemsCharacterQuest
+library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc, AStructSystemsCharacterAbstractQuest
 
 	struct AQuestItem extends AAbstractQuest
 		// construction members
@@ -20,7 +20,7 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 		/// Single call!
 		public stub method enable takes nothing returns boolean
 			if (this.setState(AAbstractQuest.stateNew)) then
-				call this.quest().displayUpdate()
+				call this.quest().displayUpdate.evaluate()
 				return true
 			endif
 			return false
@@ -33,12 +33,12 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 
 		/// Single call!
 		public stub method complete takes nothing returns boolean
-			local integer oldState = this.quest().state()
+			local integer oldState = this.quest().state.evaluate()
 			if (this.setState(AAbstractQuest.stateCompleted)) then
-				if (this.quest().state() == AAbstractQuest.stateCompleted and oldState != AAbstractQuest.stateCompleted) then
-					call this.quest().displayState()
+				if (this.quest().state.evaluate() == AAbstractQuest.stateCompleted and oldState != AAbstractQuest.stateCompleted) then
+					call this.quest().displayState.evaluate()
 				else
-					call this.quest().displayUpdate()
+					call this.quest().displayUpdate.evaluate()
 				endif
 				return true
 			endif
@@ -47,16 +47,24 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 
 		/// Single call!
 		public stub method fail takes nothing returns boolean
-			local integer oldState = this.quest().state()
+			local integer oldState = this.quest().state.evaluate()
 			if (this.setState(AAbstractQuest.stateFailed)) then
-				if (this.quest().state() == AAbstractQuest.stateFailed and oldState != AAbstractQuest.stateFailed) then
-					call this.quest().displayState()
+				if (this.quest().state.evaluate() == AAbstractQuest.stateFailed and oldState != AAbstractQuest.stateFailed) then
+					call this.quest().displayState.evaluate()
 				else
-					call this.quest().displayUpdate()
+					call this.quest().displayUpdate.evaluate()
 				endif
 				return true
 			endif
 			return false
+		endmethod
+
+		public stub method setStateWithoutCondition takes integer state returns nothing
+			if (this.state() == state) then
+				return
+			endif
+			call this.setStateWithoutConditionAndCheck.evaluate(state) // TODO JassHelper bug, shouldn't use .evaluate since we're calling from parent struct. Change order that this method is declared after setStateWithoutConditionAndCheck() again when bug is fixed.
+			call this.quest().checkQuestItemsForState.evaluate(state)
 		endmethod
 
 		/// \note Required by structure \ref AQuest, don't call manually.
@@ -65,23 +73,15 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 				call super.setStateWithoutCondition(state)
 				return
 			endif
-			if (AQuest.isQuestLogUsed()) then
+			if (AQuest.isQuestLogUsed.evaluate()) then
 				if (this.m_questItem == null) then
-					set this.m_questItem = QuestCreateItem(this.m_quest.questLogQuest())
+					set this.m_questItem = QuestCreateItem(this.quest().questLogQuest.evaluate())
 					call QuestItemSetDescription(this.m_questItem, this.title())
 				endif
 				//call QuestItemSetDescription(this.questLogQuestItem, this.title())
 				call QuestItemSetCompleted(this.m_questItem, state == AAbstractQuest.stateCompleted)
 			endif
 			call super.setStateWithoutCondition(state)
-		endmethod
-
-		public stub method setStateWithoutCondition takes integer state returns nothing
-			if (this.state() == state) then
-				return
-			endif
-			call this.setStateWithoutConditionAndCheck(state)
-			call this.m_quest.checkQuestItemsForState(state)
 		endmethod
 
 		public static method create takes AQuest whichQuest, string description returns thistype
@@ -92,16 +92,16 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 			// construction members
 			set this.m_quest = whichQuest
 			// members
-			if (AQuest.isQuestLogUsed()) then
+			if (AQuest.isQuestLogUsed.evaluate()) then
 				set this.m_questItem = null
 			endif
-			set this.m_index = whichQuest.addQuestItem(this)
+			set this.m_index = whichQuest.addQuestItem.evaluate(this)
 			return this
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
-			call this.m_quest.removeQuestItemByIndex(this.m_index)
-			if (AQuest.isQuestLogUsed()) then
+			call this.quest().removeQuestItemByIndex.evaluate(this.m_index)
+			if (AQuest.isQuestLogUsed.evaluate()) then
 				if (this.m_questItem != null) then
 					set this.m_questItem = null
 					//Could not destroy quest items!

@@ -14,7 +14,7 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 		private real m_z
 
 		//! runtextmacro A_STRUCT_DEBUG("\"AVector3\"")
-		
+
 		// dynamic members
 
 		public method setX takes real x returns nothing
@@ -93,7 +93,7 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 		public method setNorm takes real norm returns nothing
 			call this.setLength(norm)
 		endmethod
-		
+
 		/**
 		* Similar to \ref AVector3.length.
 		*/
@@ -115,7 +115,7 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 			set this.m_y = this.m_y + vector.m_y
 			set this.m_z = this.m_z + vector.m_z
 		endmethod
-		
+
 		/**
 		* Adds scaled vector \p vector which is scaled by value \p factor.
 		* Note that vector \p vector won't be changed!
@@ -136,7 +136,7 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 			set this.m_y = this.m_y - vector.m_y
 			set this.m_z = this.m_z - vector.m_z
 		endmethod
-		
+
 		/**
 		* Substracts scaled vector \p vector which is scaled by value \p factor.
 		* Note that vector \p vector won't be changed!
@@ -157,80 +157,6 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 		*/
 		public method multiply takes thistype vector returns real
 			return ((this.m_x * vector.m_x) + (this.m_y * vector.m_y) + (this.m_z * vector.m_z))
-		endmethod
-
-		/**
-		* Similar to \ref thistype.multiply.
-		* \sa thistype.dotProduct
-		*/
-		public method dot takes thistype vector returns real
-			return thistype.dotProduct(this, vector)
-		endmethod
-
-		/**
-		* \sa thistype.crossProduct
-		*/
-		public method cross takes thistype vector returns thistype
-			return thistype.crossProduct(this, vector)
-		endmethod
-
-		public method distance takes thistype vector returns real
-			local thistype temp = thistype.createCopy(vector)
-			local real result
-			call temp.subtract(vector)
-			set result = temp.length()
-			call temp.destroy()
-			return result
-		endmethod
-		
-		/**
-		* Normalizes given vector.
-		* Normal of vector should be orthogonal.
-		*/
-		public method normalize takes nothing returns nothing
-			local real length = this.length()
-			debug if (length == 0) then
-				debug call this.printMethodError("normalize", "0 vector.")
-				debug return
-			debug endif
-			set this.m_x = this.m_x / length
-			set this.m_y = this.m_y / length
-			set this.m_z = this.m_z / length
-		endmethod
-		
-		/**
-		* Projects vector on vector \p vector.
-		* Doesn't change the length.
-		*/
-		public method project takes thistype vector returns nothing
-			local real factor = this.multiply(vector) / vector.length()
-			set this.m_x = vector.m_x * factor
-			set this.m_y = vector.m_y * factor
-			set this.m_z = vector.m_z * factor
-		endmethod
-
-		/**
-		* Rotates a vector through \p angle.
-		* Only x and y will be changed. Rotation on z axis is not possible yet.
-		*/
-		public method rotate takes real angle returns nothing
-			local real length = this.length()
-			local real beta = (Asin(this.m_y / length) - (angle * bj_DEGTORAD))
-			set this.m_x = length * Cos(beta)
-			set this.m_y = length * Sin(beta)
-		endmethod
-		
-		/**
-		* \return Result is returned in degrees.
-		* \author Anitarf
-		*/
-		public method angle takes thistype vector returns real
-			local real length = this.length() * vector.length()
-			debug if length == 0 then
-				debug call this.printMethodError("angle", "0 vector.")
-				debug return 0.0
-			debug endif
-			return Acos(this.dot(vector) / length) * bj_RADTODEG
 		endmethod
 
 		/**
@@ -268,7 +194,7 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 
 			return this
 		endmethod
-		
+
 		public static method createCopy takes thistype vector returns thistype
 			local thistype this = thistype.allocate()
 			call this.copy(vector)
@@ -327,10 +253,84 @@ library AStructCoreMathsVector3 requires optional ALibraryCoreDebugMisc, ALibrar
 			return thistype.multiplication(vector0, vector1)
 		endmethod
 
+		/**
+		* Similar to \ref thistype.multiply.
+		* \sa thistype.dotProduct
+		*/
+		public method dot takes thistype vector returns real
+			return thistype.dotProduct(this, vector)
+		endmethod
+
 		public static method crossProduct takes thistype vector0, thistype vector1 returns thistype
 			return thistype.create(vector0.m_y * vector1.m_z - vector0.m_z * vector1.m_y, vector0.m_z * vector1.m_x - vector0.m_x * vector1.m_z, vector0.m_x * vector1.m_y - vector0.m_y * vector1.m_x)
 		endmethod
-		
+
+		/**
+		* \sa thistype.crossProduct
+		*/
+		public method cross takes thistype vector returns thistype
+			return thistype.crossProduct(this, vector)
+		endmethod
+
+		public method distance takes thistype vector returns real
+			local thistype temp = thistype.createCopy(vector)
+			local real result
+			call temp.subtract(vector)
+			set result = temp.length()
+			call temp.destroy()
+			return result
+		endmethod
+
+		/**
+		* Normalizes given vector.
+		* Normal of vector should be orthogonal.
+		*/
+		public method normalize takes nothing returns nothing
+			local real length = this.length()
+			debug if (length == 0) then
+				debug call this.printMethodError("normalize", "0 vector.")
+				debug return
+			debug endif
+			set this.m_x = this.m_x / length
+			set this.m_y = this.m_y / length
+			set this.m_z = this.m_z / length
+		endmethod
+
+		/**
+		* Projects vector on vector \p vector.
+		* Doesn't change the length.
+		*/
+		public method project takes thistype vector returns nothing
+			local real factor = this.multiply(vector) / vector.length()
+			set this.m_x = vector.m_x * factor
+			set this.m_y = vector.m_y * factor
+			set this.m_z = vector.m_z * factor
+		endmethod
+
+		/**
+		* Rotates a vector through \p angle.
+		* Only x and y will be changed. Rotation on z axis is not possible yet.
+		*/
+		public method rotate takes real angle returns nothing
+			local real length = this.length()
+			local real beta = (Asin(this.m_y / length) - (angle * bj_DEGTORAD))
+			set this.m_x = length * Cos(beta)
+			set this.m_y = length * Sin(beta)
+		endmethod
+
+		/**
+		* \return Result is returned in degrees.
+		* \author Anitarf
+		*/
+		public method angle takes thistype vector returns real
+			local real length = this.length() * vector.length()
+			debug if length == 0 then
+				debug call this.printMethodError("angle", "0 vector.")
+				debug return 0.0
+			debug endif
+			return Acos(this.dot(vector) / length) * bj_RADTODEG
+		endmethod
+
 		/**
 		* @return Returns projection of the two vectors \p vector0 and \p vector1 in a new vector instance.
 		* @author Tamino Dauth

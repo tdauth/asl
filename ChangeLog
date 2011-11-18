@@ -1,3 +1,14 @@
+2011-11-18 Tamino Dauth <tamino@cdauth.eu>
+* AVideo: stop() isn't called with .execute() from skip() anymore (prevents going on of threads).
+* AVideo: Renamed onSkip() to onSkipCondition() which doesn't need to reimplement skip() call.
+* AVote: Players are stored using a list which increases performance when players are leaving the game.
+* Optimized for using JassHelper option [forcemethodevaluate].
+
+2011-11-16 Tamino Dauth <tamino@cdauth.eu>
+* Revised API documentation.
+* AAbstractQuest: Fixed from setting to state not used.
+* ATalk: Fixed null members.
+
 2011-11-14 Tamino Dauth <tamino@cdauth.eu>
 * ATalk: Completed revision.
 * AInfo: speech() doesn't support unit animations anymore.

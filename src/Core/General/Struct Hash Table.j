@@ -1,4 +1,4 @@
-library AStructCoreGeneralHashTable requires optional ALibraryCoreDebugMisc
+library AStructCoreGeneralHashTable
 
 	/**
 	 * Provides access to a single hashtable instance.
@@ -14,8 +14,6 @@ library AStructCoreGeneralHashTable requires optional ALibraryCoreDebugMisc
 		private static thistype m_global
 		// members
 		private hashtable m_hashTable
-
-		//! runtextmacro optional A_STRUCT_DEBUG("\"AHashTable\"")
 
 		//! textmacro AHashTableOperationMacro takes TYPE, TYPENAME, METHODTYPENAME
 			public method set$TYPENAME$ takes string key, string label, $TYPE$ value returns nothing

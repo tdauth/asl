@@ -1,13 +1,13 @@
 library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryCoreStringMisc
 
 	/**
-	* Converts an ASCII char to an integer.
-	* ASCII is the American Keyboard Standard.
-	* Conversion of a char to ASCII works with the integer type: 'a' = 97.
-	* @author Peppar
-	* @link http://www.wc3jass.com/
-	* @todo Syntax error?!
-	*/
+	 * Converts an ASCII value \p i to its corresponding character.
+	 * ASCII is the American Keyboard Standard.
+	 * Conversion of a char to ASCII works with the integer type: 'a' = 97.
+	 * \author Peppar
+	 * <a href="link http://www.wc3jass.com/">Source</a>
+	 * \todo Syntax error?!
+	 */
 	function AsciiToChar takes integer i returns string
 		if (i == 0) then
         		return null
@@ -22,10 +22,10 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
-	* Converts hexadecimal RGB string \p colorString to its matching player color.
-	* If \p colorString is invalid it returns null.
-	* \sa PlayerColorToString, GetPlayerColorValue, GetPlayerColorRed, GetPlayerColorGreen, GetPlayerColorBlue
-	*/
+	 * Converts hexadecimal RGB string \p colorString to its matching player color.
+	 * If \p colorString is invalid it returns null.
+	 * \sa PlayerColorToString, GetPlayerColorValue, GetPlayerColorRed, GetPlayerColorGreen, GetPlayerColorBlue
+	 */
 	function StringToPlayerColor takes string colorString returns playercolor
 		set colorString = StringCase(colorString, false)
 		if (colorString == "ff0000") then
@@ -232,19 +232,19 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
-	* Old argument function text macro for internationalisation of your code.
-	* Usage of structure AFormat is highly recommended since it allows you to use argument numbers instead of types.
-	* Allows you to create string-formatting function for any type.
-	* Usage example:
-	* @code
-	* StringArg(StringArg(IntegerArg("You're %i years old and you're called %s. Besides you're %s.", 0), "Peter"), "gay")
-	* @endcode
-	* Compared to AFormat usage:
-	* @code
-	* Format("You're %1% years old and you're called %2%. Besides you're %3%.").i(0).s("Peter").("gay").result()
-	* @endcode
-	* @see AFormat, Format, String
-	*/
+	 * Old argument function text macro for internationalisation of your code.
+	 * Usage of structure \ref AFormat is highly recommended since it allows you to use argument numbers instead of types.
+	 * Allows you to create string-formatting function for any type.
+	 * Usage example:
+	 * \code
+	 * StringArg(StringArg(IntegerArg("You're %i years old and you're called %s. Besides you're %s.", 0), "Peter"), "gay")
+	 * \endcode
+	 * Compared to AFormat usage:
+	 * \code
+	 * Format("You're %1% years old and you're called %2%. Besides you're %3%.").i(0).s("Peter").("gay").result()
+	 * \endcode
+	 * \sa AFormat, Format, String
+	 */
 	//! textmacro AStringArgumentMacro takes NAME, TYPE, TYPECHARS, CONVERSION, PARAMETERS
 		function $NAME$ takes string whichString, $TYPE$ value $PARAMETERS$ returns string
 			local integer index = FindString(whichString, "%$TYPECHARS$")
@@ -261,9 +261,9 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	//! runtextmacro AStringArgumentMacro("IntegerArg", "integer", "i", "I2S(value)", "")
 	//! runtextmacro AStringArgumentMacro("RArg", "real", "r", "R2S(value)", "")
 	//! runtextmacro AStringArgumentMacro("RealArg", "real", "r", "R2S(value)", "")
-	/// @param width Width of argument string in characters (if it is too short there will be inserted space characters).
+	/// \param width Width of argument string in characters (if it is too short there will be inserted space characters).
 	//! runtextmacro AStringArgumentMacro("RWArg", "real", "r", "R2SW(value, width, precision)", ", integer width, integer precision")
-	/// @param width Width of argument string in characters (if it is too short there will be inserted space characters).
+	/// \param width Width of argument string in characters (if it is too short there will be inserted space characters).
 	//! runtextmacro AStringArgumentMacro("RealWidthArg", "real", "r", "R2SW(value, width, precision)", ", integer width, integer precision")
 	//! runtextmacro AStringArgumentMacro("SArg", "string", "s", "value", "")
 	//! runtextmacro AStringArgumentMacro("StringArg", "string", "s", "value", "")

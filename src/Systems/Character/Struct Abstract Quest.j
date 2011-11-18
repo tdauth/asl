@@ -68,7 +68,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AAbstractQuest\"")
 
 		debug private method checkState takes integer state returns boolean
-			debug if ((state <= thistype.stateNotUsed) or (state >= thistype.maxStates)) then
+			debug if ((state < thistype.stateNotUsed) or (state >= thistype.maxStates)) then
 				debug call this.print("Wrong state: " + I2S(state) + ".")
 				debug return false
 			debug endif

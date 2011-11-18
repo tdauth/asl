@@ -34,6 +34,14 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ADialog\"")
 
+		public method modifiedMessage takes nothing returns string
+			if (this.m_maxPageNumber == 0) then
+				return this.m_message
+			endif
+			/// @todo Fix InsertLineBreaks
+			return InsertLineBreaks(IntegerArg(IntegerArg(StringArg(thistype.m_textMessage, this.m_message), this.m_currentPage + 1), this.m_maxPageNumber + 1), thistype.maxMessageChars)
+		endmethod
+
 		// dynamic members
 
 		/**
@@ -116,14 +124,6 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		// methods
-
-		public method modifiedMessage takes nothing returns string
-			if (this.m_maxPageNumber == 0) then
-				return this.m_message
-			endif
-			/// @todo Fix InsertLineBreaks
-			return InsertLineBreaks(IntegerArg(IntegerArg(StringArg(thistype.m_textMessage, this.m_message), this.m_currentPage + 1), this.m_maxPageNumber + 1), thistype.maxMessageChars)
-		endmethod
 
 		public method show takes nothing returns nothing
 			call this.setDisplayed(true)

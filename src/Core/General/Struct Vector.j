@@ -51,11 +51,11 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 			endmethod
 
 			public method hasNext takes nothing returns boolean
-				return this.m_index != -1 and this.m_container.size() > this.m_index + 1
+				return this.m_index != -1 and this.m_container.size.evaluate() > this.m_index + 1
 			endmethod
 
 			public method hasPrevious takes nothing returns boolean
-				return this.m_index != -1 and this.m_container.size() != 0 and this.m_index - 1 >= 0
+				return this.m_index != -1 and this.m_container.size.evaluate() != 0 and this.m_index - 1 >= 0
 			endmethod
 
 			/// Similar to C++'s ++ iterators operator.

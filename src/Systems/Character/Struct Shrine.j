@@ -34,13 +34,53 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			return this.destructable() != null
 		endmethod
 
+		public method discoverRegion takes nothing returns region
+			return this.m_discoverRegion
+		endmethod
+
+		private static method triggerConditionEnable takes nothing returns boolean
+			local trigger triggeringTrigger
+			local unit triggerUnit = GetTriggerUnit()
+			local player owner = GetOwningPlayer(triggerUnit)
+			local thistype this
+			local boolean result = false
+			if (triggerUnit == ACharacter.playerCharacter(owner).unit()) then
+				set triggeringTrigger = GetTriggeringTrigger()
+				set this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+				set result = ACharacter.playerCharacter(owner).shrine() != this
+				set triggeringTrigger = null
+			endif
+			set triggerUnit = null
+			set owner = null
+			return result
+		endmethod
+
+		private static method triggerActionEnable takes nothing returns nothing
+			local trigger triggeringTrigger = GetTriggeringTrigger()
+			local unit triggerUnit = GetTriggerUnit()
+			local player owner = GetOwningPlayer(triggerUnit)
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			call this.onEnter.evaluate(ACharacter.playerCharacter(owner))
+			set triggeringTrigger = null
+			set triggerUnit = null
+			set owner = null
+		endmethod
+
+		private method updateShrineTrigger takes nothing returns nothing
+			if (this.m_shrineTrigger != null) then
+				call AHashTable.global().destroyTrigger(this.m_shrineTrigger)
+				set this.m_shrineTrigger = null
+			endif
+			set this.m_shrineTrigger = CreateTrigger()
+			call TriggerRegisterEnterRegion(this.m_shrineTrigger, this.discoverRegion(), null)
+			call TriggerAddCondition(this.m_shrineTrigger, Condition(function thistype.triggerConditionEnable))
+			call TriggerAddAction(this.m_shrineTrigger, function thistype.triggerActionEnable)
+			call AHashTable.global().setHandleInteger(this.m_shrineTrigger, "this", this)
+		endmethod
+
 		public method setDiscoverRegion takes region whichRegion returns nothing
 			set this.m_discoverRegion = whichRegion
 			call this.updateShrineTrigger()
-		endmethod
-
-		public method discoverRegion takes nothing returns region
-			return this.m_discoverRegion
 		endmethod
 
 		public method setRevivalRegion takes rect whichRect returns nothing
@@ -134,48 +174,11 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			set user = null
 		endmethod
 
+		/**
+		 * Called by .evaluate().
+		 */
 		public stub method onEnter takes ACharacter character returns nothing
 			call this.enableForCharacter(character, true)
-		endmethod
-
-		private static method triggerConditionEnable takes nothing returns boolean
-			local trigger triggeringTrigger
-			local unit triggerUnit = GetTriggerUnit()
-			local player owner = GetOwningPlayer(triggerUnit)
-			local thistype this
-			local boolean result = false
-			if (triggerUnit == ACharacter.playerCharacter(owner).unit()) then
-				set triggeringTrigger = GetTriggeringTrigger()
-				set this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-				set result = ACharacter.playerCharacter(owner).shrine() != this
-				set triggeringTrigger = null
-			endif
-			set triggerUnit = null
-			set owner = null
-			return result
-		endmethod
-
-		private static method triggerActionEnable takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local unit triggerUnit = GetTriggerUnit()
-			local player owner = GetOwningPlayer(triggerUnit)
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			call this.onEnter(ACharacter.playerCharacter(owner))
-			set triggeringTrigger = null
-			set triggerUnit = null
-			set owner = null
-		endmethod
-
-		private method updateShrineTrigger takes nothing returns nothing
-			if (this.m_shrineTrigger != null) then
-				call AHashTable.global().destroyTrigger(this.m_shrineTrigger)
-				set this.m_shrineTrigger = null
-			endif
-			set this.m_shrineTrigger = CreateTrigger()
-			call TriggerRegisterEnterRegion(this.m_shrineTrigger, this.discoverRegion(), null)
-			call TriggerAddCondition(this.m_shrineTrigger, Condition(function thistype.triggerConditionEnable))
-			call TriggerAddAction(this.m_shrineTrigger, function thistype.triggerActionEnable)
-			call AHashTable.global().setHandleInteger(this.m_shrineTrigger, "this", this)
 		endmethod
 
 		public static method create takes destructable whichDestructable, region discoverRegion, rect revivalRect, real facing returns thistype

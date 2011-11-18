@@ -52,6 +52,10 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AClassSelection\"")
 
+		public static method playerClassSelection takes player whichPlayer returns thistype
+			return thistype.m_playerClassSelection[GetPlayerId(whichPlayer)]
+		endmethod
+
 		// construction members
 
 		public method player takes nothing returns player
@@ -527,10 +531,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				set i = i + 1
 			endloop
 			set thistype.m_stack = 0
-		endmethod
-
-		public static method playerClassSelection takes player whichPlayer returns thistype
-			return thistype.m_playerClassSelection[GetPlayerId(whichPlayer)]
 		endmethod
 	endstruct
 

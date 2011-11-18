@@ -51,17 +51,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 
 		// dynamic members
 
-		/**
-		 * \param orderId If this value is not equal to 0 the talk is enabled for a player's character if the player orders his character unit the given order with the talk's NPC as target (for example "smart"). Otherwise, talk activation on order is disabled.
-		 * Use \ref setOrderDistance() to specify the character's required distance to the NPC when order is being issued.
-		 * Use \ref setOrderErrorMessage() to specify an error message in case of talks which are already in use.
-		 * \sa orderId()
-		 * \sa hasOrder()
-		 */
-		public method setOrderId takes integer orderId returns nothing
-			set this.m_orderId = orderId
-			call this.updateOrderTrigger()
-		endmethod
 
 		public method orderId takes nothing returns integer
 			return this.m_orderId
@@ -100,19 +89,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 			return this.m_orderErrorMessage
 		endmethod
 
-		/**
-		 * \param effectPath If this value is null, effect is disabled completely.
-		 * \sa setEffectPath()
-		 * \sa hasEffect()
-		 */
-		public method setEffectPath takes string effectPath returns nothing
-			if (this.m_effectPath == effectPath) then
-				return
-			endif
-			set this.m_effectPath = effectPath
-			call this.updateEffect(this.disableEffectInCinematicMode())
-		endmethod
-
 		public method effectPath takes nothing returns string
 			return this.m_effectPath
 		endmethod
@@ -121,36 +97,8 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 			return this.effectPath() != null
 		endmethod
 
-		/**
-		 * \param disable If this value is true the talk's effect will be hidden in any \ref AVideo based cinematic sequence.
-		 * \sa disableEffectInCinematicMode()
-		 * \sa AVideo
-		 */
-		public method setDisableEffectInCinematicMode takes boolean disable returns nothing
-			local boolean tmp = this.m_disableEffectInCinematicMode
-			if (disable == tmp) then
-				return
-			endif
-			set this.m_disableEffectInCinematicMode = disable
-			call this.updateEffect(tmp)
-		endmethod
-
 		public method disableEffectInCinematicMode takes nothing returns boolean
 			return this.m_disableEffectInCinematicMode
-		endmethod
-
-		/**
-		 * \param hide If this value is true, user interface is hidden for character's owner during talks.
-		 * \sa hideUserInterface()
-		 */
-		public method setHideUserInterface takes boolean hide returns nothing
-			if (hide == this.m_hideUserInterface) then
-				return
-			endif
-			set this.m_hideUserInterface = hide
-			if (hide and this.isOpen()) then
-
-			endif
 		endmethod
 
 		public method hideUserInterface takes nothing returns boolean
@@ -193,6 +141,22 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		endmethod
 
 		//methods
+
+		/**
+		 * \return Returns true if talk is currently in use by any character.
+		 * \sa isClosed()
+		 */
+		public method isOpen takes nothing returns boolean
+			return this.character() != 0
+		endmethod
+
+		/**
+		 * \return Returns true if no character talks to the NPC at the moment.
+		 * \sa isOpen()
+		 */
+		public method isClosed takes nothing returns boolean
+			return this.character() == 0
+		endmethod
 
 		/**
 		 * Runs the start action with the curresponding talk as parameter.
@@ -340,14 +304,6 @@ endif
 		endmethod
 
 		/**
-		 * \return Returns true if talk is currently in use by any character.
-		 * \sa isClosed()
-		 */
-		public method isOpen takes nothing returns boolean
-			return this.character() != 0
-		endmethod
-
-		/**
 		 * \return Returns true if third person camera system is enabled for the current character.
 		 * \sa character()
 		 */
@@ -398,14 +354,6 @@ endif
 		endmethod
 
 		/**
-		 * \return Returns true if no character talks to the NPC at the moment.
-		 * \sa isOpen()
-		 */
-		public method isClosed takes nothing returns boolean
-			return this.character() == 0
-		endmethod
-
-		/**
 		 * Closes the talk for the current talking character which means that units are unpaused again and the corresponding dialog is cleared if necessary.
 		 * Besides unit looking constraints are reset.
 		 * \sa openForCharacter()
@@ -432,6 +380,63 @@ endif
 			set this.m_character = 0
 			call PauseUnit(this.m_unit, false) //Enables routines or something else
 			set characterUser = null
+		endmethod
+
+		private static method triggerConditionOpen takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local boolean result = false
+			if (GetIssuedOrderId() == this.orderId()) then
+				// Is character, if there is shared control or controller is computer player talks can not be used.
+				if (GetPlayerSlotState(GetOwningPlayer(GetTriggerUnit())) != PLAYER_SLOT_STATE_LEFT and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) then
+					if (GetOrderTargetUnit() == this.unit()) then
+						if (GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance()) then //Z value is not checked
+							set result = (this.character() == 0)
+							if (not result and this.orderErrorMessage() != null) then
+								call ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).displayMessage(ACharacter.messageTypeError, this.orderErrorMessage())
+							endif
+						endif
+					endif
+				endif
+			endif
+			return result
+		endmethod
+
+		private static method triggerActionOpen takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			call IssueImmediateOrder(ACharacter.playerCharacter(GetTriggerPlayer()).unit(), "stop")
+			call this.openForCharacter(ACharacter.playerCharacter(GetTriggerPlayer()))
+		endmethod
+
+		private method updateOrderTrigger takes nothing returns nothing
+			if (this.m_orderTrigger != null) then
+				call AHashTable.global().destroyTrigger(this.m_orderTrigger)
+				set this.m_orderTrigger = null
+			endif
+			if (this.hasOrder()) then
+				set this.m_orderTrigger = CreateTrigger()
+				call TriggerRegisterAnyUnitEventBJ(this.m_orderTrigger, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER)
+				call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOpen))
+				call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOpen)
+				call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
+				if (not this.isEnabled()) then
+					call DisableTrigger(this.m_orderTrigger)
+				endif
+			endif
+		endmethod
+
+		/**
+		 * \param orderId If this value is not equal to 0 the talk is enabled for a player's character if the player orders his character unit the given order with the talk's NPC as target (for example "smart"). Otherwise, talk activation on order is disabled.
+		 * Use \ref setOrderDistance() to specify the character's required distance to the NPC when order is being issued.
+		 * Use \ref setOrderErrorMessage() to specify an error message in case of talks which are already in use.
+		 * \sa orderId()
+		 * \sa hasOrder()
+		 */
+		public method setOrderId takes integer orderId returns nothing
+			if (orderId == this.orderId()) then
+				return
+			endif
+			set this.m_orderId = orderId
+			call this.updateOrderTrigger()
 		endmethod
 
 		private static method infoActionExit takes AInfo info returns nothing
@@ -516,49 +521,6 @@ endif
 			call this.m_infos.erase(index)
 		endmethod
 
-		private static method triggerConditionOpen takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			local boolean result = false
-			if (GetIssuedOrderId() == this.orderId()) then
-				// Is character, if there is shared control or controller is computer player talks can not be used.
-				if (GetPlayerSlotState(GetOwningPlayer(GetTriggerUnit())) != PLAYER_SLOT_STATE_LEFT and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) then
-					if (GetOrderTargetUnit() == this.unit()) then
-						if (GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance()) then //Z value is not checked
-							set result = (this.character() == 0)
-							if (not result and this.orderErrorMessage() != null) then
-								call ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).displayMessage(ACharacter.messageTypeError, this.orderErrorMessage())
-							endif
-						endif
-					endif
-				endif
-			endif
-			return result
-		endmethod
-
-		private static method triggerActionOpen takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			call IssueImmediateOrder(ACharacter.playerCharacter(GetTriggerPlayer()).unit(), "stop")
-			call this.openForCharacter(ACharacter.playerCharacter(GetTriggerPlayer()))
-		endmethod
-
-		private method updateOrderTrigger takes nothing returns nothing
-			if (this.orderId() == 0) then
-				if (this.m_orderTrigger != null) then
-					call AHashTable.global().destroyTrigger(this.m_orderTrigger)
-					set this.m_orderTrigger = null
-				endif
-			elseif (this.m_orderTrigger == null) then
-				set this.m_orderTrigger = CreateTrigger()
-				call TriggerRegisterAnyUnitEventBJ(this.m_orderTrigger, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER)
-				call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOpen))
-				call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOpen)
-				call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
-				if (not this.isEnabled()) then
-					call DisableTrigger(this.m_orderTrigger)
-				endif
-			endif
-		endmethod
-
 		private method updateEffect takes boolean disabledInCinematicsBefore returns nothing
 			if (this.m_effect != null) then
 				call DestroyEffect(this.m_effect)
@@ -567,9 +529,13 @@ endif
 			if (disabledInCinematicsBefore and not this.disableEffectInCinematicMode() and this.effectPath() != null) then
 				call thistype.m_cinematicTalks.remove(this)
 			endif
+			call BJDebugMsg("Before has effect.")
 			if (this.hasEffect()) then
 				if (this.isEnabled()) then
+					call BJDebugMsg("is enabled")
 					set this.m_effect = AddSpecialEffectTarget(this.effectPath(), this.m_unit, "overhead")
+				else
+					call BJDebugMsg("Is not enabled")
 				endif
 				if (not disabledInCinematicsBefore and this.disableEffectInCinematicMode()) then
 					if (thistype.m_cinematicTalks == 0) then
@@ -577,6 +543,47 @@ endif
 					endif
 					call thistype.m_cinematicTalks.pushBack(this)
 				endif
+			endif
+		endmethod
+
+		/**
+		 * \param effectPath If this value is null, effect is disabled completely.
+		 * \sa effectPath()
+		 * \sa hasEffect()
+		 */
+		public method setEffectPath takes string effectPath returns nothing
+			if (this.m_effectPath == effectPath) then
+				return
+			endif
+			set this.m_effectPath = effectPath
+			call this.updateEffect(this.disableEffectInCinematicMode())
+		endmethod
+
+		/**
+		 * \param disable If this value is true the talk's effect will be hidden in any \ref AVideo based cinematic sequence.
+		 * \sa disableEffectInCinematicMode()
+		 * \sa AVideo
+		 */
+		public method setDisableEffectInCinematicMode takes boolean disable returns nothing
+			local boolean tmp = this.m_disableEffectInCinematicMode
+			if (disable == tmp) then
+				return
+			endif
+			set this.m_disableEffectInCinematicMode = disable
+			call this.updateEffect(tmp)
+		endmethod
+
+		/**
+		 * \param hide If this value is true, user interface is hidden for character's owner during talks.
+		 * \sa hideUserInterface()
+		 */
+		public method setHideUserInterface takes boolean hide returns nothing
+			if (hide == this.m_hideUserInterface) then
+				return
+			endif
+			set this.m_hideUserInterface = hide
+			if (hide and this.isOpen()) then
+				call this.hideUserInterfaceForPlayer(true)
 			endif
 		endmethod
 
@@ -597,6 +604,8 @@ endif
 			set this.m_infos = AIntegerVector.create()
 			set this.m_character = 0
 			set this.m_isEnabled = true
+			set this.m_orderTrigger = null
+			set this.m_effect = null
 
 			call this.updateOrderTrigger()
 			call this.updateEffect(not this.disableEffectInCinematicMode())

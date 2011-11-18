@@ -59,8 +59,8 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AMultiboardBar\"")
 
 		debug private method checkLength takes integer length returns boolean
-			debug if (length >= this.length() or length < 0) then
-				debug call this.print("Wrong length " + I2S(length) + " has to be between 0 and " + I2S(this.length() - 1) + ".")
+			debug if (length >= this.m_items.size() or length < 0) then
+				debug call this.print("Wrong length " + I2S(length) + " has to be between 0 and " + I2S(this.m_items.size() - 1) + ".")
 				debug return true
 			debug endif
 			debug return false

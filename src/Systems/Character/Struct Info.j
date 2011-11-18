@@ -150,6 +150,15 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		endmethod
 
 		/**
+		 * \return Returns true if the info has been shown to \p character.
+		 * \sa hasBeenShown()
+		 * \sa hasBeenShownToPlayer()
+		 */
+		public method hasBeenShownToCharacter takes ACharacter character returns boolean
+			return this.m_hasBeenShownToCharacter[character.userId()]
+		endmethod
+
+		/**
 		 * \return Returns true if the info has been shown to the current character in talk.
 		 * \sa hasBeenShownToCharacter()
 		 * \sa hasBeenShownToPlayer()
@@ -159,15 +168,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				return false
 			endif
 			return this.hasBeenShownToCharacter(this.talk().character())
-		endmethod
-
-		/**
-		 * \return Returns true if the info has been shown to \p character.
-		 * \sa hasBeenShown()
-		 * \sa hasBeenShownToPlayer()
-		 */
-		public method hasBeenShownToCharacter takes ACharacter character returns boolean
-			return this.m_hasBeenShownToCharacter[character.userId()]
 		endmethod
 
 		/**

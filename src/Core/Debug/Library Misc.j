@@ -1,4 +1,4 @@
-library ALibraryCoreDebugMisc initializer init requires ALibraryCoreGeneralPlayer
+library ALibraryCoreDebugMisc initializer init requires ALibraryCoreGeneralPlayer, AStructCoreGeneralHashTable, AStructCoreGeneralList
 
 	/**
 	* Displays text on the screen if the debug mode is enabled.
@@ -35,22 +35,22 @@ static if (DEBUG_MODE) then
 	endglobals
 
 	function EnablePrintIdentifier takes string identifier returns nothing
-		call disabledPrintIdentifiers.remove.evaluate(identifier)
+		call disabledPrintIdentifiers.remove(identifier)
 	endfunction
 
 	function DisablePrintIdentifier takes string identifier returns nothing
-		if (disabledPrintIdentifiers.contains.evaluate(identifier)) then
+		if (disabledPrintIdentifiers.contains(identifier)) then
 			return
 		endif
-		call disabledPrintIdentifiers.pushBack.evaluate(identifier)
+		call disabledPrintIdentifiers.pushBack(identifier)
 	endfunction
 
 	function IsPrintIdentifierEnabled takes string identifier returns boolean
-		return not disabledPrintIdentifiers.contains.evaluate(identifier)
+		return not disabledPrintIdentifiers.contains(identifier)
 	endfunction
 
 	function IsPrintIdentifierDisabled takes string identifier returns boolean
-		return disabledPrintIdentifiers.contains.evaluate(identifier)
+		return disabledPrintIdentifiers.contains(identifier)
 	endfunction
 
 	function SetPrintIdentifierEnabled takes string identifier, boolean enabled returns nothing
@@ -192,7 +192,7 @@ endif
 
 	/**
 	* Useful for getting the causing struct and instance of the debug message.
-	* Displays the string @param message in the following schema: "<structname> - <instanceid>: <message>"
+	* Displays the string \p message in the following schema: "<structname> - <instanceid>: <message>"
 	* @author Tamino Dauth
 	*/
 	//! textmacro A_ZINC_STRUCT_DEBUG takes STRUCTNAME
@@ -400,7 +400,7 @@ endif
 
 	private function init takes nothing returns nothing
 static if (DEBUG_MODE) then
-		set disabledPrintIdentifiers = AStringList.create.evaluate()
+		set disabledPrintIdentifiers = AStringList.create()
 endif
 	endfunction
 

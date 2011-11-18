@@ -75,3 +75,5 @@ After a bit of testing i concluded that this is the only function thats able to 
 
 native SetImageRender takes image whichImage, boolean flag returns nothing
 Does not work. Use SetImageRenderAlways instead.
+
+GetLocalizedString in Konstante verursacht Absturz im Kartenmenü.

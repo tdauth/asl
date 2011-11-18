@@ -237,19 +237,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.m_equipmentItemData[equipmentType]
 		endmethod
 
-		public method setRucksackItemCharges takes integer index, integer charges returns integer
-			if (index >= thistype.maxRucksackItems or index < 0 or this.m_rucksackItemData[index] == 0) then
-				debug call this.print("Empty rucksack item at index: " + I2S(index) + ".")
-				return 0
-			endif
-
-			set charges = IMaxBJ(0, charges)
-			call this.m_rucksackItemData[index].setCharges(charges)
-			call this.refreshRucksackItemCharges(index)
-
-			return charges
-		endmethod
-
 		public method rucksackItemData takes integer index returns AInventoryItemData
 			debug if (index >= thistype.maxRucksackItems or index < 0) then
 				debug call this.print("Wrong rucksack index: " + I2S(index) + ".")
@@ -296,7 +283,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 			return result
 		endmethod
-		
+
 		public method totalRucksackItemTypeCharges takes integer itemTypeId returns integer
 			local integer result = 0
 			local integer i = 0
@@ -309,7 +296,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 			return result
 		endmethod
-		
+
 		public method totalEquipmentItemTypeCharges takes integer itemTypeId returns integer
 			local integer result = 0
 			local integer i = 0
@@ -322,7 +309,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 			return result
 		endmethod
-		
+
 		public method totalItemTypeCharges takes integer itemTypeId returns integer
 			return this.totalRucksackItemTypeCharges(itemTypeId) + this.totalEquipmentItemTypeCharges(itemTypeId)
 		endmethod
@@ -358,6 +345,40 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		/// Just required for the move order and for item dropping.
 		private static method itemIndex takes item usedItem returns integer
 			return AHashTable.global().handleInteger(usedItem, "AInventory_index")
+		endmethod
+
+		private static method unitAddItemToSlotById takes unit whichUnit, integer itemType, integer slot returns boolean
+			local boolean result
+			local boolean isBeingPaused
+			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			if (IsUnitPaused(whichUnit)) then
+				set isBeingPaused = true
+				call PauseUnit(whichUnit, false)
+			else
+				set isBeingPaused = false
+			endif
+			set result = UnitAddItemToSlotById(whichUnit, itemType, slot)
+			if (isBeingPaused) then
+				call PauseUnit(whichUnit, true)
+			endif
+			return result
+		endmethod
+
+		private static method unitDropItemPoint takes unit whichUnit, item whichItem, real x, real y returns boolean
+			local boolean result
+			local boolean isBeingPaused
+			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			if (IsUnitPaused(whichUnit)) then
+				set isBeingPaused = true
+				call PauseUnit(whichUnit, false)
+			else
+				set isBeingPaused = false
+			endif
+			set result = UnitDropItemPoint(whichUnit, whichItem, x, y)
+			if (isBeingPaused) then
+				call PauseUnit(whichUnit, true)
+			endif
+			return result
 		endmethod
 
 		private method clearRucksackItem takes integer index, boolean drop returns nothing
@@ -640,7 +661,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 			return -1
 		endmethod
-		
+
 		public method hasItemType takes integer itemTypeId returns boolean
 			return this.hasItemEquipped(itemTypeId) != -1 or this.hasItemTypeInRucksack(itemTypeId) != -1
 		endmethod
@@ -669,6 +690,19 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 				set characterUnit = null
 			endif
+		endmethod
+
+		public method setRucksackItemCharges takes integer index, integer charges returns integer
+			if (index >= thistype.maxRucksackItems or index < 0 or this.m_rucksackItemData[index] == 0) then
+				debug call this.print("Empty rucksack item at index: " + I2S(index) + ".")
+				return 0
+			endif
+
+			set charges = IMaxBJ(0, charges)
+			call this.m_rucksackItemData[index].setCharges(charges)
+			call this.refreshRucksackItemCharges(index)
+
+			return charges
 		endmethod
 
 		/// Stacks everything in rucksack which is stackable and moves it to the front of it.
@@ -1540,40 +1574,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set thistype.m_textDropPageItem = textDropPageItem
 			set thistype.m_textMovePageItem = textMovePageItem
 			set thistype.m_textOwnedByOther = textOwnedByOther
-		endmethod
-
-		private static method unitAddItemToSlotById takes unit whichUnit, integer itemType, integer slot returns boolean
-			local boolean result
-			local boolean isBeingPaused
-			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
-			if (IsUnitPaused(whichUnit)) then
-				set isBeingPaused = true
-				call PauseUnit(whichUnit, false)
-			else
-				set isBeingPaused = false
-			endif
-			set result = UnitAddItemToSlotById(whichUnit, itemType, slot)
-			if (isBeingPaused) then
-				call PauseUnit(whichUnit, true)
-			endif
-			return result
-		endmethod
-
-		private static method unitDropItemPoint takes unit whichUnit, item whichItem, real x, real y returns boolean
-			local boolean result
-			local boolean isBeingPaused
-			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
-			if (IsUnitPaused(whichUnit)) then
-				set isBeingPaused = true
-				call PauseUnit(whichUnit, false)
-			else
-				set isBeingPaused = false
-			endif
-			set result = UnitDropItemPoint(whichUnit, whichItem, x, y)
-			if (isBeingPaused) then
-				call PauseUnit(whichUnit, true)
-			endif
-			return result
 		endmethod
 	endstruct
 

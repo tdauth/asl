@@ -14,6 +14,7 @@ library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSyste
 	 * <li>life</li>
 	 * <li>mana</li>
 	 * </ul>
+	 * \todo Make player rows more dynamic (add struct like ACharactersSchemeRow) that they can be moved and hidden.
 	 */
 	struct ACharactersScheme
 		// static start members
