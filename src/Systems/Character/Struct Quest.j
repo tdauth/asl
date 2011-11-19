@@ -1,7 +1,7 @@
 library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, AStructCoreGeneralVector, ALibraryCoreStringConversion, AStructSystemsCharacterAbstractQuest, AStructSystemsCharacterQuestItem
 
 	/**
-	 * Some kind of more specific emulation of data type \ref quest.
+	 * \brief Some kind of more specific emulation of data type \ref quest.
 	 * Allows you to create character-related quests and define it's state behaviour (extends AAbstractQuest).
 	 * It's not necessarily required that AQuest instances create \ref quest objects. This must be defined in the initialization method.
 	 * \internal Don't move quest items since they're stored via their corresponding index (besides we're using AIntegerVector which has huge performance costs for reodering elements)!
@@ -177,7 +177,6 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		/// Single call!
 		public stub method enableUntil takes integer questItemIndex returns boolean
 			local integer i = 0
-			call BJDebugMsg("Enable until for " + this.title())
 			if (this.setState(AAbstractQuest.stateNew)) then
 				set i = 0
 				loop
@@ -249,12 +248,10 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			local player user
 			local playercolor playerColor
 			local string title = null
-			call BJDebugMsg("Set state")
 			if (this.state() == state) then
 				call super.setStateWithoutCondition(state)
 				return
 			endif
-			call BJDebugMsg("After state")
 			if (state == AAbstractQuest.stateCompleted or state == AAbstractQuest.stateFailed or state == AAbstractQuest.stateNotUsed) then
 				set i = 0
 				loop
@@ -265,7 +262,6 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 					set i = i + 1
 				endloop
 			endif
-			call BJDebugMsg("Before use quest log")
 			if (thistype.m_useQuestLog) then
 				if (this.character() == 0) then
 					set title = this.title()
@@ -276,7 +272,6 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 					set user = null
 					set playerColor = null
 				endif
-				call BJDebugMsg("Update title")
 				call QuestSetTitle(this.m_questLogQuest, title)
 				//call QuestSetDescription(this.questLogQuest, this.description)
 				call this.setQuestLogState(state)
@@ -336,9 +331,8 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			// dynamic members
 			set this.m_questItems = AIntegerVector.create()
 
-			call BJDebugMsg("Before create quest log quest")
 			call this.createQuestLogQuest()
-			call BJDebugMsg("After create quest log quest")
+
 			return this
 		endmethod
 

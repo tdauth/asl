@@ -112,7 +112,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 	endstruct
 
 
-	/// @struct ASpawnPoint provides the functionality of common creep spawn points, mostly used in RPG maps.
+	/**
+	 * \brief ASpawnPoint provides the functionality of common creep spawn points, mostly used in RPG maps.
+	 * \sa AItemSpawnPoint
+	 */
 	struct ASpawnPoint extends ASpawnPointInterface
 		// static construction members
 		private static real m_time
@@ -214,7 +217,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method clearUnits takes nothing returns nothing
 			call this.m_group.units().clear()
 		endmethod
-		
+
 		/**
 		* Counts only alive units.
 		* Dying units are removed.
@@ -222,15 +225,15 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method countUnits takes nothing returns integer
 			return this.m_group.units().size()
 		endmethod
-		
+
 		public method countUnitsIf takes AUnitVectorUnaryPredicate unaryPredicate returns integer
 			return this.m_group.units().countIf(unaryPredicate)
 		endmethod
-		
+
 		public method countUnitsOfType takes integer unitTypeId returns integer
 			return this.m_group.countUnitsOfType(unitTypeId)
 		endmethod
-		
+
 		public method firstUnitOfType takes integer unitTypeId returns unit
 			local integer i = 0
 			loop
@@ -244,8 +247,8 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		/**
-		* Note that after unit @param whichUnit has died there will be spawned a new RANDOM unit from unit pool.
-		* @param weight Weight of added unit type. This value has no effects if @param addType is false.
+		* Note that after unit \p whichUnit has died there will be spawned a new RANDOM unit from unit pool.
+		* @param weight Weight of added unit type. This value has no effects if \p addType is false.
 		* @return Returns the index of the added member.
 		*/
 		public method addUnitWithType takes unit whichUnit, real weight returns integer

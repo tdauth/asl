@@ -295,9 +295,6 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		// call first setStateEvent then setStateCondition and at least setStateAction
 		public method setStateEvent takes integer state, AAbstractQuestStateEvent stateEvent returns nothing
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			debug if (not this.checkState(state)) then
 				debug return
 			debug endif
@@ -305,7 +302,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 				call this.createStateTrigger.evaluate(state)
 			//else
 			endif
-			call stateEvent.execute(this, this.m_stateTrigger[state])
+			call stateEvent.evaluate(this, this.m_stateTrigger[state])
 		endmethod
 
 		public method setStateCondition takes integer state, AAbstractQuestStateCondition stateCondition returns nothing
@@ -550,6 +547,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		public static method create takes ACharacter character, string title returns thistype
 			local thistype this = thistype.allocate()
+			local integer i
 			// dynamic members
 			set this.m_state = thistype.stateNotUsed
 			set this.m_pingWidget = null
@@ -561,6 +559,12 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			call thistype.m_abstractQuests.pushBack(this)
 			// members
 			set this.m_index = thistype.m_abstractQuests.backIndex()
+			set i = 0
+			loop
+				exitwhen (i == thistype.maxStates)
+				set this.m_stateTrigger[i] = null
+				set i = i + 1
+			endloop
 
 			return this
 		endmethod

@@ -33,7 +33,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		public method restoreOnActorsLocation takes nothing returns nothing
-			call BJDebugMsg("restore on actors location")
 			call SetUnitX(this.m_unit, GetUnitX(this.m_actor))
 			call SetUnitY(this.m_unit, GetUnitY(this.m_actor))
 			call SetUnitFacing(this.m_unit, GetUnitFacing(this.m_actor))
@@ -383,6 +382,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				debug return
 			debug endif
 			set thistype.m_playedSound = null
+			set thistype.m_skipped = false
+			set thistype.m_skippingPlayers = 0
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			call TriggerSleepAction(thistype.m_waitTime)
 			/// @todo disable experience gain of all characters?
@@ -435,17 +436,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set thistype.m_actor = 0
 			endif
 			call ACharacter.showAll(true)
-			debug call Print("Before pausing all units.")
 			call PauseAllUnits(false)
-			debug call Print("After pausing all units.")
 			call this.onStopAction.evaluate()
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			call SetTimeOfDay(thistype.m_timeOfDay)
 			call TriggerSleepAction(thistype.m_waitTime)
 			call thistype.restorePlayerData()
 			set thistype.m_runningVideo = 0
-			set thistype.m_skipped = false
-			set thistype.m_skippingPlayers = 0
 			//No camera pan! Call it manually, please.
 		endmethod
 
@@ -462,9 +459,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_skipped = true
 			call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
-			call BJDebugMsg("Before on skip")
 			call this.onSkipAction.evaluate()
-			call BJDebugMsg("After on skip")
 			call this.stop()
 		endmethod
 
@@ -716,7 +711,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 	/**
 	* Waits (synchronized) until no video is running anymore.
-	* @param interval Check interval.
+	* \param interval Check interval.
 	*/
 	function waitForVideo takes real interval returns nothing
 		loop

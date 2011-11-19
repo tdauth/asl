@@ -4,8 +4,13 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 	 * Shrines are region based entities which can be used to change a characters revival (\ref ARevival).
 	 * Each shrine has its own region which activates it when the character's unit enters it.
 	 * \note All shrines are usable by all characters!
+	 * \todo When enabled it sets a fixed facing and coordinates. It should assign a custom revival action to the character's \ref ARevival instead!
 	 */
 	struct AShrine
+		// static constant members
+		public static constant string defaultEffectPath = "Abilities\\Spells\\Items\\TomeOfRetraining\\TomeOfRetrainingCaster.mdl"
+		public static constant string defaultSoundPath = "Abilities\\Spells\\Demon\\SoulPerservation\\SoulPerservation.wav"
+		public static constant string defaultMessage = null
 		// dynamic members
 		private destructable m_destructable
 		private region m_discoverRegion
@@ -78,12 +83,16 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			call AHashTable.global().setHandleInteger(this.m_shrineTrigger, "this", this)
 		endmethod
 
+		/**
+		 * \param whichRegion Whenever a character enters this region the shrine will be enabled for him, except it is already activated.
+		 * \sa discoverRegion()
+		 */
 		public method setDiscoverRegion takes region whichRegion returns nothing
 			set this.m_discoverRegion = whichRegion
 			call this.updateShrineTrigger()
 		endmethod
 
-		public method setRevivalRegion takes rect whichRect returns nothing
+		public method setRevivalRect takes rect whichRect returns nothing
 			set this.m_revivalRect = whichRect
 		endmethod
 
@@ -99,6 +108,12 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			return this.m_facing
 		endmethod
 
+		/**
+		 * Sets the shrine's effect path of its effect which is created whenever the shrine is enabled by any character.
+		 * \sa defaultEffectPath
+		 * \sa effectPath()
+		 * \sa hasEffect()
+		 */
 		public method setEffectPath takes string effectPath returns nothing
 			set this.m_effectPath = effectPath
 			if (effectPath == null and this.m_discoverEffect != null) then
@@ -107,34 +122,77 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			endif
 		endmethod
 
+		/**
+		 * \sa defaultEffectPath
+		 * \sa setEffectPath()
+		 * \sa hasEffect()
+		 */
 		public method effectPath takes nothing returns string
 			return this.m_effectPath
 		endmethod
 
+		/**
+		 * \sa defaultEffectPath
+		 * \sa setEffectPath()
+		 * \sa effectPath()
+		 */
 		public method hasEffect takes nothing returns boolean
 			return this.effectPath() != null
 		endmethod
 
+		/**
+		 * Sets the shrine's sound path of its sound which is played whenever the shrine is enabled by any character.
+		 * \sa defaultSoundPath
+		 * \sa soundPath()
+		 * \sa hasSound()
+		 */
 		public method setSoundPath takes string soundPath returns nothing
 			set this.m_soundPath = soundPath
 		endmethod
 
+		/**
+		 * \sa defaultSoundPath
+		 * \sa setSoundPath()
+		 * \sa hasSound()
+		 */
 		public method soundPath takes nothing returns string
 			return this.m_soundPath
 		endmethod
 
+		/**
+		 * \sa defaultSoundPath
+		 * \sa setSoundPath()
+		 * \sa soundPath()
+		 */
 		public method hasSound takes nothing returns boolean
 			return this.soundPath() != null
 		endmethod
 
+		/**
+		 * Sets the shrine's message which is displayed to a character's owner whenever the shrine is enabled by the character.
+		 * It's displayed of type \ref ACharacter.messageTypeInfo.
+		 * \sa defaultMessage
+		 * \sa message()
+		 * \sa hasMessage()
+		 */
 		public method setMessage takes string message returns nothing
 			set this.m_message = message
 		endmethod
 
+		/**
+		 * \sa defaultMessage
+		 * \sa setMessage()
+		 * \sa hasMessage()
+		 */
 		public method message takes nothing returns string
 			return this.m_message
 		endmethod
 
+		/**
+		 * \sa defaultMessage
+		 * \sa setMessage()
+		 * \sa message()
+		 */
 		public method hasMessage takes nothing returns boolean
 			return this.message() != null
 		endmethod
@@ -176,6 +234,7 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 
 		/**
 		 * Called by .evaluate().
+		 * Usually calls \ref enableForCharacter() with the corresponding character and shows the message if it has one.
 		 */
 		public stub method onEnter takes ACharacter character returns nothing
 			call this.enableForCharacter(character, true)
@@ -188,9 +247,9 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			set this.m_discoverRegion = discoverRegion
 			set this.m_revivalRect = revivalRect
 			set this.m_facing = facing
-			set this.m_effectPath = "Abilities\\Spells\\Items\\TomeOfRetraining\\TomeOfRetrainingCaster.mdl"
-			set this.m_soundPath = "Abilities\\Spells\\Demon\\SoulPerservation\\SoulPerservation.wav"
-			set this.m_message = null
+			set this.m_effectPath = thistype.defaultEffectPath
+			set this.m_soundPath = thistype.defaultSoundPath
+			set this.m_message = thistype.defaultMessage
 
 			call this.updateShrineTrigger()
 			return this

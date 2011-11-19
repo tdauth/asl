@@ -4,7 +4,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 	function interface ATalkStartAction takes ATalk talk returns nothing
 
 	/**
-	 * Talks are a kind of dialogs with NPCs (\ref unit) which are implemented by using the Warcraft III \ref dialog natives.
+	 * \brief Talks are a kind of dialogs with NPCs (\ref unit) which are implemented by using the Warcraft III \ref dialog natives.
 	 * This means that choices in form of dialog buttons are shown to a specific character owner.
 	 * If the owner presses any button an user-defined function will be called where the user can define the whole talk using functions like \ref speech() or \ref speech2(), for instance.
 	 * One talk contains one or several infos (\ref AInfo). Those infos contain the user-defined function and an user-defined condition.
@@ -28,6 +28,13 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 	 * \internal Don't move around any info's since they are refered by their indices!
 	 */
 	struct ATalk
+		// static constant members
+		public static constant integer defaultOrderId = OrderId("smart")
+		public static constant real defaultMaxOrderDistance = 250.0
+		public static constant string defaultOrderErrorMessage = A_TEXT_TARGET_TALKS_ALREADY /// German: "Ziel unterhält sich bereits".
+		public static constant string defaultEffectPath = "Abilities\\Spells\\Other\\TalkToMe\\TalkToMe.mdl"
+		public static constant boolean defaultDisableEffectInCinematicMode = true
+		public static constant boolean defaultHideUserInterface = false
 		// static members
 		private static AIntegerList m_cinematicTalks = 0 /// \note allocated on request, not in \ref thistype.init() anymore!
 		// dynamic members
@@ -51,11 +58,22 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 
 		// dynamic members
 
-
+		/**
+		 * \return Returns the talk's corresponding order id of the order which has to be issued to the character's unit by its owner to start the talk. If this value is 0 there won't be any possibility to start the talk by an issued order.
+		 * \sa defaultOrderId
+		 * \sa setOrderId()
+		 * \sa hasOrder()
+		 */
 		public method orderId takes nothing returns integer
 			return this.m_orderId
 		endmethod
 
+		/**
+		 * \return Returns true if the talk has any specified order. Otherwise it returns false and it is not possible to start the talk by an issued order.
+		 * \sa defaultOrderId
+		 * \sa setOrderId()
+		 * \sa orderId()
+		 */
 		public method hasOrder takes nothing returns boolean
 			return this.orderId() != 0
 		endmethod
@@ -65,7 +83,9 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * \param distance If this value is 0 or smaller, distance check is ignored.
 		 * Use \ref setOrderId() to enable order-based activation.
 		 * Use \ref setOrderErrorMessage() to specify an error message in case of talks which are already in use.
+		 * \sa defaultMaxOrderDistance
 		 * \sa maxOrderDistance()
+		 * \sa hasMaxOrderDistance()
 		 */
 		public method setMaxOrderDistance takes real distance returns nothing
 			debug if (distance <= 50.0 and distance > 0.0) then
@@ -74,33 +94,86 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 			set this.m_maxOrderDistance = distance
 		endmethod
 
+		/**
+		 * \sa defaultMaxOrderDistance
+		 * \sa setMaxOrderDistance()
+		 * \sa hasMaxOrderDistance()
+		 */
 		public method maxOrderDistance takes nothing returns real
 			return this.m_maxOrderDistance
 		endmethod
 
 		/**
+		 * \sa defaultMaxOrderDistance
+		 * \sa setMaxOrderDistance()
+		 * \sa maxOrderDistance()
+		 */
+		public method hasMaxOrderDistance takes nothing returns boolean
+			return this.maxOrderDistance() > 0.0
+		endmethod
+
+		/**
 		 * This message is send to a character's owner when he would enable a talk through order-based activation but fails because the talk is already in use by another player's character.
+		 * It's send using \ref ACharacter.messageTypeError.
+		 * \param message If this value is null there won't be any message.
+		 * \sa defaultOrderErrorMessage
+		 * \sa orderErrorMessage()
+		 * \sa hasOrderErrorMessage()
 		 */
 		public method setOrderErrorMessage takes string message returns nothing
 			set this.m_orderErrorMessage = message
 		endmethod
 
+		/**
+		 * \sa defaultOrderErrorMessage
+		 * \sa setOrderErrorMessage()
+		 * \sa hasOrderErrorMessage()
+		 */
 		public method orderErrorMessage takes nothing returns string
 			return this.m_orderErrorMessage
 		endmethod
 
+		/**
+		 * \sa defaultOrderErrorMessage
+		 * \sa setOrderErrorMessage()
+		 * \sa orderErrorMessage()
+		 */
+		public method hasOrderErrorMessage takes nothing returns boolean
+			return this.orderErrorMessage() != null
+		endmethod
+
+		/**
+		 * \return Returns the talk's effect path.
+		 * \sa defaultEffectPath
+		 * \sa setEffectPath()
+		 * \sa hasEffect()
+		 */
 		public method effectPath takes nothing returns string
 			return this.m_effectPath
 		endmethod
 
+		/**
+		 * \return Returns true if any effect path is set.
+		 * \sa defaultEffectPath
+		 * \sa setEffectPath()
+		 * \sa effectPath()
+		 */
 		public method hasEffect takes nothing returns boolean
 			return this.effectPath() != null
 		endmethod
 
+		/**
+		 * \sa defaultDisableEffectInCinematicMode
+		 * \sa setDisableEffectInCinematicMode()
+		 */
 		public method disableEffectInCinematicMode takes nothing returns boolean
 			return this.m_disableEffectInCinematicMode
 		endmethod
 
+		/**
+		 * \sa defaultHideUserInterface
+		 * \sa setHideUserInterface()
+		 */
 		public method hideUserInterface takes nothing returns boolean
 			return this.m_hideUserInterface
 		endmethod
@@ -389,9 +462,9 @@ endif
 				// Is character, if there is shared control or controller is computer player talks can not be used.
 				if (GetPlayerSlotState(GetOwningPlayer(GetTriggerUnit())) != PLAYER_SLOT_STATE_LEFT and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) then
 					if (GetOrderTargetUnit() == this.unit()) then
-						if (GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance()) then //Z value is not checked
+						if (not this.hasMaxOrderDistance() or GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance()) then //Z value is not checked
 							set result = (this.character() == 0)
-							if (not result and this.orderErrorMessage() != null) then
+							if (not result and this.hasOrderErrorMessage()) then
 								call ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).displayMessage(ACharacter.messageTypeError, this.orderErrorMessage())
 							endif
 						endif
@@ -526,16 +599,12 @@ endif
 				call DestroyEffect(this.m_effect)
 				set this.m_effect = null
 			endif
-			if (disabledInCinematicsBefore and not this.disableEffectInCinematicMode() and this.effectPath() != null) then
+			if (disabledInCinematicsBefore and not this.disableEffectInCinematicMode() and this.hasEffect()) then
 				call thistype.m_cinematicTalks.remove(this)
 			endif
-			call BJDebugMsg("Before has effect.")
 			if (this.hasEffect()) then
 				if (this.isEnabled()) then
-					call BJDebugMsg("is enabled")
-					set this.m_effect = AddSpecialEffectTarget(this.effectPath(), this.m_unit, "overhead")
-				else
-					call BJDebugMsg("Is not enabled")
+					set this.m_effect = AddSpecialEffectTarget(this.effectPath(), this.unit(), "overhead")
 				endif
 				if (not disabledInCinematicsBefore and this.disableEffectInCinematicMode()) then
 					if (thistype.m_cinematicTalks == 0) then
@@ -547,7 +616,9 @@ endif
 		endmethod
 
 		/**
+		 * Each talk can have its own effect which is attached to attachment point "overhead" of the talk's unit.
 		 * \param effectPath If this value is null, effect is disabled completely.
+		 * \sa defaultEffectPath
 		 * \sa effectPath()
 		 * \sa hasEffect()
 		 */
@@ -561,6 +632,7 @@ endif
 
 		/**
 		 * \param disable If this value is true the talk's effect will be hidden in any \ref AVideo based cinematic sequence.
+		 * \sa defaultDisableEffectInCinematicMode
 		 * \sa disableEffectInCinematicMode()
 		 * \sa AVideo
 		 */
@@ -575,6 +647,7 @@ endif
 
 		/**
 		 * \param hide If this value is true, user interface is hidden for character's owner during talks.
+		 * \sa defaultHideUserInterface
 		 * \sa hideUserInterface()
 		 */
 		public method setHideUserInterface takes boolean hide returns nothing
@@ -587,16 +660,29 @@ endif
 			endif
 		endmethod
 
-		/// \todo Use translated string from Warcraft III.
+		/**
+		 * Creates a new talk for NPC \p whichUnit using start action \p startAction which is called when the talk is started.
+		 * All default values are assigned in constructor which are:
+		 * <ul>
+		 * <li>\ref defaultOrderId </li>
+		 * <li>\ref defaultMaxOrderDistance </li>
+		 * <li>\ref defaultOrderErrorMessage </li>
+		 * <li>\ref defaultEffectPath </li>
+		 * <li>\ref defaultDisableEffectInCinematicMode </li>
+		 * <li>\ref defaultHideUserInterface </li>
+		 * </ul>
+		 * \param whichUnit The talk's NPC which can be accessed by \ref unit().
+		 * \param startAction The talk's start action which is called in \ref showStartPage() and can be accessed by \ref startAction() and dynamically changed by \ref setStartAction().
+		 */
 		public static method create takes unit whichUnit, ATalkStartAction startAction returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
-			set this.m_orderId = OrderId("smart")
-			set this.m_maxOrderDistance = 250.0
-			set this.m_orderErrorMessage = A_TEXT_TARGET_TALKS_ALREADY // Ziel unterhält sich bereits.
-			set this.m_effectPath = "Abilities\\Spells\\Other\\TalkToMe\\TalkToMe.mdl"
-			set this.m_disableEffectInCinematicMode = true
-			set this.m_hideUserInterface = false
+			set this.m_orderId = thistype.defaultOrderId
+			set this.m_maxOrderDistance = thistype.defaultMaxOrderDistance
+			set this.m_orderErrorMessage = thistype.defaultOrderErrorMessage
+			set this.m_effectPath = thistype.defaultEffectPath
+			set this.m_disableEffectInCinematicMode = thistype.defaultDisableEffectInCinematicMode
+			set this.m_hideUserInterface = thistype.defaultHideUserInterface
 			// construction members
 			set this.m_unit = whichUnit
 			set this.m_startAction = startAction
@@ -623,7 +709,7 @@ endif
 		endmethod
 
 		private method destroyEffect takes nothing returns nothing
-			if (this.effectPath() != null) then
+			if (this.hasEffect()) then
 				// should always be true
 				if (this.m_effect != null) then
 					call DestroyEffect(this.m_effect)
@@ -664,7 +750,10 @@ endif
 			set iterator = thistype.m_cinematicTalks.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call thistype(iterator.data()).destroyEffect()
+				if (thistype(iterator.data()).m_effect != null) then
+					call DestroyEffect(thistype(iterator.data()).m_effect)
+					set thistype(iterator.data()).m_effect = null
+				endif
 				call iterator.next()
 			endloop
 			call iterator.destroy()

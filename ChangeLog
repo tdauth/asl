@@ -1,3 +1,11 @@
+2011-11-19 Tamino Dauth <tamino@cdauth.eu>
+* ATalk: Added default value constants.
+* Added function CopyItemToItem().
+* Function CopyUnit() considers inventory slots now.
+* ATalk: hideAllEffects() doesn't remove talks from list anymore!
+* AVideo: Moved reset of skip data from stop() into play() which should prevent ongoing videos.
+* AAbstractQuest: Fixed quest activation by setting state triggers to null.
+
 2011-11-18 Tamino Dauth <tamino@cdauth.eu>
 * AVideo: stop() isn't called with .execute() from skip() anymore (prevents going on of threads).
 * AVideo: Renamed onSkip() to onSkipCondition() which doesn't need to reimplement skip() call.

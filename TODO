@@ -1,8 +1,13 @@
+2011-11-19 Tamino Dauth <tamino@cdauth.eu>
+* DONE: Fix new item copy feature of CopyUnit()!
+* waitForVideo() seems to be bugged randomly and doesn't end sometimes.
+* ARoutine: Revise that it is stored more unit-based using one ARoutine instance as type (increases performance).
+
 2011-11-18 Tamino Dauth <tamino@cdauth.eu>
 * Report JassHelper bugs which prevent from using option [forcemethodevaluate].
 * AVote: If A_MAP is usable replace AIntegerList.
-* AQuest: Items aren't enabled after revision (enter region quest state).
-* ATalk: Effects are not shown when enabled.
+* FIXED: AQuest: Items aren't enabled after revision (enter region quest state).
+* FIXED: ATalk: Effects are not shown when enabled.
 * AGui: Make shortcut handler optional or only on request (non escape and arrow keys).
 
 2011-11-15 Tamino Dauth <tamino@cdauth.eu>

@@ -219,8 +219,10 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 	 * <li>unit's custom stock units - \ref AddUnitToStock(), \ref SetUnitTypeSlots()</li>
 	 * </ul>
 	 * \return Returns the copied version.
-	 * \note Uses \ref CopyItem() to copy unit inventory's items (which lacks of some copy functionality limited by JASS natives as well). Consider that \ref ReplaceUnitBJ() doesn't lack of this feature since it moves the original items into the replacing unit's inventory!
-	 * \sa CopyItem ReplaceUnitBJ
+	 * \note Uses \ref CopyItemToItem() to copy unit inventory's items (which lacks of some copy functionality limited by JASS natives as well). Consider that \ref ReplaceUnitBJ() doesn't lack of this feature since it moves the original items into the replacing unit's inventory!
+	 * \sa CopyItemToItem()
+	 * \sa CopyItem()
+	 * \sa ReplaceUnitBJ()
 	 * \author Tamino Dauth
 	 * \todo Complete!
 	 */
@@ -231,25 +233,43 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 		local player user
 		local integer i
 		local item oldSlotItem
-		local item newSlotItem
+		local integer inventorySize
 		if (GetUnitTypeId(whichUnit) == 'ugol') then
 			set result = CreateBlightedGoldmine(owner, x, y, facing)
 		else
 			set result = CreateUnit(owner, GetUnitTypeId(whichUnit), x, y, facing)
 		endif
-		
+
+		// NOTE update inventory before pausing etc. since this seems to prevent items from being added!
+		set inventorySize = IMinBJ(UnitInventorySize(whichUnit),  UnitInventorySize(result))
+
+		if (inventorySize > 0) then
+			set i = 0
+			loop
+				exitwhen (i == inventorySize)
+				set oldSlotItem = UnitItemInSlot(whichUnit, i)
+				if (oldSlotItem != null) then
+					if (UnitAddItemToSlotById(result, GetItemTypeId(oldSlotItem), i)) then
+						call CopyItemToItem(oldSlotItem, UnitItemInSlot(result, i))
+					endif
+					set oldSlotItem = null
+				endif
+				set i = i + 1
+			endloop
+		endif
+
 		call ShowUnit(result, not IsUnitHidden(whichUnit))
 		call PauseUnit(result, IsUnitPaused(whichUnit))
 		call SetResourceAmount(result, GetResourceAmount(whichUnit))
 		call SetUnitUserData(result, GetUnitUserData(whichUnit))
-		
+
 		// waygate data
 		call WaygateSetDestination(result, WaygateGetDestinationX(whichUnit), WaygateGetDestinationY(whichUnit))
 		call WaygateActivate(result, WaygateIsActive(whichUnit))
-		
+
 		call UnitAddSleep(result, UnitIsSleeping(whichUnit))
 		call UnitIgnoreAlarm(result, UnitIgnoreAlarmToggled(whichUnit))
-		
+
 		/**
 		TODO add these functions to the list since some values could be modified even without any item boni.
 		Don't add item boni!
@@ -259,176 +279,176 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 		call SetUnitPropWindow(result, GetUnitPropWindow(whichUnit))
 		call SetUnitAcquireRange(result, GetUnitAcquireRange(whichUnit))
 		*/
-		
+
 		// all unit types
 		if (IsUnitType(whichUnit, UNIT_TYPE_HERO)) then
 			call UnitAddType(result, UNIT_TYPE_HERO)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_HERO)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_DEAD)) then
 			call UnitAddType(result, UNIT_TYPE_DEAD)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_DEAD)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_STRUCTURE)) then
 			call UnitAddType(result, UNIT_TYPE_STRUCTURE)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_STRUCTURE)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_FLYING)) then
 			call UnitAddType(result, UNIT_TYPE_FLYING)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_FLYING)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_GROUND)) then
 			call UnitAddType(result, UNIT_TYPE_GROUND)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_GROUND)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_ATTACKS_FLYING)) then
 			call UnitAddType(result, UNIT_TYPE_ATTACKS_FLYING)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_ATTACKS_FLYING)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_ATTACKS_GROUND)) then
 			call UnitAddType(result, UNIT_TYPE_ATTACKS_GROUND)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_ATTACKS_GROUND)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_MELEE_ATTACKER)) then
 			call UnitAddType(result, UNIT_TYPE_MELEE_ATTACKER)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_MELEE_ATTACKER)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_RANGED_ATTACKER)) then
 			call UnitAddType(result, UNIT_TYPE_RANGED_ATTACKER)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_RANGED_ATTACKER)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_GIANT)) then
 			call UnitAddType(result, UNIT_TYPE_GIANT)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_GIANT)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_SUMMONED)) then
 			call UnitAddType(result, UNIT_TYPE_SUMMONED)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_SUMMONED)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_STUNNED)) then
 			call UnitAddType(result, UNIT_TYPE_STUNNED)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_STUNNED)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_PLAGUED)) then
 			call UnitAddType(result, UNIT_TYPE_PLAGUED)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_PLAGUED)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_SNARED)) then
 			call UnitAddType(result, UNIT_TYPE_SNARED)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_SNARED)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_UNDEAD)) then
 			call UnitAddType(result, UNIT_TYPE_UNDEAD)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_UNDEAD)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_MECHANICAL)) then
 			call UnitAddType(result, UNIT_TYPE_MECHANICAL)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_MECHANICAL)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_PEON)) then
 			call UnitAddType(result, UNIT_TYPE_PEON)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_PEON)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_SAPPER)) then
 			call UnitAddType(result, UNIT_TYPE_SAPPER)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_SAPPER)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_TOWNHALL)) then
 			call UnitAddType(result, UNIT_TYPE_TOWNHALL)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_TOWNHALL)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_ANCIENT)) then
 			call UnitAddType(result, UNIT_TYPE_ANCIENT)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_ANCIENT)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_TAUREN)) then
 			call UnitAddType(result, UNIT_TYPE_TAUREN)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_TAUREN)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_POISONED)) then
 			call UnitAddType(result, UNIT_TYPE_POISONED)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_POISONED)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_POLYMORPHED)) then
 			call UnitAddType(result, UNIT_TYPE_POLYMORPHED)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_POLYMORPHED)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_SLEEPING)) then
 			call UnitAddType(result, UNIT_TYPE_SLEEPING)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_SLEEPING)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_RESISTANT)) then
 			call UnitAddType(result, UNIT_TYPE_RESISTANT)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_RESISTANT)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_SLEEPING)) then
 			call UnitAddType(result, UNIT_TYPE_SLEEPING)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_SLEEPING)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_MAGIC_IMMUNE)) then
 			call UnitAddType(result, UNIT_TYPE_MAGIC_IMMUNE)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_MAGIC_IMMUNE)
 		endif
-		
+
 		if (IsUnitType(whichUnit, UNIT_TYPE_MAGIC_IMMUNE)) then
 			call UnitAddType(result, UNIT_TYPE_MAGIC_IMMUNE)
 		else
 			call UnitRemoveType(result, UNIT_TYPE_MAGIC_IMMUNE)
 		endif
-		
+
 		// Set the unit's life and mana according to the requested method.
 		if (stateMethod == bj_UNIT_STATE_METHOD_RELATIVE) then
 			// Set the replacement's current/max life ratio to that of the old unit.
@@ -467,18 +487,6 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 			set i = i + 1
 		endloop
 
-		set i = 0
-		loop
-			exitwhen (i == bj_MAX_INVENTORY)
-			set oldSlotItem = UnitItemInSlot(whichUnit, i)
-			if (oldSlotItem != null) then
-				set newSlotItem = CopyItem(oldSlotItem, GetUnitX(result), GetUnitY(result))
-				call UnitAddItem(result, newSlotItem) /// @todo add to old slot
-				set oldSlotItem = null
-			endif
-			set i = i + 1
-		endloop
-
 		if (IsUnitType(whichUnit, UNIT_TYPE_HERO) and IsUnitType(result, UNIT_TYPE_HERO)) then
 			call SetHeroLevel(result, GetHeroLevel(whichUnit), false)
 			call SetHeroXP(result, GetHeroXP(whichUnit), false)
@@ -491,16 +499,16 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 
 		/// TODO Selection!
 		//constant native IsUnitSelected      takes unit whichUnit, player whichPlayer returns boolean
-		
+
 		// rally point
 		if (GetUnitRallyPoint(whichUnit) != null) then
 			call SetUnitRallyPoint(result, GetUnitRallyPoint(whichUnit))
 		endif
-		
+
 		if (GetUnitRallyUnit(whichUnit) != null) then
 			call SetUnitRallyUnit(result, GetUnitRallyUnit(whichUnit))
 		endif
-		
+
 		if (GetUnitRallyDestructable(whichUnit) != null) then
 			call SetUnitRallyDestructable(result, GetUnitRallyDestructable(whichUnit))
 		endif

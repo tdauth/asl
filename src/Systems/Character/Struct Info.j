@@ -7,8 +7,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	function interface AInfoAction takes AInfo info returns nothing
 
 	/**
-	 * Members of talks are called informations or just infos.
-	 * Each info can be imagined like a choice for the character's owner displayed in the talk's dialog.
+	 * \brief Members of talks are called informations or just infos. Each info can be imagined like a choice for the character's owner displayed in the talk's dialog.
 	 * Informations can have conditions (\ref AInfoCondition) and actions (\ref AInfoAction) just like triggers.
 	 * If their condition returns false they won't be shown to the user.
 	 * If they are chosen or run automatically (important infos) by or for the user their action is called.
