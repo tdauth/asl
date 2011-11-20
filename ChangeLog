@@ -1,3 +1,10 @@
+2011-11-20 Tamino Dauth <tamino@cdauth.eu>
+* ARoutine: Dropped unnecessary structure storage, as well as struct ARoutineUnitData and renamed struct ARoutineData to ARoutinePeriod.
+* ARoutine: Made structs more flexible and dropped static initializer.
+* Added function IsTimeOfDay().
+* Added "Ex" time of day functions with parameter.
+* AUnitRoutine: Is an extension to ARoutinePeriod now which implements instances storage per unit (used by "Die Macht des Feuers").
+
 2011-11-19 Tamino Dauth <tamino@cdauth.eu>
 * ATalk: Added default value constants.
 * Added function CopyItemToItem().

@@ -1,23 +1,39 @@
 /**
-* These functions do only work with environment's default settings (24 hours per day, 60 minutes per hour)
-* @note GetTimeOfDay returns current hour and percentage of minutes/seconds of day.
-*/
+ * These functions do only work with environment's default settings (24 hours per day, 60 minutes per hour)
+ * \note \ref GetTimeOfDay() returns current hour and percentage of minutes/seconds of day.
+ */
 library ALibraryCoreEnvironmentTimeOfDay requires ALibraryCoreStringConversion
 
+	function GetTimeOfDayElapsedHoursEx takes real timeOfDay returns integer
+		return R2I(timeOfDay)
+	endfunction
+
 	function GetTimeOfDayElapsedHours takes nothing returns integer
-		return R2I(GetTimeOfDay())
+		return GetTimeOfDayElapsedHoursEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayMinutesPercentageEx takes real timeOfDay returns real
+		return 60.0 * (timeOfDay - I2R(GetTimeOfDayElapsedHoursEx(timeOfDay)))
 	endfunction
 
 	function GetTimeOfDayMinutesPercentage takes nothing returns real
-		return 60.0 * (GetTimeOfDay() - I2R(GetTimeOfDayElapsedHours()))
+		return GetTimeOfDayMinutesPercentageEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayElapsedMinutesInHourEx takes real timeOfDay returns integer
+		return R2I(GetTimeOfDayMinutesPercentageEx(timeOfDay))
 	endfunction
 
 	function GetTimeOfDayElapsedMinutesInHour takes nothing returns integer
-		return R2I(GetTimeOfDayMinutesPercentage())
+		return GetTimeOfDayElapsedMinutesInHourEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayRemainingHoursEx takes real timeOfDay returns integer
+		return 24 - GetTimeOfDayElapsedHoursEx(timeOfDay)
 	endfunction
 
 	function GetTimeOfDayRemainingHours takes nothing returns integer
-		return 24 - GetTimeOfDayElapsedHours()
+		return GetTimeOfDayRemainingHoursEx(GetTimeOfDay())
 	endfunction
 
 	globals
@@ -25,32 +41,64 @@ library ALibraryCoreEnvironmentTimeOfDay requires ALibraryCoreStringConversion
 		private constant integer dailySeconds = 86400 // 24 * 60 * 60
 	endglobals
 
+	function GetTimeOfDayElapsedMinutesEx takes real timeOfDay returns integer
+		return GetTimeOfDayElapsedHoursEx(timeOfDay) * 60 + GetTimeOfDayElapsedMinutesInHourEx(timeOfDay)
+	endfunction
+
 	function GetTimeOfDayElapsedMinutes takes nothing returns integer
-		return GetTimeOfDayElapsedHours() * 60 + GetTimeOfDayElapsedMinutesInHour()
+		return GetTimeOfDayElapsedMinutesEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDaySecondsPercentageEx takes real timeOfDay returns real
+		return 60.0 * (GetTimeOfDayMinutesPercentageEx(timeOfDay) - I2R(GetTimeOfDayElapsedMinutesInHourEx(timeOfDay)))
 	endfunction
 
 	function GetTimeOfDaySecondsPercentage takes nothing returns real
-		return 60.0 * (GetTimeOfDayMinutesPercentage() - I2R(GetTimeOfDayElapsedMinutesInHour()))
+		return GetTimeOfDaySecondsPercentageEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayElapsedSecondsInMinuteEx takes real timeOfDay returns integer
+		return R2I(GetTimeOfDaySecondsPercentageEx(timeOfDay))
 	endfunction
 
 	function GetTimeOfDayElapsedSecondsInMinute takes nothing returns integer
-		return R2I(GetTimeOfDaySecondsPercentage())
+		return GetTimeOfDayElapsedSecondsInMinuteEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayRemainingMinutesEx takes real timeOfDay returns integer
+		return dailyMinutes - GetTimeOfDayElapsedMinutesEx(timeOfDay)
 	endfunction
 
 	function GetTimeOfDayRemainingMinutes takes nothing returns integer
-		return dailyMinutes - GetTimeOfDayElapsedMinutes()
+		return GetTimeOfDayRemainingMinutesEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayElapsedSecondsEx takes real timeOfDay returns integer
+		return GetTimeOfDayElapsedMinutesEx(timeOfDay) * 60 + GetTimeOfDayElapsedSecondsInMinuteEx(timeOfDay)
 	endfunction
 
 	function GetTimeOfDayElapsedSeconds takes nothing returns integer
-		return GetTimeOfDayElapsedMinutes() * 60 + GetTimeOfDayElapsedSecondsInMinute()
+		return GetTimeOfDayElapsedSecondsEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayRemainingSecondsEx takes real timeOfDay returns integer
+		return dailySeconds - GetTimeOfDayElapsedSecondsEx(timeOfDay)
 	endfunction
 
 	function GetTimeOfDayRemainingSeconds takes nothing returns integer
-		return dailySeconds - GetTimeOfDayElapsedSeconds()
+		return GetTimeOfDayRemainingSecondsEx(GetTimeOfDay())
+	endfunction
+
+	function GetTimeOfDayStringEx takes real timeOfDay returns string
+		return GetTimeString(GetTimeOfDayElapsedSecondsEx(timeOfDay))
 	endfunction
 
 	function GetTimeOfDayString takes nothing returns string
-		return GetTimeString(GetTimeOfDayElapsedSeconds())
+		return GetTimeOfDayStringEx(GetTimeOfDay())
+	endfunction
+
+	function IsTimeOfDay takes real timeOfDay returns boolean
+		return timeOfDay >= 0.0 and timeOfDay <= 24.0
 	endfunction
 
 endlibrary

@@ -1,7 +1,11 @@
+2011-11-20 Tamino Dauth <tamino@cdauth.eu>
+* ARoutine: Test revision.
+* We need something like //! if or static ifs should recognize //! import.
+
 2011-11-19 Tamino Dauth <tamino@cdauth.eu>
 * DONE: Fix new item copy feature of CopyUnit()!
 * waitForVideo() seems to be bugged randomly and doesn't end sometimes.
-* ARoutine: Revise that it is stored more unit-based using one ARoutine instance as type (increases performance).
+* DONE: ARoutine: Revise that it is stored more unit-based using one ARoutine instance as type (increases performance).
 
 2011-11-18 Tamino Dauth <tamino@cdauth.eu>
 * Report JassHelper bugs which prevent from using option [forcemethodevaluate].
