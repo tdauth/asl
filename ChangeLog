@@ -1,3 +1,6 @@
+2011-11-22 Tamino Dauth <tamino@cdauth.eu>
+* Improved API documentation.
+
 2011-11-20 Tamino Dauth <tamino@cdauth.eu>
 * ARoutine: Dropped unnecessary structure storage, as well as struct ARoutineUnitData and renamed struct ARoutineData to ARoutinePeriod.
 * ARoutine: Made structs more flexible and dropped static initializer.
@@ -190,7 +193,7 @@
 2010-11-06 Tamino Dauth <tamino@cdauth.eu>
 * ALayer: Uses SetUnitZ now. Improved height refreshing. Enter and leave methods return results now and do not crash if unit belongs or belongs not to layer. Improved performance of method unitLeaveAll. Revised documentation. Fixed double free of ARegionListIterator.
 * AVideo: Uses static member divident now. Stores and restores time of day now.
-* AInventor: Method refreshRucksackItemCharges considers dropped items now.
+* AInventory: Method refreshRucksackItemCharges considers dropped items now.
 * AMovement: Fixed syntax errors which occured when A_RTC and A_FPS_MOVEMENT were enabled.
 * Added cheat debugging "execution" and its corresponding library.
 

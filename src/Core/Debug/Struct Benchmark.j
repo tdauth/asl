@@ -1,7 +1,7 @@
 library AStructCoreDebugBenchmark requires AModuleCoreGeneralSystemStruct, AStructCoreGeneralAsl, AStructCoreGeneralVector
 
 	/**
-	 * ABenchmark can be used for time measurement of important code parts.
+	 * \brief ABenchmark can be used for time measurement of important code parts.
 	 * If you're using the \ref jAPI or \ref RtC it uses specific watch natives for exact time measures.
 	 * Otherwise it uses the default Warcraft \ref timer.
 	 * Each "benchmark timer" has its own identifier which can be defined on construction or using method \ref setIdentifier().
@@ -28,7 +28,7 @@ endif
 		// members
 		private boolean m_isRunning
 		private real m_time
-static if (A_JAPI) then
+static if (A_JAPI or A_RTC) then
 		private integer m_stopWatch
 else
 		private timer m_timer
@@ -63,7 +63,7 @@ endif
 		public method start takes nothing returns nothing
 			set this.m_isRunning = true
 			set this.m_time = 0.0
-static if (A_JAPI) then
+static if (A_JAPI or A_RTC) then
 			set this.m_stopWatch = StopWatchCreate()
 else
 			call TimerStart(this.m_timer, 99999.0, false, null)
@@ -72,7 +72,7 @@ endif
 
 		public method stop takes nothing returns nothing
 			set this.m_isRunning = false
-static if (A_JAPI) then
+static if (A_JAPI or A_RTC) then
 			set this.m_time = 1000 * StopWatchMark(this.m_stopWatch)
 			call StopWatchDestroy(this.m_stopWatch)
 			set this.m_stopWatch = -1
@@ -93,7 +93,7 @@ endif
 			//members
 			set this.m_isRunning = false
 			set this.m_time = 0
-static if (A_JAPI) then
+static if (A_JAPI or A_RTC) then
 			set this.m_stopWatch = -1 //0?
 else
 			set this.m_timer = CreateTimer()
@@ -108,7 +108,7 @@ endif
 			//static members
 			call thistype.m_benchmarks.erase(this.m_index)
 			//members
-static if (A_JAPI) then
+static if (A_JAPI or A_RTC) then
 			if (this.m_stopWatch != -1) then
 				call StopWatchDestroy(this.m_stopWatch)
 			endif

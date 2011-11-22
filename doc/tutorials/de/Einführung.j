@@ -1,6 +1,6 @@
 1. Vorwort
 
-Seit dem Erscheinen und der Weiterentwicklung von vJass hat sich so einiges in der Warcraft-3-Modding-Welt getan.
+Seit dem Erscheinen und der Weiterentwicklung von vJass hat sich so einiges in der Warcraft-III-Modding-Welt getan.
 Auf Wc3C.net gibt es inzwischen eine Menge Systeme und Zauber, welche in vJass geschrieben sind. vJass setzt sich durch,
 da man damit einfach wesentlich angenehmer Code schreiben kann. Vor allem bei größeren Projekten zeigt sich das, da man mit
 reinem Jass oft nur ein unübersichtliches Gewurschtel zusammenbekommt und auch die nötigen Syntaxfreiheiten fehlen.

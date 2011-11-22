@@ -91,4 +91,7 @@ For using Bonus Mod you have to make an entry in the "jasshelper.conf" file for 
 It should always be named "ObjectMerger".
 You have to import file "Systems/BonusMod/Creation Bonus Mod.j" once to create all object editor data required by Bonus Mod code.
 
-Tamino Dauth <tamino@cdauth.eu>, 2011-11-04
+-- Optimization:
+Please use Wc3mapoptimizer (http://www.wc3c.net/showthread.php?t=79326) to decrease your map script size and increase the script's performance.
+
+Tamino Dauth <tamino@cdauth.eu>, 2011-11-22

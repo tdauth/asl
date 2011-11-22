@@ -1,3 +1,6 @@
+2011-11-22 Tamino Dauth <tamino@cdauth.eu>
+* Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706
+
 2011-11-20 Tamino Dauth <tamino@cdauth.eu>
 * ARoutine: Test revision.
 * We need something like //! if or static ifs should recognize //! import.
@@ -8,7 +11,7 @@
 * DONE: ARoutine: Revise that it is stored more unit-based using one ARoutine instance as type (increases performance).
 
 2011-11-18 Tamino Dauth <tamino@cdauth.eu>
-* Report JassHelper bugs which prevent from using option [forcemethodevaluate].
+* DONE: Report JassHelper bugs which prevent from using option [forcemethodevaluate].
 * AVote: If A_MAP is usable replace AIntegerList.
 * FIXED: AQuest: Items aren't enabled after revision (enter region quest state).
 * FIXED: ATalk: Effects are not shown when enabled.
@@ -28,7 +31,7 @@
 * A_MAP: Add range versions of remove().
 
 2011-11-06 Tamino Dauth <tamino@cdauth.eu>
- A_MAP: Should use more efficient storage so that the middle elements could be detected much faster (at the moment they are detected by iterating all elements  - linear complexity).
+ A_MAP: Should use more efficient storage so that the middle elements could be detected much faster (at the moment they are detected by iterating all elements  - linear complexity). We need a binary tree implementation to store nodes!
 
 2011-11-05 Tamino Dauth <tamino@cdauth.eu>
 * Structures must accept JASS constants as maximum size so we can define maximum count of container instances for A_VECTOR, A_LIST, A_MAP and A_STACK!

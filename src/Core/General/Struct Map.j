@@ -352,6 +352,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 						endif
 						set front = middle.next()
 					endif
+					debug call Print("Go on!")
 				endloop
 
 				return 0

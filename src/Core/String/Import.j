@@ -33,21 +33,27 @@
  * \param s String value from which hash value is generated.
  * \return Returns resulting hash value.
  * TODO add documentation!
+ *
  * \fn GetLocalizedString
- * 
+ * \warning Crashes the game in map selection when used in global constant:
+ * \code
+ * globals
+ * 	constant string test = GetLocalizedString("bla") // causes crash!
+ * endglobals
+ * \endcode
+ *
  * \fn GetLocalizedHotkey
  *
 native GetLocalizedString takes string source returns string
 native GetLocalizedHotkey takes string source returns integer
 */
 
-
 /**
  * \fn I2S
  * Converts integer value \p i into string value.
  * \param r Integer value which is converted into string value.
  * \return Returns resulting string value.
- * 
+ *
  * \fn R2S
  * Converts real value \p r into string value.
  * \param r Real value which is converted into string value.

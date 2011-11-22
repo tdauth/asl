@@ -1,98 +1,118 @@
 library ALibraryCoreMathsUnit requires ALibraryCoreGeneralUnit, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint
 
-	/// Die Entfernung zwischen zwei Einheiten.
-	/// Da es die nativen Funktionen GetUnitX() und GetUnitY() gibt, dürfte es schneller sein, als erst Locations der Einheiten zu erzeugen und diese zu vergleichen.
-	/// Achtung: Nur verwenden, wenn man auch wirklich den Z-Wert braucht.
-	/// @return Returns the distance between units.
+	/**
+	 * Calculates the distance between two units including their z coordinates.
+	 * \note Do only use if z distance is really required. Otherwise use \ref GetDistanceBetweenUnits().
+	 * \return Returns the distance between units \p unit0 and \p unit1.
+	 */
 	function GetDistanceBetweenUnitsWithZ takes unit unit0, unit unit1 returns real
-		local location unitLocation0 = GetUnitLoc(unit0)
-		local location unitLocation1 = GetUnitLoc(unit1)
-		local real distance =  GetDistanceBetweenUnits(unit0, unit1, GetLocationZ(unitLocation0), GetLocationZ(unitLocation1)) //ALibraryMathsHandle
-		call RemoveLocation(unitLocation0)
-		set unitLocation0 = null
-		call RemoveLocation(unitLocation1)
-		set unitLocation1 = null
-		return distance
+		return GetDistanceBetweenUnits(unit0, unit1, GetUnitZ(unit0), GetUnitZ(unit1)) // ALibraryMathsHandle
 	endfunction
 
-	/// Does not create any locations.
-	function SetUnitPolarProjectionPosition takes unit usedUnit, real angle, real distance returns nothing
-		local real x = GetUnitPolarProjectionX(usedUnit, angle, distance)
-		local real y = GetUnitPolarProjectionY(usedUnit, angle, distance)
-		call SetUnitPosition(usedUnit, x, y)
-		call SetUnitFacing(usedUnit, angle)
-	endfunction
-
-	/// Makes a unit flyable by adding and removing the ability Crow Form.
-	/// Thus you can change its high.
-	function MakeUnitFlyable takes unit usedUnit returns nothing
-		if (GetUnitAbilityLevel(usedUnit, 'Amrf') == 0) then
-			call UnitAddAbility(usedUnit, 'Amrf')
-			call UnitRemoveAbility(usedUnit, 'Amrf')
-		endif
-	endfunction
-
-	/// Ändert die Höhe einer Einheit.
-	/// Die neue Höhe muss >= der Bodenhöhe an dem Punkt, an dem sich die Einheit befindet, sein.
-	/// @author WaterKnight
-	function SetUnitZ takes unit usedUnit, real z returns nothing
-		call MakeUnitFlyable(usedUnit)
-		call SetUnitFlyHeight(usedUnit, z - GetUnitZ(usedUnit), 0.0) //ALibraryMathsHandle
+	/// \note Does not create any locations.
+	function SetUnitPolarProjectionPosition takes unit whichUnit, real angle, real distance returns nothing
+		local real x = GetUnitPolarProjectionX(whichUnit, angle, distance)
+		local real y = GetUnitPolarProjectionY(whichUnit, angle, distance)
+		call SetUnitPosition(whichUnit, x, y)
+		call SetUnitFacing(whichUnit, angle)
 	endfunction
 
 	/**
-	* Beschreibung: Die Funktionen setzen eine Einheit auf angegebene Koordinaten, falls die Einheit
-	* auf diesen stehen könnte. Dabei wird die Betrachtung für jede Koordinate separat ausgeführt.
-	* Das heißt, die Einheit könnte in eine Achsenrichtung bewegt werden, auch wenn sie es in die
-	* Zweite nicht kann. Dadurch slidet sie an Grenzen, wenn die Bewegung in eine Richtung möglich
-	* ist. Die Funktionen returnen, ob die Einheit erfolgreich an die gegebenen Koordinaten bewegt
-	* wurde.
-	* Hinweise: Um zu entscheiden, ob die Einheit geblockt wird, wird ein kleiner Toleranzbereich
-	* genommen. Auf Bewegung bezogene Ereignisse werden ausgeführt, auch wenn die Einheit im
-	* Endeffekt zurückgesetzt wurde. Sowohl das Prüfen als auch das Zurücksetzen der Position
-	* erfolgt über Bewegungsaktionen, die auf die Einheit angewandt werden. Da die Funktionen wohl
-	* im Zusammenhang mit rekursiven Fortbewegungssystemen einer Einheit gebraucht werden (die
-	* vorigen Koordinaten einer Einheit werden ausgelesen, um sie zum Beispiel für die Ermittlung
-	* der Nächsten zu verarbeiten), muss man bei allen drei Funktionen die alten
-	* Positionsinformationen der Einheit mitliefern. Das ist besser für die
-	* Schnelligkeitsperformance, als wenn man es mehrfach ausliest.
-	* @author WaterKnight
-	*/
-	function SetUnitXIfNotBlocked takes unit usedUnit, real oldX, real oldY, real x returns boolean
-		call SetUnitPosition(usedUnit, x, oldY)
-		if ((RAbsBJ(GetUnitX(usedUnit) - x) > 1) or (RAbsBJ(GetUnitY(usedUnit) - oldY) > 1)) then
-			call SetUnitX(usedUnit, oldX)
-			call SetUnitY(usedUnit, oldY)
+	 * Makes a unit flyable by adding and removing the ability "Crow Form".
+	 * Thus you can change its high.
+	 * \sa SetUnitFlyHeight()
+	 * \sa SetUnitZ()
+	 */
+	function MakeUnitFlyable takes unit whichUnit returns nothing
+		if (GetUnitAbilityLevel(whichUnit, 'Amrf') == 0) then
+			call UnitAddAbility(whichUnit, 'Amrf')
+			call UnitRemoveAbility(whichUnit, 'Amrf')
+		endif
+	endfunction
+
+	/**
+	 * Changes height of unit \p whichUnit to \p z.
+	 * \param z Has to be greater than or equal to the ground height at which unit \p whichUnit is standing.
+	 * \author WaterKnight
+	 * <a href="https://warcraft.ingame.de/forum/showthread.php?p=3564125&postcount=13#post3564125">source</a>
+	 * \sa GetUnitZ()
+	 * \sa MakeUnitFlyable()
+	 */
+	function SetUnitZ takes unit whichUnit, real z returns nothing
+		call MakeUnitFlyable(whichUnit)
+		call SetUnitFlyHeight(whichUnit, z - GetUnitZ(whichUnit), 0.0) // ALibraryMathsHandle
+	endfunction
+
+	/**
+	 * Beschreibung: Die Funktionen setzen eine Einheit auf angegebene Koordinaten, falls die Einheit
+	 * auf diesen stehen könnte. Dabei wird die Betrachtung für jede Koordinate separat ausgeführt.
+	 * Das heißt, die Einheit könnte in eine Achsenrichtung bewegt werden, auch wenn sie es in die
+	 * Zweite nicht kann. Dadurch slidet sie an Grenzen, wenn die Bewegung in eine Richtung möglich
+	 * ist. Die Funktionen returnen, ob die Einheit erfolgreich an die gegebenen Koordinaten bewegt
+	 * wurde.
+	 * Hinweise: Um zu entscheiden, ob die Einheit geblockt wird, wird ein kleiner Toleranzbereich
+	 * genommen. Auf Bewegung bezogene Ereignisse werden ausgeführt, auch wenn die Einheit im
+	 * Endeffekt zurückgesetzt wurde. Sowohl das Prüfen als auch das Zurücksetzen der Position
+	 * erfolgt über Bewegungsaktionen, die auf die Einheit angewandt werden. Da die Funktionen wohl
+	 * im Zusammenhang mit rekursiven Fortbewegungssystemen einer Einheit gebraucht werden (die
+	 * vorigen Koordinaten einer Einheit werden ausgelesen, um sie zum Beispiel für die Ermittlung
+	 * der Nächsten zu verarbeiten), muss man bei allen drei Funktionen die alten
+	 * Positionsinformationen der Einheit mitliefern. Das ist besser für die
+	 * Schnelligkeitsperformance, als wenn man es mehrfach ausliest.
+	 * \author WaterKnight
+	 * <a href="https://warcraft.ingame.de/forum/showthread.php?p=4102915&postcount=21#post4102915">source</a>
+	 * \sa SetUnitYIfNotBlocked()
+	 * \sa SetUnitXYIfNotBlocked()
+	 */
+	function SetUnitXIfNotBlocked takes unit whichUnit, real oldX, real oldY, real x returns boolean
+		call SetUnitPosition(whichUnit, x, oldY)
+		if ((RAbsBJ(GetUnitX(whichUnit) - x) > 1) or (RAbsBJ(GetUnitY(whichUnit) - oldY) > 1)) then
+			call SetUnitX(whichUnit, oldX)
+			call SetUnitY(whichUnit, oldY)
 			return false
 		endif
 		return true
 	endfunction
 
-	/// @author WaterKnight
-	function SetUnitYIfNotBlocked takes unit usedUnit, real oldX, real oldY, real y returns boolean
-		call SetUnitPosition(usedUnit, oldX, y)
-		if ((RAbsBJ(GetUnitX(usedUnit) - oldX) > 1) or (RAbsBJ(GetUnitY(usedUnit) - y) > 1)) then
-			call SetUnitX(usedUnit, oldX)
-			call SetUnitY(usedUnit, oldY)
+	/**
+	 * \author WaterKnight
+	 * <a href="https://warcraft.ingame.de/forum/showthread.php?p=4102915&postcount=21#post4102915">source</a>
+	 * \sa SetUnitXIfNotBlocked()
+	 * \sa SetUnitXYIfNotBlocked()
+	 */
+	function SetUnitYIfNotBlocked takes unit whichUnit, real oldX, real oldY, real y returns boolean
+		call SetUnitPosition(whichUnit, oldX, y)
+		if ((RAbsBJ(GetUnitX(whichUnit) - oldX) > 1) or (RAbsBJ(GetUnitY(whichUnit) - y) > 1)) then
+			call SetUnitX(whichUnit, oldX)
+			call SetUnitY(whichUnit, oldY)
 			return false
 		endif
 		return true
 	endfunction
 
-	/// @author WaterKnight
-	function SetUnitXYIfNotBlocked takes unit usedUnit, real oldX, real oldY, real x, real y returns boolean
-		if (SetUnitXIfNotBlocked(usedUnit, oldX, oldY, x)) then
-			if (SetUnitYIfNotBlocked(usedUnit, x, oldY, y )) then
+	/**
+	 * \author WaterKnight
+	 * <a href="https://warcraft.ingame.de/forum/showthread.php?p=4102915&postcount=21#post4102915">source</a>
+	 * \sa SetUnitXIfNotBlocked()
+	 * \sa SetUnitYIfNotBlocked()
+	 */
+	function SetUnitXYIfNotBlocked takes unit whichUnit, real oldX, real oldY, real x, real y returns boolean
+		if (SetUnitXIfNotBlocked(whichUnit, oldX, oldY, x)) then
+			if (SetUnitYIfNotBlocked(whichUnit, x, oldY, y )) then
 				return true
 			endif
 		else
-			call SetUnitYIfNotBlocked(usedUnit, oldX, oldY, y)
+			call SetUnitYIfNotBlocked(whichUnit, oldX, oldY, y)
 		endif
 		return false
 	endfunction
 
-	/// @author Grater
-	/// @link http://www.wc3jass.com/
+	/**
+	 * \author Grater
+	 * <a href="http://www.wc3jass.com/viewtopic.php?t=100">source</a>
+	 * \sa FindClosestUnitByLocation()
+	 * \sa FindClosestUnitByRect()
+	 */
 	function FindClosestUnit takes group g, real x, real y returns unit
 		local real dx
 		local real dy
@@ -127,27 +147,35 @@ library ALibraryCoreMathsUnit requires ALibraryCoreGeneralUnit, ALibraryCoreMath
 		return closest
 	endfunction
 
-	/// @author Grater
-	/// @link http://www.wc3jass.com/
+	/**
+	 * \author Grater
+	 * <a href="http://www.wc3jass.com/viewtopic.php?t=100">source</a>
+	 * \sa FindClosestUnit()
+	 * \sa FindClosestUnitByRect()
+	 */
 	function FindClosestUnitByLocation takes group g, location loc returns unit
 		return FindClosestUnit(g, GetLocationX(loc), GetLocationY(loc))
 	endfunction
 
-	/// @author Tamino Dauth
-	function FindClosestUnitByRect takes group usedGroup, rect usedRect returns unit
-		return FindClosestUnit(usedGroup, GetRectCenterX(usedRect), GetRectCenterY(usedRect))
+	/**
+	 * \author Tamino Dauth
+	 * \sa FindClosestUnit()
+	 * \sa FindClosestUnitByLocation()
+	 */
+	function FindClosestUnitByRect takes group whichGroup, rect usedRect returns unit
+		return FindClosestUnit(whichGroup, GetRectCenterX(usedRect), GetRectCenterY(usedRect))
 	endfunction
 
 	/**
-	* IsUnitOnRect returns true if the unit's collision circle
-	* ------------ interesects with a rect.
-	*
-	* Useful for example, in a "enter rect" event
-	* it will return true, unlike blizz' RectContainsUnit
-	*
-	* probably slower than RectContainsUnit
-	* @author Vexorian
-	*/
+	 * IsUnitOnRect returns true if the unit's collision circle
+	 * ------------ interesects with a rect.
+	 *
+	 * Useful for example, in a "enter rect" event
+	 * it will return true, unlike blizz' \ref RectContainsUnit()
+	 *
+	 * probably slower than \ref RectContainsUnit()
+	 * \author Vexorian
+	 */
 	function IsUnitOnRect takes unit u, rect r returns boolean
 		local real x = GetUnitX(u)
 		local real y = GetUnitY(u)
@@ -171,37 +199,40 @@ library ALibraryCoreMathsUnit requires ALibraryCoreGeneralUnit, ALibraryCoreMath
 		return IsUnitInRangeXY(u,x,y,0.0)
 	endfunction
 
-	/// @author Tamino Dauth
+	/**
+	 * \author Tamino Dauth
+	 * \sa SetUnitFacingTimed()
+	 */
 	function SetUnitFacingToFaceRectTimed takes unit whichUnit, rect whichRect, real duration returns nothing
 		call SetUnitFacingTimed(whichUnit, GetAngleBetweenPoints(GetUnitX(whichUnit), GetUnitY(whichUnit), GetRectCenterX(whichRect), GetRectCenterY(whichRect)), duration)
 	endfunction
 
 	/**
-	* @author Tamino Dauth
-	* @see SetUnitFacingToFaceUnitTimed
-	*/
+	 * \author Tamino Dauth
+	 * \sa SetUnitFacingToFaceUnitTimed()
+	 */
 	function SetUnitFacingToFaceUnit takes unit whichUnit, unit target returns nothing
 		call SetUnitFacing(whichUnit, GetAngleBetweenUnits(whichUnit, target))
 	endfunction
 
 	/**
-	* @author Tamino Dauth
-	* @see SetUnitPositionLoc
-	*/
+	 * \author Tamino Dauth
+	 * \sa SetUnitPositionLoc()
+	 */
 	function SetUnitPositionRect takes unit whichUnit, rect whichRect returns nothing
 		call SetUnitPosition(whichUnit, GetRectCenterX(whichRect), GetRectCenterY(whichRect))
 	endfunction
 
 	/**
-	* \author Tamino Dauth
-	* \sa SetUnitPositionLocFacingBJ
-	*/
+	 * \author Tamino Dauth
+	 * \sa SetUnitPositionLocFacingBJ
+	 */
 	function SetUnitPositionRectFacing takes unit whichUnit, rect whichRect, real facing returns nothing
 		call SetUnitPositionRect(whichUnit, whichRect)
 		call SetUnitFacing(whichUnit, facing)
 	endfunction
 
-	/// @author Tamino Dauth
+	/// \author Tamino Dauth
 	function SetUnitToRandomPointOnRect takes unit whichUnit, rect whichRect returns nothing
 		local real minX = RMinBJ(GetRectMinX(whichRect), GetRectMaxX(whichRect))
 		local real maxX = RMaxBJ(GetRectMinX(whichRect), GetRectMaxX(whichRect))
@@ -211,20 +242,22 @@ library ALibraryCoreMathsUnit requires ALibraryCoreGeneralUnit, ALibraryCoreMath
 	endfunction
 
 	/**
-	* Issues unit \p whichUnit order \p order at center of rect \p whichRect.
-	* \return Returns true if order was issued successfully.
-	* \author Tamino Dauth
-	* \sa IssuePointOrder, IssueRectOrderById
-	*/
+	 * Issues unit \p whichUnit order \p order at center of rect \p whichRect.
+	 * \return Returns true if order was issued successfully.
+	 * \author Tamino Dauth
+	 * \sa IssuePointOrder()
+	 * \sa IssueRectOrderById()
+	 */
 	function IssueRectOrder takes unit whichUnit, string order, rect whichRect returns boolean
 		return IssuePointOrder(whichUnit, order, GetRectCenterX(whichRect), GetRectCenterY(whichRect))
 	endfunction
 
 	/**
-	* \copydoc IssueRectOrder
-	* \author Tamino Dauth
-	* \sa IssuePointOrderById, IssueRectOrder
-	*/
+	 * \copydoc IssueRectOrder
+	 * \author Tamino Dauth
+	 * \sa IssuePointOrderById()
+	 * \sa IssueRectOrder()
+	 */
 	function IssueRectOrderById takes unit whichUnit, integer order, rect whichRect returns boolean
 		return IssuePointOrderById(whichUnit, order, GetRectCenterX(whichRect), GetRectCenterY(whichRect))
 	endfunction
