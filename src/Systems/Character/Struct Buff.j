@@ -1,12 +1,10 @@
-library AStructSystemsCharacterBuff requires AModuleCoreGeneralSystemStruct, AStructCoreGeneralHashTable, AStructCoreGeneralVector
+library AStructSystemsCharacterBuff requires AStructCoreGeneralHashTable, AStructCoreGeneralVector
 
 	/**
 	* Provides acces to buff type which can be added as buff instance several times to one single unit.
 	* Buff id should be a custom ability id of an aura which only affects the caster himself to create real buff effect in Warcraft 3.
 	*/
 	struct ABuff
-		implement ASystemStruct
-
 		// static members
 		private static AIntegerVector m_buffs
 		// construction members
@@ -59,18 +57,12 @@ library AStructSystemsCharacterBuff requires AModuleCoreGeneralSystemStruct, ASt
 			call thistype.m_buffs.erase(this.m_index)
 		endmethod
 
-		private static method onInit takes nothing returns nothing
-			call thistype.setName("ABuff")
-		endmethod
-
 		public static method init takes nothing returns nothing
-			call thistype.initialize()
 			// static members
 			set thistype.m_buffs = AIntegerVector.create()
 		endmethod
 
 		public static method cleanUp takes nothing returns nothing
-			call thistype.uninitialize()
 			// static members
 			loop
 				exitwhen (thistype.m_buffs.empty())
@@ -81,17 +73,14 @@ library AStructSystemsCharacterBuff requires AModuleCoreGeneralSystemStruct, ASt
 		endmethod
 
 		public static method hookRemoveUnit takes unit whichUnit returns nothing
-			local integer i
-			if (thistype.initialized()) then
-				set i = 0
-				loop
-					exitwhen (i == thistype.m_buffs.size())
-					if (AHashTable.global().hasHandleInteger(whichUnit, "ABuff" + I2S(thistype.m_buffs[i]) + "Count")) then
-						call AHashTable.global().removeHandleInteger(whichUnit, "ABuff" + I2S(thistype.m_buffs[i]) + "Count")
-					endif
-					set i = i + 1
-				endloop
-			endif
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.m_buffs.size())
+				if (AHashTable.global().hasHandleInteger(whichUnit, "ABuff" + I2S(thistype.m_buffs[i]) + "Count")) then
+					call AHashTable.global().removeHandleInteger(whichUnit, "ABuff" + I2S(thistype.m_buffs[i]) + "Count")
+				endif
+				set i = i + 1
+			endloop
 		endmethod
 	endstruct
 

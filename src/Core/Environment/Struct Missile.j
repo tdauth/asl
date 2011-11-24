@@ -1,9 +1,9 @@
-library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, AModuleCoreGeneralSystemStruct, AStructCoreGeneralVector, AStructCoreMathsVector3, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsUnit, ALibraryCoreInterfaceSelection
+library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, AStructCoreMathsVector3, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsUnit, ALibraryCoreInterfaceSelection
 
-	/// OnCollisionFunction functions can be set by method @method AMissileType.setOnCollisionFunction and will be called when missile collides.
+	/// OnCollisionFunction functions can be set by method \ref AMissileType.setOnCollisionFunction and will be called when missile collides.
 	function interface AMissileTypeOnCollisionFunction takes AMissile missile returns nothing
 
-	/// OnDeathFunction functions can by set by method @method AMissileType.setOnDeathFunction and will be called when missile hits target.
+	/// OnDeathFunction functions can by set by method \ref AMissileType.setOnDeathFunction and will be called when missile hits target.
 	function interface AMissileTypeOnDeathFunction takes AMissile missile returns nothing
 
 	struct AMissileType
@@ -36,8 +36,8 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		endmethod
 
 		/**
-		* @param speed Distance per second (without gravitational acceleration).
-		*/
+		 * \param speed Distance per second (without gravitational acceleration).
+		 */
 		public method setSpeed takes real speed returns nothing
 			set this.m_speed = speed * AMissile.refreshTime.evaluate()
 		endmethod
@@ -134,14 +134,14 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 	endstruct
 
 	/**
-	* Provides the functionality of a single physical missile which can have a specific missile type, a widget source and target or three coordinate values (x, y and z).
-	* @todo Incompleted!
-	* @todo Add static methods for missile containers.
-	* @todo Collision between missiles?!
-	* @author Draculark
-	* @author Tamino Dauth
-	* @link http://warcraft.ingame.de/forum/showthread.php?s=6f44abe813a621c950b94373b91ed929&threadid=186184
-	*/
+	 * Provides the functionality of a single physical missile which can have a specific missile type, a widget source and target or three coordinate values (x, y and z).
+	 * \todo Incompleted!
+	 * \todo Add static methods for missile containers.
+	 * \todo Collision between missiles?!
+	 * \author Draculark
+	 * \author Tamino Dauth
+	 * <a href="http://warcraft.ingame.de/forum/showthread.php?s=6f44abe813a621c950b94373b91ed929&threadid=186184">source</a>
+	 */
 	struct AMissile
 		//static start members
 		private static real m_refreshTime
@@ -161,8 +161,6 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		private AVector3 m_speed
 		private unit m_unit
 		private integer m_index
-
-		implement ASystemStruct
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AMissile\"")
 
@@ -278,7 +276,7 @@ endif
 			return GetUnitZ(this.m_unit)
 		endmethod
 
-		/// Starts the missile from coordinates @param x, @param y, and @param z with angle @param angle.
+		/// Starts the missile from coordinates \p x, \p y, and \p z with angle \p angle.
 		public method start takes real x, real y, real z returns nothing
 			local real angle
 			debug if (this.onTheWay()) then
@@ -307,14 +305,14 @@ endif
 		endmethod
 
 		/**
-		* Stops the missile.
-		* This means that the missile will be destroyed, damage will be distributed, a death effect will be shown,
-		* a death sound will be played and the death function will be executed.
-		*/
+		 * Stops the missile.
+		 * This means that the missile will be destroyed, damage will be distributed, a death effect will be shown,
+		 * a death sound will be played and the death function will be executed.
+		 */
 		public method stop takes nothing returns nothing
 			local effect whichEffect
 			if (this.m_missileType.deathEffectPath() != null) then
-				set whichEffect = AddSpecialEffect(this.m_missileType.deathEffectPath(), GetUnitX(this.m_unit), GetUnitY(this.m_unit)) /// @todo Can't use Z value with special effects.
+				set whichEffect = AddSpecialEffect(this.m_missileType.deathEffectPath(), GetUnitX(this.m_unit), GetUnitY(this.m_unit)) /// \todo Can't use Z value with special effects.
 				call DestroyEffect(whichEffect)
 				set whichEffect = null
 			endif
@@ -335,7 +333,7 @@ endif
 			endif
 		endmethod
 
-		//private methods
+		// private methods
 
 		private method move takes nothing returns nothing
 			local rect mapRect = GetPlayableMapRect()
@@ -366,7 +364,7 @@ endif
 
 			if (RectContainsCoords(mapRect, newX, newY) and not IsTerrainPathable(newX, newY, PATHING_TYPE_WALKABILITY)) then //not?!
 				debug call this.print("Is pathable and on map.")
-				/// @todo Doesn't work if it's target seeking, Z value has to be shortend much more if target gets nearer to missile position?
+				/// \todo Doesn't work if it's target seeking, Z value has to be shortend much more if target gets nearer to missile position?
 				call this.m_speed.setZ(this.m_speed.z() - thistype.m_gravitationalAcceleration)
 				set newZ = GetUnitZ(this.m_unit) + this.m_speed.z()
 				debug call this.print("New X " + R2S(newX) + ", new Y " + R2S(newY) + ", new Z " + R2S(newZ) + ".")
@@ -375,7 +373,7 @@ endif
 					debug call this.print("Hit ground")
 					call this.stop()
 				elseif (this.m_missileType.collides()) then
-					/// @todo Check for things, maybe other missiles?
+					/// \todo Check for things, maybe other missiles?
 					set i = 0
 					loop
 						exitwhen (i == thistype.m_missiles.size())
@@ -415,10 +413,10 @@ endif
 
 		public static method create takes nothing returns AMissile
 			local thistype this = thistype.allocate()
-			//dynamic members
+			// dynamic members
 			set this.m_missileType = 0
 			set this.m_isPaused = true
-			//members
+			// members
 			set this.m_speed = 0
 			set this.m_unit = null
 			call thistype.m_missiles.pushBack(this)
@@ -427,9 +425,9 @@ endif
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
-			//static members
+			// static members
 			call thistype.m_missiles.erase(this.m_index)
-			//members
+			// members
 			if (this.m_speed != 0) then
 				call this.m_speed.destroy()
 			endif
@@ -437,10 +435,6 @@ endif
 				call RemoveUnit(this.m_unit)
 			endif
 			set this.m_unit = null
-		endmethod
-
-		private static method onInit takes nothing returns nothing
-			call thistype.setName("AMissile")
 		endmethod
 
 		private static method timerFunctionRefresh takes nothing returns nothing
@@ -455,25 +449,24 @@ endif
 		endmethod
 
 		/**
-		* @param gravitationalAcceleration Earth average: 9.80665.
-		*/
+		 * \param gravitationalAcceleration Earth average: 9.80665.
+		 */
 		public static method init takes real refreshTime, real gravitationalAcceleration, boolean enableCollisions returns nothing
 			debug if (refreshTime <= 0.0) then
 				debug call thistype.staticPrint("Wrong value refresh time value in AMissile struct initialization: " + R2S(refreshTime) + ".")
 			debug endif
-			//static start members
+			// static construction members
 			set thistype.m_refreshTime = refreshTime
 			set thistype.m_gravitationalAcceleration = gravitationalAcceleration * refreshTime
 			set thistype.m_enableCollisions = enableCollisions
-			//static members
+			// static members
 			set thistype.m_missiles = AIntegerVector.create()
 			set thistype.m_refreshTimer = CreateTimer()
 			call TimerStart(thistype.m_refreshTimer, thistype.m_refreshTime, true, function thistype.timerFunctionRefresh)
-			call thistype.initialize()
 		endmethod
 
 		public static method cleanUp takes nothing returns nothing
-			call thistype.uninitialize()
+			call PauseTimer(thistype.m_refreshTimer)
 			call DestroyTimer(thistype.m_refreshTimer)
 			set thistype.m_refreshTimer = null
 			//remove all missiles

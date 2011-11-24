@@ -15,21 +15,21 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 	 */
 	//! textmacro A_VECTOR takes STRUCTPREFIX, NAME, ELEMENTTYPE, NULLVALUE, MAXSIZE, STRUCTSPACE, ITERATORSPACE
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$UnaryPredicate takes $ELEMENTTYPE$ value returns boolean
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$BinaryPredicate takes $ELEMENTTYPE$ value0, $ELEMENTTYPE$ value1 returns boolean
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$UnaryFunction takes $ELEMENTTYPE$ element returns nothing //Rückgabewert wurde vorerst rausgenommen, bis ich weiß, was er bringt
 
 		/// Generator.
 		/// Allows filling some elements with the return value.
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$Generator takes nothing returns $ELEMENTTYPE$
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$BinaryOperation takes $ELEMENTTYPE$ value0, $ELEMENTTYPE$ value1 returns $ELEMENTTYPE$
 
 		$STRUCTPREFIX$ struct $NAME$Iterator[$ITERATORSPACE$]
@@ -77,9 +77,9 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 			endmethod
 
 			/**
-			* Vector iterators need container struct instance since vectors do not use nodes.
-			* @todo If you want to implement toBack and toFront (like Qt does) you'll have to save parent struct instance ...
-			*/
+			 * Vector iterators need container struct instance since vectors do not use nodes.
+			 * \todo If you want to implement toBack and toFront (like Qt does) you'll have to save parent struct instance ...
+			 */
 			public static method create takes $NAME$ container returns thistype
 				local thistype this = thistype.allocate()
 				set this.m_container = container
@@ -470,7 +470,7 @@ endif
 
 			/**
 			 * Merges \p vector into the vector, inserting all the elements of \p vector into the vector object at their respective ordered positions. This empties \p vector and increases the vector size.
-			 * @todo insert sorted?!
+			 * \todo insert sorted?!
 			 */
 			public method merge takes thistype vector returns nothing
 				local integer i = 0
@@ -486,7 +486,7 @@ endif
 			/**
 			 * The second version (template function), has the same behavior, but takes a specific function to perform the comparison operation in charge of determining the insertion points. The comparison function has to perform weak strict ordering (which basically means the comparison operation has to be transitive and irreflexive).
 			 * The merging is performed using two iterators: one to iterate through x and another one to keep the insertion point in the vector object; During the iteration of x, if the current element in x compares less than the element at the current insertion point in the list object, the element is removed from x and inserted into that location, otherwise the insertion point is advanced. This operation is repeated until either end is reached, in which moment the remaining elements of x (if any) are moved to the end of the list object and the function returns (this last operation is performed in constant time).
-			 * @todo implement mergeIf pls.
+			 * \todo implement mergeIf pls.
 			 * template <class Compare>
 			 * void merge ( list<T,Allocator>& x, Compare comp );
 			 */

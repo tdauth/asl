@@ -8,7 +8,7 @@ endfunction
 function MultiboardItemSizeByString takes string whichString returns real
 endfunction
 
-/// @todo RemoveString and ReplaceString should do their actions for ALL found strings!!!!
+/// \todo RemoveString and ReplaceString should do their actions for ALL found strings!!!!
 
 function StringRemoveCharPool takes string whichString, string charPool returns string
 	local integer i = 1

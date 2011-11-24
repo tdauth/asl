@@ -61,7 +61,7 @@ library AStructCoreNetHost requires ALibraryCoreDebugMisc, AStructCoreGeneralVec
 			loop
 				exitwhen (not SocTCPConnected(this.m_listener))
 				set message = SocReceiveMessage(this.m_listener, 100, this.m_buffer)
-				/// @todo Get sender?!
+				/// \todo Get sender?!
 				set command = BufferReadInt(this.m_buffer)
 				debug call this.print("Received command " + I2S(command))
 				if (command == thistype.commandConnect) then
@@ -107,6 +107,6 @@ library AStructCoreNetHost requires ALibraryCoreDebugMisc, AStructCoreGeneralVec
 		endmethod
 	endstruct
 
-	/// @todo Add hooks which hook native Create functions etc. and send commands to all clients.
+	/// \todo Add hooks which hook native Create functions etc. and send commands to all clients.
 
 endlibrary

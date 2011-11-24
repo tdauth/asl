@@ -50,7 +50,7 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		constant integer AShortcutY = 89
 		constant integer AShortcutZ = 90
 		// dialogs
-		/// @todo 16?
+		/// \todo 16?
 		constant integer AMaxDialogButtons = 12
 	endglobals
 
@@ -248,7 +248,7 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		return result
 	endfunction
 
-	/// @todo test please
+	/// \todo test please
 	function SetUnitVertexColourForPlayer takes player whichPlayer, unit whichUnit, real red, real green, real blue, real transparency returns nothing
 		local player localPlayer = GetLocalPlayer()
 		if (whichPlayer == localPlayer) then
@@ -258,9 +258,9 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 	endfunction
 
 	/**
-	* @author Tamino Dauth
-	* @todo Desync.
-	*/
+	 * \author Tamino Dauth
+	 * \todo Desync.
+	 */
 	function ShowUnitForPlayer takes player whichPlayer, unit whichUnit, boolean show returns nothing
 		//if (whichPlayer == GetLocalPlayer()) then
 			call ShowUnit(whichUnit, show)
@@ -271,8 +271,8 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		private sound error
 	endglobals
 
-	/// @author Vexorian
-	/// @link http://www.wc3c.net/showthread.php?t=101260
+	/// \author Vexorian
+	/// <a href="http://www.wc3c.net/showthread.php?t=101260">source</a>
 	function SimError takes player whichPlayer, string message returns nothing
 		local player localPlayer = GetLocalPlayer()
 		set message = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n|cffffcc00" + message + "|r"

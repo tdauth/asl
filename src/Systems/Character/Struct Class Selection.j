@@ -32,7 +32,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private static string m_textAbilities
 		private static string m_textDescription
 		// static members
-		private static thistype array m_playerClassSelection[12] /// @todo bj_MAX_PLAYERS, JassHelper bug
+		private static thistype array m_playerClassSelection[12] /// \todo \ref bj_MAX_PLAYERS, JassHelper bug
 		private static integer m_stack //required for the start game action
 		// construction members
 		private player m_user
@@ -263,14 +263,14 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call SetUnitInvulnerable(this.m_classUnit, true)
 			call PauseUnit(this.m_classUnit, true)
 			call SetUnitPathing(this.m_classUnit, false)
-			/// @todo Has to be set although unit is being paused?!
+			/// \todo Has to be set although unit is being paused?!
 			if (IsUnitType(this.m_classUnit, UNIT_TYPE_HERO)) then
 				call SuspendHeroXP(this.m_classUnit, true)
 			endif
 			// refresh position
 			call SetUnitPosition(this.m_classUnit, thistype.m_x, thistype.m_y)
 			//call ShowUnit(this.m_classUnit, false)
-			/// @todo Desync
+			/// \todo Desync
 			//call ShowUnitForPlayer(this.m_user, this.m_classUnit, true)
 			call SetUnitAnimation(this.m_classUnit, this.m_class.animation())
 			call PlaySoundFileForPlayer(this.m_user, this.m_class.soundPath())

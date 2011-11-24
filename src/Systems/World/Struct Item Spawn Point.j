@@ -1,4 +1,4 @@
-library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPointInterface, optional ALibraryCoreDebugMisc, AModuleCoreGeneralSystemStruct, AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreMathsPoint
+library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPointInterface, optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreMathsPoint
 
 	/**
 	 * Unfortunately there is no known possibility to register generic item death or pickup events.
@@ -21,8 +21,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		private timer m_timer
 		private boolean m_isEnabled
 		private boolean m_runs // required because of restarting before finishing!
-
-		implement ASystemStruct
 
 		//! runtextmacro A_STRUCT_DEBUG("\"AItemSpawnPoint\"")
 
@@ -169,10 +167,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 			call thistype.m_itemSpawnPoints.remove(this)
 		endmethod
 
-		private static method onInit takes nothing returns nothing
-			call thistype.setName("AItemSpawnPoint")
-		endmethod
-
 		private static method timerFunctionRespawnCheck takes nothing returns nothing
 			local AIntegerListIterator iterator = thistype.m_itemSpawnPoints.begin()
 			//debug call thistype.staticPrint("Calling item spawn points check with count of " + I2S(thistype.m_itemSpawnPoints.size()))
@@ -195,7 +189,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 			set thistype.m_itemSpawnPoints = AIntegerList.create()
 			set thistype.m_respawnTimer = CreateTimer()
 			call TimerStart(thistype.m_respawnTimer, checkRate, true, function thistype.timerFunctionRespawnCheck)
-			call thistype.initialize()
 		endmethod
 
 		public static method time takes nothing returns real
@@ -208,9 +201,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 
 		public static method pauseAll takes nothing returns nothing
 			local AIntegerListIterator iterator
-			debug if (not thistype.check("pauseAll")) then
-				debug return
-			debug endif
 			set iterator = thistype.m_itemSpawnPoints.begin()
 			loop
 				exitwhen (not iterator.hasNext())
@@ -221,9 +211,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 
 		public static method resumeAll takes nothing returns nothing
 			local AIntegerListIterator iterator
-			debug if (not thistype.check("resumeAll")) then
-				debug return
-			debug endif
 			set iterator = thistype.m_itemSpawnPoints.begin()
 			loop
 				exitwhen (not iterator.hasNext())
@@ -235,9 +222,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		// do not resume or stop the global timer since user could enable or disable single instances afterwards
 		public static method enableAll takes nothing returns nothing
 			local AIntegerListIterator iterator
-			debug if (not thistype.check("pauseAll")) then
-				debug return
-			debug endif
 			set iterator = thistype.m_itemSpawnPoints.begin()
 			loop
 				exitwhen (not iterator.hasNext())
@@ -249,9 +233,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		// do not resume or stop the global timer since user could enable or disable single instances afterwards
 		public static method disableAll takes nothing returns nothing
 			local AIntegerListIterator iterator
-			debug if (not thistype.check("disableAll")) then
-				debug return
-			debug endif
 			set iterator = thistype.m_itemSpawnPoints.begin()
 			loop
 				exitwhen (not iterator.hasNext())
@@ -262,9 +243,6 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 
 		public static method cleanUp takes nothing returns nothing
 			local AIntegerListIterator iterator
-			debug if (not thistype.check("cleanUp")) then
-				debug return
-			debug endif
 			call PauseTimer(thistype.m_respawnTimer)
 			call DestroyTimer(thistype.m_respawnTimer)
 			set iterator = thistype.m_itemSpawnPoints.begin()
@@ -275,7 +253,7 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 				call iterator.next()
 			endloop
 			call thistype.m_itemSpawnPoints.destroy()
-			call thistype.uninitialize()
 		endmethod
 	endstruct
+
 endlibrary

@@ -2,7 +2,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 
 	/// \todo Should be a static member of \ref AGui, vJass bug.
 	/// This is the generic shortcut function interface.
-	/// @param id Id of the object which belongs to the function call.
+	/// \param id Id of the object which belongs to the function call.
 	function interface AGuiOnPressShortcutAction takes integer id returns nothing
 
 	/// \todo Should be a static member of \ref AGui, vJass bug.
@@ -10,12 +10,11 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 	function interface AGuiOnPressGuiShortcutAction takes AGui gui returns nothing
 
 	/**
-	 * Represents the graphical user interface which can be used by all playing players.
-	 * Each player can have exactly one GUI.
+	 * \brief Represents the graphical user interface which can be used by all playing players. Each player can have exactly one GUI.
 	 * A GUI contains main windows which are user-defined areas on the map. That's necessary because
 	 * trackables, textes and images are map-placed objects and trackables aren't removable.
 	 * When you destroy an instance all docked main windows will be destroy automatically.
-	 * Besides user can access a single \ref ADialog instance by using method @method dialog.
+	 * Besides user can access a single \ref ADialog instance by using method \ref dialog().
 	 * There also is a simple implemention of shortcuts by creating an unit with shortcut abilities.
 	 * Unfortunately a unit can only have 12 different abilities so you can't use all ASCII keys.
 	 * Maybe shortcut abilities will be added dynamically (by checking which shortcuts are really necessary) in future.
@@ -43,7 +42,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		// static dynamic members
 		private static integer array m_shortcutAbility[thistype.m_maxShortcuts]
 		// static members
-		private static thistype array m_playerGui[12] /// bj_MAX_PLAYERS, @todo vJass bug
+		private static thistype array m_playerGui[12] /// \ref bj_MAX_PLAYERS, \todo vJass bug
 		// dynamic members
 		private AGuiOnPressShortcutAction array m_onPressShortcutAction[thistype.m_maxShortcuts]
 		private integer array m_onPressShortcutActionId[thistype.m_maxShortcuts]
@@ -170,24 +169,24 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		endmethod
 
 		/**
-		* If you dock a main window it will be destroyed when the GUI will be destroyed.
-		* @return Container index.
-		* @todo Friend relation to \ref AMainWindow. In general you do not need to use this method.
-		*/
+		 * If you dock a main window it will be destroyed when the GUI will be destroyed.
+		 * \return Container index.
+		 * \todo Friend relation to \ref AMainWindow. In general you do not need to use this method.
+		 */
 		public method dockMainWindow takes AMainWindow mainWindow returns integer
 			call this.m_mainWindows.pushBack(mainWindow)
 			return this.m_mainWindows.backIndex()
 		endmethod
 
 		/**
-		* Undocks a main window from GUI. If a main window is undocked there won't be any relationships between it and the GUI anymore.
-		* @todo Friend relation to \ref AMainWindow. In general you do not need to use this method.
-		*/
+		 * Undocks a main window from GUI. If a main window is undocked there won't be any relationships between it and the GUI anymore.
+		 * \todo Friend relation to \ref AMainWindow. In general you do not need to use this method.
+		 */
 		public method undockMainWindowByIndex takes integer index returns nothing
 			call this.m_mainWindows.erase(index)
 		endmethod
 
-		/// @todo Friend relation to \ref AMainWindow, do not use!
+		/// \todo Friend relation to \ref AMainWindow, do not use!
 		public method hideShownMainWindowAndSetNew takes AMainWindow mainWindow returns nothing
 			if (this.m_shownMainWindow != 0) then
 				call this.m_shownMainWindow.hide.evaluate()
@@ -195,7 +194,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 			set this.m_shownMainWindow = mainWindow
 		endmethod
 
-		/// @todo Friend relation to \ref AMainWindow, do not use!
+		/// \todo Friend relation to \ref AMainWindow, do not use!
 		public method resetShownMainWindow takes nothing returns nothing
 			set this.m_shownMainWindow = 0
 		endmethod
@@ -322,7 +321,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		endmethod
 
 		/// Don't use the constructor.
-		/// Use @method getPlayerGui.
+		/// Use \ref playerGui().
 		/// Shortcuts will be disabled first.
 		private static method create takes player whichPlayer returns thistype
 			local thistype this = thistype.allocate()
@@ -387,12 +386,12 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 		endmethod
 
 		/**
-		* @param shortcutHandlerUnitType The unit type of the unit which is selected during the display time of the GUI. It should have all shortcut abilities.
-		* @param shortcutHandlerX The x coordinate of the shortcut handlers position.
-		* @param shortcutHandlerY The y coordinate of the shortcut handlers position.
-		* @param textOk The text which is displayed as Ok text.
-		* @param shortcutOk The shortcut which is used for the Ok text.
-		*/
+		 * \param shortcutHandlerUnitType The unit type of the unit which is selected during the display time of the GUI. It should have all shortcut abilities.
+		 * \param shortcutHandlerX The x coordinate of the shortcut handlers position.
+		 * \param shortcutHandlerY The y coordinate of the shortcut handlers position.
+		 * \param textOk The text which is displayed as Ok text.
+		 * \param shortcutOk The shortcut which is used for the Ok text.
+		 */
 		public static method init takes integer shortcutHandlerUnitType, real shortcutHandlerX, real shortcutHandlerY, string textOk, integer shortcutOk returns nothing
 			local integer i
 			// static construction members

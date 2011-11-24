@@ -23,7 +23,7 @@ endif
  * \sa ASystems
  * \endif
 
- * \section japi jAPI
+ * \defgroup japi jAPI
  * The <a href="http://www.wc3c.net/showthread.php?t=79652">jAPI</a> has been created to support various new JASS natives.
  * Unfortunately, jAPI doesn't seem to be maintained anymore and therefore only works with older versions of Warcraft III: The Frozen Throne up to 1.21b (just like <a href="http://www.wc3c.net/showthread.php?t=86652">war3err</a>.
  * Amongst some native container functions they provide stop watch natives which can be used for benchmarks, probably more exact than using \ref timer.
@@ -32,7 +32,7 @@ endif
  * \ref Asl.useJapi() returns the same result. \ref Asl.japiVersion() returns the supported jAPI version as string.
  * \note If you want to have support for the current version of Warcraft III: The Frozen Throne, please use \ref RtC.
 
- * \section rtc RtC
+ * \defgroup rtc RtC
  * <a href=http://www.wc3c.net/showthread.php?t=109255>Reinventing the Craft</a> (also refered as nAPI) provides some of the natives provided by \ref japi but in addition much more
  * like string, bit and mouse natives.
  * Checkout file \ref rtc.j to get a list of all natives and constants provided by RtC.
@@ -44,6 +44,15 @@ endif
  * <li>\ref AMovement -> only if \ref A_FPS_MOVEMENT is enabled as well</li>
  * </ul>
  * \note There had been another version of the project with its own <a href="http://www.hiveworkshop.com/forums/reinventing-craft-458/">board<a> which is obsolete now but contains some interesting FPS code examples.
+
+ * \defgroup war3err war3err
+ * If game is started with <a href="http://www.wc3c.net/showthread.php?t=86652">war3err</a> debugging support, you can use some more functions for better debugging.
+ *
+ * \defgroup nativedebug Native debugging
+ * If global constant \ref A_DEBUG_NATIVES is set to true and script has been compiled in debug mode, some JASS natives will be debugged due to usual issues
+ * of Warcraft III's interpreter.
+ * Debugging is realized by using function hooks.
+ * \note You can check out all known native bugs on <a href="http://www.wc3c.net/showthread.php?t=80693">Wc3C.net<a> or <a href="http://mappedia.de/Liste_bekannter_Fehler">Mappedia (German)</a>.
  */
 library Asl requires ACore, optional ASystems
 endlibrary

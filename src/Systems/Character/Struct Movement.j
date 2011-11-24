@@ -1,39 +1,11 @@
-/// The rtc.j file is required.
-/// Jumping is not implemented yet.
-/// Do not use this library, it is unfinished!
 library AStructSystemsCharacterMovement requires optional ALibraryCoreDebugMisc, AStructCoreGeneralAsl, AStructCoreGeneralHashTable, ALibraryCoreInterfaceMisc, AStructSystemsCharacterAbstractCharacterSystem
 
-	//Die Blocker-Suche noch weiter ausarbeiten und auch die Entfernung für die Kamera damit berechnen
-	//Herausfinden wir man Parameter in die Funktion der Blocker übergeben kann.
-	//private function FilterFunctionIsDestructableBlocker takes nothing returns boolean
-		//local destructable FilterDestructable = GetFilterDestructable()
-		//local boolean Result = false
-		//if (GetDestructableTypeId(FilterDestructable) == 'YTpb') then //Verlauf-Blocker Boden
-		//set Result = true
-		//elseif (GetDestructableTypeId(FilterDestructable) == 'YTpc') then  //Verlauf-Blocker Boden (groß)
-		//set Result = true
-		//elseif (GetDestructableTypeId(FilterDestructable) == 'YTfb') then  //Verlauf-Blocker Beides (groß)
-		//set Result = true
-		//elseif (GetDestructableTypeId(FilterDestructable) == 'YTfc') then  //Verlauf-Blocker Beides
-		//set Result = true
-		//endif
-		//set FilterDestructable = null
-		//return Result
-	//endfunction
-
-	//function IsBlockerInRange takes real X, real Y, real Angle, real AngleWidth, real Distance returns boolean
-		//local real RealAngle = (AngleWidth / 2.00)
-		//local real X1 = GetPolarProjectionX(X, (Angle + RealAngle), 0.00)
-		//local real Y1 = GetPolarProjectionY(Y, (Angle + RealAngle), 0.00)
-		//local real X2 = GetPolarProjectionX(X, (Angle - RealAngle), Distance)
-		//local real Y2 = GetPolarProjectionY(Y, (Angle - RealAngle), Distance)
-		//local rect BlockerRect = Rect(X1, Y1, X2, Y2)
-		//call EnumDestructablesInRect(BlockerRect, Filter(function FilterFunctionIsDestructableBlocker), null)
-		//call RemoveRect(BlockerRect)
-		//set BlockerRect = null
-		//return false
-	//endfunction
-
+	/**
+	 * \brief Provides character movement based on arrow keys. Doesn't use \ref AArrowKeys.
+	 * \sa AFight
+	 * \sa AView
+	 * \todo Finish!
+	 */
 	struct AMovement extends AAbstractCharacterSystem
 		// static constant members
 		private static constant integer stateMoveForward = 0
@@ -466,11 +438,11 @@ endif
 //static if (not A_RTC or not A_FPS_MOVEMENT) then
 static if (not A_FPS_MOVEMENT) then
 		/**
-		* @param refreshRate 0.01
-		* @param speed 5.0
-		* @param angle 90.0
-		* @param stopWhileStanding false Character stops if no key is pressed.
-		*/
+		 * \param refreshRate 0.01
+		 * \param speed 5.0
+		 * \param angle 90.0
+		 * \param stopWhileStanding false Character stops if no key is pressed.
+		 */
 		public static method init takes real refreshRate, real speed, real angle, boolean stopWhileStanding returns nothing
 			// static construction members
 			set thistype.refreshRate = refreshRate
@@ -480,15 +452,15 @@ static if (not A_FPS_MOVEMENT) then
 		endmethod
 else
 		/**
-		* @param fpsKeyMoveForward 87 - W
-		* @param fpsKeyMoveBackward 83 - S
-		* @param fpsKeyTurnRight 68 - D
-		* @param fpsKeyTurnLeft 65 - A
-		* @param refreshRate 0.01
-		* @param speed 5.0
-		* @param angle 90.0
-		* @param stopWhileStanding false Character stops if no key is pressed.
-		*/
+		 * \param fpsKeyMoveForward 87 - W
+		 * \param fpsKeyMoveBackward 83 - S
+		 * \param fpsKeyTurnRight 68 - D
+		 * \param fpsKeyTurnLeft 65 - A
+		 * \param refreshRate 0.01
+		 * \param speed 5.0
+		 * \param angle 90.0
+		 * \param stopWhileStanding false Character stops if no key is pressed.
+		 */
 		public static method init takes integer fpsKeyMoveForward, integer fpsKeyMoveBackward, integer fpsKeyTurnRight, integer fpsKeyTurnLeft, real refreshRate, real speed, real angle, boolean stopWhileStanding returns nothing
 			// static construction members
 			set thistype.fpsKeyMoveForward = fpsKeyMoveForward

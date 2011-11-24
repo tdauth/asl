@@ -199,7 +199,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	 */
 	struct AInventory extends AAbstractCharacterSystem
 		// static constant members, useful for GUIs
-		public static constant integer maxEquipmentTypes = 5//AItemType.maxEuqipmentTypes /// @todo vJass bug //AClassCharacterItemType
+		public static constant integer maxEquipmentTypes = 5 /// \todo \ref AItemType.maxEuqipmentTypes, vJass bug
 		public static constant integer maxRucksackItems = 128
 		public static constant integer maxRucksackPages = 32 //maxRucksackItems / maxRucksackItemsPerPage
 		public static constant integer maxRucksackItemsPerPage = 4
@@ -350,7 +350,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method unitAddItemToSlotById takes unit whichUnit, integer itemType, integer slot returns boolean
 			local boolean result
 			local boolean isBeingPaused
-			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			// Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
 			if (IsUnitPaused(whichUnit)) then
 				set isBeingPaused = true
 				call PauseUnit(whichUnit, false)
@@ -367,7 +367,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method unitDropItemPoint takes unit whichUnit, item whichItem, real x, real y returns boolean
 			local boolean result
 			local boolean isBeingPaused
-			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			// Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
 			if (IsUnitPaused(whichUnit)) then
 				set isBeingPaused = true
 				call PauseUnit(whichUnit, false)
@@ -407,7 +407,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_rucksackItemData[index] = 0
 		endmethod
 
-		/// Removes the first found item with item type id @param itemTypeId.
+		/// Removes the first found item with item type id \p itemTypeId.
 		public method removeFromRucksackByTypeId takes integer itemTypeId, boolean drop returns nothing
 			local integer i = 0
 			loop
@@ -509,7 +509,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.disableEquipment()
 			endif
 
-			/// @todo wait for calling methods above?
+			/// \todo wait for calling methods above?
 			call DisableTrigger(this.m_openTrigger)
 			call DisableTrigger(this.m_orderTrigger)
 			call DisableTrigger(this.m_pickupTrigger)
@@ -629,7 +629,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.enableEquipment()
 			endif
 
-			/// @todo wait for calling methods above?
+			/// \todo wait for calling methods above?
 			call EnableTrigger(this.m_openTrigger)
 			call EnableTrigger(this.m_orderTrigger)
 			call EnableTrigger(this.m_pickupTrigger)
@@ -919,7 +919,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.setRucksackItem(index, inventoryItemData, add)
 		endmethod
 
-		/// @todo Added item player check!
 		private method equipItem takes item usedItem, boolean dontMoveToRucksack, boolean swapWithAlreadyEquipped, boolean showEquipMessage returns nothing
 			local AItemType itemType
 			local integer equipmentType
@@ -1556,10 +1555,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		* @param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in rucksack.
-		* @param openRucksackAbilityId This ability is added to the character's unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
-		* @param allowPickingUpFromOthers If this value is true characters are allowed to pick up items which are owned by other playing users (human controlled).
-		*/
+		 * \param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in rucksack.
+		 * \param openRucksackAbilityId This ability is added to the character's unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
+		 * \param allowPickingUpFromOthers If this value is true characters are allowed to pick up items which are owned by other playing users (human controlled).
+		 */
 		public static method init takes integer leftArrowItemType, integer rightArrowItemType, integer openRucksackAbilityId, boolean allowPickingUpFromOthers, string textUnableToEquipItem, string textEquipItem, string textUnableToAddRucksackItem, string textAddItemToRucksack, string textUnableToMoveRucksackItem, string textDropPageItem, string textMovePageItem, string textOwnedByOther returns nothing
 			// static construction members
 			set thistype.m_leftArrowItemType = leftArrowItemType

@@ -617,7 +617,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			endloop
 		endmethod
 
-		/// @param pingRate If this value is 0.0 or smaller there won't be any pings.
+		/// \param pingRate If this value is 0.0 or smaller there won't be any pings.
 		public static method init takes real pingRate, string stateNewSoundPath, string stateCompletedSoundPath, string stateFailedSoundPath, string textStateNew, string textStateCompleted, string textStateFailed, string textRewardLevels, string textRewardSkillPoints, string textRewardExperience, string textRewardStrength, string textRewardAgility, string textRewardIntelligence, string textRewardGold, string textRewardLumber returns nothing
 			// static construction members
 			set thistype.m_pingRate = pingRate

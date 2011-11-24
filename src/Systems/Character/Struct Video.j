@@ -257,8 +257,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private static integer m_skippingPlayers
 		private static trigger m_skipTrigger
 		private static AActorData m_actor //copy of first character
-		private static AVideoPlayerData array m_playerData[12] /// @todo bj_MAX_PLAYERS
-		private static AVideoCharacterData array m_playerCharacterData[12] /// @todo bj_MAX_PLAYERS
+		private static AVideoPlayerData array m_playerData[12] /// \todo \ref bj_MAX_PLAYERS
+		private static AVideoCharacterData array m_playerCharacterData[12] /// \todo \ref bj_MAX_PLAYERS
 		private static AIntegerVector m_actorData
 		private static real m_timeOfDay
 		// dynamic members
@@ -386,7 +386,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_skippingPlayers = 0
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			call TriggerSleepAction(thistype.m_waitTime)
-			/// @todo disable experience gain of all characters?
+			/// \todo disable experience gain of all characters?
 			call thistype.savePlayerData()
 			set thistype.m_timeOfDay = GetTimeOfDay()
 			call ATalk.hideAllEffects()

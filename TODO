@@ -1,5 +1,28 @@
+2011-11-24 Tamino Dauth <tamino@cdauth.eu>
+* 1.3 preparings:
+Test
+static if (DEBUG_MODE) then
+	//! runtextmacro A_STRUCT_DEBUG("\"MyStruct\"")
+endif
+Test
+* test A_DEBUG_NATIVES
+* test ResetTerrainFogForPlayer() for desync
+* fix IsUnitInvulnerable()
+* test ALibraryCoreInterfaceCamera functions for desync
+* test AKillQuestItem.
+* ShowBashTextTagForPlayer() needs proper colors?
+* Fix CreateImageForPlayer()
+* Test SetUnitVertexColourForPlayer()
+* Fix ShowUnitForPlayer()'s desync
+* Revise AIndicator.
+* Improve merge() of A_VECTOR.
+* TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
+* Fix ARoutine and A_MAP.
+* No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
+
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706
+* Another snippet: http://www.hiveworkshop.com/forums/jass-resources-412/snippet-reviveunit-186696/
 
 2011-11-20 Tamino Dauth <tamino@cdauth.eu>
 * ARoutine: Test revision.

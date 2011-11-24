@@ -125,7 +125,7 @@ library AStructCoreGeneralHashTable
 		//! runtextmacro AHashTableHandleOperationMacro("region", "Region", "region")
 		//! runtextmacro AHashTableHandleOperationMacro("fogstate", "FogState", "fogState")
 		//! runtextmacro AHashTableHandleOperationMacro("fogmodifier", "FogModifier", "fogModifier")
-		///! runtextmacro AHashTableHandleOperationMacro("agent", "Agent", "agent") /// @todo Missing native
+		///! runtextmacro AHashTableHandleOperationMacro("agent", "Agent", "agent") /// \todo Missing native
 		//! runtextmacro AHashTableHandleOperationMacro("hashtable", "Hashtable", "hashtable")
 
 		/// Flushes all data of the hashtable.

@@ -29,10 +29,10 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 	endstruct
 
 	/**
-	* @todo vJass bug, should be a part of @struct AMultiboardBar.
-	* This represents the function which controls both MultiboardBar values:
-	* Value and maximum value.
-	*/
+	 * \todo vJass bug, should be a part of \ref AMultiboardBar.
+	 * This represents the function which controls both MultiboardBar values:
+	 * Value and maximum value.
+	 */
 	function interface AMultiboardBarValueFunction takes AMultiboardBar multiboardBar returns real
 
 	/**

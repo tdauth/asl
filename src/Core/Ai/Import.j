@@ -1,3 +1,3 @@
-/// @todo Implement AI module.
+/// \todo Implement AI module.
 library ACoreAi
 endlibrary

@@ -1,13 +1,13 @@
 library AStructCoreInterfaceIndicator requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable
 
-	/// @todo Some dynamic members could not be dynamic!
-	/// @todo Implement as abstract struct and add child structs with various object types.
+	/// \todo Some dynamic members could not be dynamic!
+	/// \todo Implement as abstract struct and add child structs with various object types.
 	struct AIndicator
-		//static constant members
+		// static constant members
 		public static constant integer objectTypeImage = 0
 		public static constant integer objectTypeTextTag = 1
 		public static constant integer objectTypeUnit = 2
-		//dynamic members
+		// dynamic members
 		private handle m_object
 		private integer m_objectType
 		private real m_rate //test if there are errors because it is dynamic
@@ -16,14 +16,14 @@ library AStructCoreInterfaceIndicator requires optional ALibraryCoreDebugMisc, A
 		private real m_green
 		private real m_blue
 		private real m_transparency
-		//members
+		// members
 		private trigger m_refreshTrigger //= null
 		private real m_elapsedTime //= 0.00 //Vergangene Zeit
 		private boolean m_firstTime //= true
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AIndicator\"")
 
-		//dynamic member methods
+		// dynamic member methods
 
 		public method setObject takes handle object returns nothing
 			set this.m_object = object

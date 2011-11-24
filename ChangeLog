@@ -1,3 +1,13 @@
+2011-11-24 Tamino Dauth <tamino@cdauth.eu>
+* Improved API documentation.
+* ASystemStruct: Dropped.
+* ABenchmark: Added additional checks to start() and end().
+* Removed some temporary variables.
+* AUnitSpell: allyChannelLoopCondition() returns true on stunned units, as well.
+* ACharacterSpell: allyChannelLoopCondition() returns true on stunned units, as well.
+* Fixed chars parameter of ALibraryCoreMathsConversionMacro.
+* AMissile: Pauses timer before destruction in cleanUp().
+
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Improved API documentation.
 

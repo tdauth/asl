@@ -134,7 +134,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			set triggeringTrigger = null
 		endmethod
 
-		/// @todo upgradeAction won't be called correctly
+		/// \todo upgradeAction won't be called correctly
 		private method createUpgradeTrigger takes nothing returns nothing
 			local event triggerEvent
 			local conditionfunc conditionFunction
@@ -193,8 +193,8 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			set triggerAction = null
 		endmethod
 
-		/// @param character Used character.
-		/// @param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
+		/// \param character Used character.
+		/// \param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
 		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction returns thistype
 			local thistype this = thistype.allocate(character)
 			//start members
@@ -250,9 +250,8 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			return IsUnitDeadBJ(target)
 		endmethod
 
-		/// @todo Add IsUnitStunned
 		public static method allyChannelLoopCondition takes unit target returns boolean
-			return IsUnitDeadBJ(target)// or
+			return IsUnitDeadBJ(target) or IsUnitType(target, UNIT_TYPE_STUNNED)
 		endmethod
 	endstruct
 

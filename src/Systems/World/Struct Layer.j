@@ -1,4 +1,4 @@
-library AStructSystemsWorldLayer requires AModuleCoreGeneralSystemStruct, AStructCoreGeneralList, ALibraryCoreDebugMisc, ALibraryCoreMathsHandle, ALibraryCoreMathsUnit
+library AStructSystemsWorldLayer requires AStructCoreGeneralList, ALibraryCoreDebugMisc, ALibraryCoreMathsHandle, ALibraryCoreMathsUnit, optional AStructCoreStringFormat
 
 	private struct ARegionData
 		private region m_region
@@ -57,7 +57,7 @@ library AStructSystemsWorldLayer requires AModuleCoreGeneralSystemStruct, AStruc
 	 * the z-axis.
 	 * As you can't do this by using the terrain editor or the Warcraft engine itself this structure
 	 * uses the native function SetUnitZ and turns off units pathing (by using
-	 * native function \ref SetUnitPathing) to be usable on water and other blocking regions.
+	 * native function \ref SetUnitPathing()) to be usable on water and other blocking regions.
 	 * Each layer consists of several regions.
 	 * Each region has its own specific meaning and all regions should be placed in specific order
 	 * that the layer can be used correctly.
@@ -82,8 +82,6 @@ library AStructSystemsWorldLayer requires AModuleCoreGeneralSystemStruct, AStruc
 		private trigger m_leaveTrigger
 		private trigger m_regionTrigger
 		private trigger m_boundsTrigger
-
-		implement ASystemStruct
 
 		//! runtextmacro A_STRUCT_DEBUG("\"ALayer\"")
 
@@ -119,7 +117,7 @@ library AStructSystemsWorldLayer requires AModuleCoreGeneralSystemStruct, AStruc
 
 		public method removeExitRegion takes region whichRegion returns nothing
 			call this.m_exitRegions.remove(whichRegion)
-			/// @todo Remove event
+			/// \todo Remove event
 		endmethod
 
 		public method addRegion takes region whichRegion, real z returns nothing
@@ -153,7 +151,7 @@ static if (DEBUG_MODE) then
 endif
 			call this.m_regions.remove(data)
 			call data.destroy()
-			/// @todo Remove events
+			/// \todo Remove events
 		endmethod
 
 		public stub method onUnitEnters takes unit whichUnit returns nothing

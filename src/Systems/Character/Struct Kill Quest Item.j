@@ -1,6 +1,6 @@
 library AStructSystemsCharacterKillQuestItem requires ALibraryCoreStringConversion, AStructSystemsCharacterQuest, AStructSystemsCharacterQuestItem
 
-	/// @state untested
+	/// \todo untested
 	struct AKillQuestItem extends AQuestItem
 		// static construction members
 		private static string message
@@ -57,9 +57,9 @@ library AStructSystemsCharacterKillQuestItem requires ALibraryCoreStringConversi
 		endmethod
 
 		/**
-		* @param unitTypeId If this value is 0 all unit types can kill the target unit type.
-		* @param targetUnitTypeId If this value is 0 all unit types can be killed by an unit-type unit.
-		*/
+		 * \param unitTypeId If this value is 0 all unit types can kill the target unit type.
+		 * \param targetUnitTypeId If this value is 0 all unit types can be killed by an unit-type unit.
+		 */
 		public static method create takes AQuest usedQuest, string description, integer unitTypeId, integer targetUnitTypeId, integer count returns thistype
 			local thistype this = thistype.allocate(usedQuest, description)
 			// construction members

@@ -80,8 +80,8 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		/**
-		* @param facing If this value is smaller than 0 it will be random (between 0 and 360 degrees).
-		*/
+		 * \param facing If this value is smaller than 0 it will be random (between 0 and 360 degrees).
+		 */
 		public static method create takes real x, real y, real facing returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_unitPool = CreateUnitPool()
@@ -247,10 +247,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		/**
-		* Note that after unit \p whichUnit has died there will be spawned a new RANDOM unit from unit pool.
-		* @param weight Weight of added unit type. This value has no effects if \p addType is false.
-		* @return Returns the index of the added member.
-		*/
+		 * Note that after unit \p whichUnit has died there will be spawned a new RANDOM unit from unit pool.
+		 * \param weight Weight of added unit type. This value has no effects if \p addType is false.
+		 * \return Returns the index of the added member.
+		 */
 		public method addUnitWithType takes unit whichUnit, real weight returns integer
 			local integer index = this.addMember(GetUnitX(whichUnit), GetUnitY(whichUnit), GetUnitFacing(whichUnit))
 			call this.addUnitType(index, GetUnitTypeId(whichUnit), weight)
@@ -462,13 +462,13 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		/**
-		* Initializes the spawn point system. Please call this method before using anything of this system.
-		* @param time Time which has to elapse before the units respawn.
-		* @param effectFilePath File fath of the effect which is shown when the units respawn. If this value is null there won't be shown any effect.
-		* @param soundPath File path of the sound which is played when the units respawn. If this value is null there won't be played any sound.
-		* @param dropChance The chance (percentaged) for dropping items.
-		* @param owner The player who owns all spawn point units.
-		*/
+		 * Initializes the spawn point system. Please call this method before using anything of this system.
+		 * \param time Time which has to elapse before the units respawn.
+		 * \param effectFilePath File fath of the effect which is shown when the units respawn. If this value is null there won't be shown any effect.
+		 * \param soundPath File path of the sound which is played when the units respawn. If this value is null there won't be played any sound.
+		 * \param dropChance The chance (percentaged) for dropping items.
+		 * \param owner The player who owns all spawn point units.
+		 */
 		public static method init takes real time, string effectFilePath, string soundFilePath, integer dropChance, boolean distributeItems, player owner, string textDistributeItem returns nothing
 			// static construction members
 			set thistype.m_time = time

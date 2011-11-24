@@ -48,7 +48,7 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 
 		//dynamic members
 
-		/// The @param onShowCondition will be checked before the main window should be displayed.
+		/// The \p onShowCondition will be checked before the main window should be displayed.
 		/// If it returns false the main window won't be displayed.
 		public method setOnShowCondition takes AMainWindowOnShowAction onShowCondition returns nothing
 			set this.m_onShowCondition = onShowCondition
@@ -83,8 +83,8 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 		endmethod
 
 		/**
-		* @param tooltipX If this value is less than 0.0 tooltip x will be set to corresponding widget's x.
-		*/
+		 * \param tooltipX If this value is less than 0.0 tooltip x will be set to corresponding widget's x.
+		 */
 		public method setTooltipX takes real tooltipX returns nothing
 			set this.m_tooltipX = tooltipX
 		endmethod
@@ -94,8 +94,8 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 		endmethod
 
 		/**
-		* @param tooltipY If this value is less than 0.0 tooltip y will be set to corresponding widget's y.
-		*/
+		 * \param tooltipY If this value is less than 0.0 tooltip y will be set to corresponding widget's y.
+		 */
 		public method setTooltipY takes real tooltipY returns nothing
 			set this.m_tooltipY = tooltipY
 		endmethod
@@ -203,7 +203,7 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 					call DestroyImage(this.m_tooltipBackground)
 					set this.m_tooltipBackground = null
 				endif
-				set this.m_tooltipBackground = CreateImageForPlayer(this.gui().player(), this.m_tooltipBackgroundImageFilePath, x, y, 5.0, 50.0, 50.0) /// @todo Setup correct size to tooltip text, should be higher than normal images
+				set this.m_tooltipBackground = CreateImageForPlayer(this.gui().player(), this.m_tooltipBackgroundImageFilePath, x, y, 5.0, 50.0, 50.0) /// \todo Setup correct size to tooltip text, should be higher than normal images
 				call ShowImage(this.m_tooltipBackground, true)
 
 			endif
@@ -250,7 +250,7 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			call ClearScreenMessagesForPlayer(this.gui().player())
 			call CameraSetupApplyForPlayer(false, thistype.m_cameraSetup, this.gui().player(), 0.0)
 			call PanCameraToTimedForPlayer(this.gui().player(), x, y, 0.0)
-			call SetCameraBoundsToPointForPlayer(this.gui().player(), x, y) /// @todo DEBUG
+			call SetCameraBoundsToPointForPlayer(this.gui().player(), x, y) /// \todo DEBUG
 			//widgets
 			set i = 0
 			loop
@@ -290,7 +290,7 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			call ResetToGameCameraForPlayer(this.gui().player(), 0.0)
 			call FogModifierStop(this.m_visibilityModifier)
 			call FogModifierStart(this.m_blackMaskModifier)
-			call this.m_gui.loadPlayerData() /// @todo DESYNC
+			call this.m_gui.loadPlayerData() /// \todo DESYNC
 			call this.hideTooltip()
 			//widgets
 			set i = 0
@@ -308,13 +308,13 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			call this.onHide()
 		endmethod
 
-		/// Friend relationship to @struct AWidget, do not use.
+		/// Friend relationship to \ref AWidget, do not use.
 		public method dockWidget takes AWidget usedWidget returns integer
 			call this.m_widgets.pushBack(usedWidget)
 			return this.m_widgets.backIndex()
 		endmethod
 
-		/// Friend relationship to @struct AWidget, do not use.
+		/// Friend relationship to \ref AWidget, do not use.
 		public method undockWidgetByIndex takes integer index returns nothing
 			call this.m_widgets.erase(index)
 		endmethod
@@ -342,10 +342,10 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 		endmethod
 
 		/**
-		* @param x Top left edge x.
-		* @param y Top left edge y.
-		* @param shortcut If this value is -1 main window won't have any shortcut.
-		*/
+		 * \param x Top left edge x.
+		 * \param y Top left edge y.
+		 * \param shortcut If this value is -1 main window won't have any shortcut.
+		 */
 		public static method create takes AGui gui, AStyle style, real x, real y, real sizeX, real sizeY, boolean useShortcuts, integer shortcut returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
@@ -431,15 +431,15 @@ endif
 			loop
 				exitwhen (this.m_widgets.empty())
 				call AWidget(this.m_widgets.back()).destroy.evaluate()
-				/// @todo don't pop back, is in destructor, check for errors
+				/// \todo don't pop back, is in destructor, check for errors
 			endloop
 			call this.m_widgets.destroy()
 		endmethod
 
 		/**
-		* @param cameraSetup The camera setup which is used as the players view on the main window.
-		* @param tooltipSoundPath Path of the sound which is played when player drags the cursor over the related object (which has its own tooltip). If this value is null there won't be played any sound.
-		*/
+		 * \param cameraSetup The camera setup which is used as the players view on the main window.
+		 * \param tooltipSoundPath Path of the sound which is played when player drags the cursor over the related object (which has its own tooltip). If this value is null there won't be played any sound.
+		 */
 		public static method init takes camerasetup cameraSetup, string tooltipSoundPath returns nothing
 			set thistype.m_cameraSetup = cameraSetup
 			set thistype.m_tooltipSoundPath = tooltipSoundPath

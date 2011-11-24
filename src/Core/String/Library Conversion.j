@@ -91,11 +91,10 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
-	* I changed the function and called my own string functions.
-	* @param colour If this value is null function will use "ffffcc00".
-	* @author Peppar
-	* @link http://www.wc3jass.com/
-	*/
+	 * \param colour If this value is null function will use "ffffcc00".
+	 * \author Peppar
+	 * <a href="http://www.wc3jass.com/">source</a>
+	 */
 	function HighlightShortcut takes string whichString, integer shortcut, string colour returns string
 		local string newShortcut = AsciiToChar(shortcut)
 		local integer index = FindString(whichString, newShortcut)
@@ -109,7 +108,7 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
-	 * @author Extrarius
+	 * \author Extrarius
 	 * <a href="http://www.wc3jass.com/">source</a>
 	 */
 	function GetExternalString takes integer index returns string
@@ -125,13 +124,16 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
-	 * Same function as \ref GetLocalizedString with shorted identifier.
+	 * Same function as \ref GetLocalizedString() with shorted identifier.
 	 * \return Returns translated string from map string file ("war3map.wts") or game string files ("UI/FrameDef/.fdf").
 	 * \note If string won't be found it returns value of parameter source.
 	 * Usually World Editor's trigger editor replaces all function usages automatically by string source identifiers and adds strings to "war3map.wts" file.
 	 * \note Shortcuts and tooltips can be customized in file "CustomKeys.txt" in Warcraft 3 installation directory.
 	 * If you use source code you'll have to use tools like vjasstrans to generate that file.
-	 * \sa GetLocalizedString, trp, sc, AFormat
+	 * \sa GetLocalizedString
+	 * \sa trp()
+	 * \sa sc
+	 * \sa AFormat
 	 */
 	function tr takes string source returns string
 		return GetLocalizedString(source)

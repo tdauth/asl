@@ -16,7 +16,6 @@
 //! import "Core/General/Library Player.j"
 //! import "Core/General/Library Timer.j"
 //! import "Core/General/Library Unit.j"
-//! import "Core/General/Module System Struct.j"
 
 /**
  * \fn StartStockUpdates
@@ -36,13 +35,13 @@
  * \return Returns dropped item handle.
  * \sa UnitDropItem
 
- * \section wrappers Wrappers
+ * \defgroup wrappers Wrappers
  * There are various wrapper structures which provide nearly the same functionality of a default native JASS type but some extras, as well.
  * \ref AForce can be used to get the same functions as there are for native type \ref force but you get random access to force members, too.
  * \ref AGroup does the same for native type \ref group.
  * Finally, \ref AHashTable provides access to one single \ref hashtable but in a way like for \ref gamecache (which had been used before), too.
 
- * \section containers Containers
+ * \defgroup containers Containers
  * ASL provides some different container types based on <a href="http://www.cplusplus.com/reference/stl">C++ STL</a> and provided through vJass's text macro feature.
  * For simple containers which do usually only grow at their end you can use \ref A_VECTOR.
  * There is a more specialized version for numeric operations, as well called \ref A_NUMERIC_VECTOR.
@@ -87,7 +86,7 @@
  * \note If you're going to use any container structure for storing pointers you should rather use an existing integer based container than creating a new text macro instance which generates a lot of code although it could be more type safe (actually type safety isn't implemented in vJass that strong at all).
  * \note As you can see there are many default containers for native handle-based types. Unfortunately, we cannot do downcasts anymore (since return bug has been fixed) so we need to generate a container structure for each type seperately instead of using the handle-based container for all derived types.
 
- * \section foreach foreach
+ * \defgroup foreach foreach loops
  * foreach loops can be used to iterate through container types (\ref containers).
  * They are implemented via text macros and you do not have to consider any bounds in code anymore.
  * All container types which do offer iterators can be used in foreach loops.
@@ -104,7 +103,7 @@
  * The second version requires a local variable of value type of the used container.
  * It's easier for people who don't any iterator and you only have to declare another local variable and the name of the container's iterator type (which is required since the text macro can't detect it automatically).
  *
- * \warning The foreach statements use the global variable \ref aIterator which can be overwritten by silmutan TODO foreach statements, so please only use any foreach statement if you're really, really sure that there won't be such a statement at the same time (don't use functions like \ref TriggerSleepAction()). It can be compared to "For Integer A" and "For Integer B" trigger actions which do use a global variable, as well.
+ * \warning The foreach statements use the global variable \ref aIterator which can be overwritten by simultaneous foreach statements, so please only use any foreach statement if you're really, really sure that there won't be such a statement at the same time (don't use functions like \ref TriggerSleepAction()). It can be compared to "For Integer A" and "For Integer B" trigger actions which do use a global variable, as well.
  *
  * Here is an example of how foreach loops can be used:
  * \code
@@ -158,5 +157,5 @@
 	endfunction
  * \endcode
  */
-library ACoreGeneral requires AInterfaceCoreGeneralContainer, AStructCoreGeneralAsl, AStructCoreGeneralForce, AStructCoreGeneralGroup, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralMap, AStructCoreGeneralNumericVector, AStructCoreGeneralSignal, AStructCoreGeneralSlkTableEntry, AStructCoreGeneralStack, AStructCoreGeneralVector, ALibraryCoreGeneralConversion, ALibraryCoreGeneralGame, ALibraryCoreGeneralItem, ALibraryCoreGeneralPlayer, ALibraryCoreGeneralTimer, ALibraryCoreGeneralUnit, AModuleCoreGeneralSystemStruct
+library ACoreGeneral requires AInterfaceCoreGeneralContainer, AStructCoreGeneralAsl, AStructCoreGeneralForce, AStructCoreGeneralGroup, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralMap, AStructCoreGeneralNumericVector, AStructCoreGeneralSignal, AStructCoreGeneralSlkTableEntry, AStructCoreGeneralStack, AStructCoreGeneralVector, ALibraryCoreGeneralConversion, ALibraryCoreGeneralGame, ALibraryCoreGeneralItem, ALibraryCoreGeneralPlayer, ALibraryCoreGeneralTimer, ALibraryCoreGeneralUnit
 endlibrary

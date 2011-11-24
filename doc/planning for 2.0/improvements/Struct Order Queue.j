@@ -5,7 +5,7 @@ library AStructCoreAiOrderQueue
 
 	/**
 	* Used on single unit.
-	* @todo add text macro A_QUEUE
+	* \todo add text macro A_QUEUE
 	*/
 	struct AOrderQueue extends AIntegerQueue
 	endstruct

@@ -1,11 +1,10 @@
 library ALibraryCoreDebugMisc initializer init requires ALibraryCoreGeneralPlayer, AStructCoreGeneralHashTable, AStructCoreGeneralList
 
 	/**
-	* Displays text on the screen if the debug mode is enabled.
-	* DebugMsg: Your Message - Echoes Your Message to logs//war3erruser.txt
-	* Ursprünglich war es eine Platzhalter-Funktion.
-	* @author Tamino Dauth
-	* @param message The message which will be shown on the screen and if Warcraft is started with Grimore it prints the messag into logs//war3err.txt.
+	 * Displays \p message on the screen visible for all playing users. Only available in debug mode.
+	 * Using JassNewGenPack (war3err) this appends \p message to file "logs//war3erruser.txt", as well.
+	 * \author Tamino Dauth
+	 * \param message The message which will be shown on the screen and if Warcraft was started with war3err it appends it to file "logs//war3err.txt", as well.
 	*/
 static if (DEBUG_MODE) then
 	function Print takes string message returns nothing
@@ -21,7 +20,7 @@ static if (DEBUG_MODE) then
 			set user = null
 			set i = i + 1
 		endloop
-		call Cheat("DebugMsg: " + message) //JNGP
+		call Cheat("DebugMsg: " + message) // war3err
 	endfunction
 
 	function PrintIf takes boolean condition, string message returns nothing
@@ -92,6 +91,11 @@ static if (DEBUG_MODE) then
 		return condition
 	endfunction
 
+	/**
+	 * Useful for getting the corresponding struct and instance where the message is sent from.
+	 * Displays the string \p message in the following schema: "<structname> - <instanceid>: <message>"
+	 * \author Tamino Dauth
+	 */
 	function PrintStructInstanceMessage takes string structName, integer instance, string message returns nothing
 		if (IsPrintIdentifierDisabled(structName)) then
 			return
@@ -150,12 +154,27 @@ static if (DEBUG_MODE) then
 endif
 
 	/**
-	* Useful for getting the causing struct and instance of the message.
-	* Displays the string @param message in the following schema: "<structname> - <instanceid>: <message>"
-	* @author Tamino Dauth
-	*/
+	 * Allows to use various print methods in your custom struct.
+	 * Should only be necessary in debug mode.
+	 * Example:
+	 * \code
+	 * struct MyStruct
+	 * static if (DEBUG_MODE) then
+	 * 	//! runtextmacro A_STRUCT_DEBUG("\"MyStruct\"")
+	 * endif
+	 *
+	 * 	public method myMethod takes nothing returns nothing
+	 * 		debug call this.printMethodError("myMethod", "Test error") // only usable in debug mode
+	 * 	endmethod
+	 * endstruct
+	 * \endcode
+	 * \sa A_ZINC_STRUCT_DEBUG
+	 */
 	//! textmacro A_STRUCT_DEBUG takes STRUCTNAME
 static if (DEBUG_MODE) then
+		/**
+		 * \copydoc PrintStructInstanceMessage
+		 */
 		public method print takes string message returns nothing //stub
 			call PrintStructInstanceMessage($STRUCTNAME$, this, message)
 		endmethod
@@ -191,11 +210,12 @@ endif
 	//! endtextmacro
 
 	/**
-	* Useful for getting the causing struct and instance of the debug message.
-	* Displays the string \p message in the following schema: "<structname> - <instanceid>: <message>"
-	* @author Tamino Dauth
-	*/
+	 * \sa A_STRUCT_DEBUG
+	 */
 	//! textmacro A_ZINC_STRUCT_DEBUG takes STRUCTNAME
+			/**
+			 * \copydoc PrintStructInstanceMessage
+			 */
 			public method print(string message)
 			{
 				if (IsPrintIdentifierDisabled($STRUCTNAME$))
@@ -218,46 +238,52 @@ endif
 	//! endtextmacro
 
 	/**
-	* war3err DumpGlobalHT - prints the names and values of all global variables to logs//war3err.txt
-	* @author Tamino Dauth
-	*/
+	 * DumpGlobalHT - prints the names and values of all global variables into file "logs//war3err.txt".
+	 * \ingroup war3err
+	 * \author Tamino Dauth
+	 */
 	function PrintGlobals takes nothing returns nothing
-		call Cheat("war3err_DumpGlobalHT") //JNGP
+		call Cheat("war3err_DumpGlobalHT") // war3err
 	endfunction
 
 	/**
-	* war3err DumpLocalHT - As above, but for the local variables of the current scope
-	* @author Tamino Dauth
-	*/
+	 * DumpLocalHT - As \ref PrintGlobals() above, but for the local variables of the current scope.
+	 * \ingroup war3err
+	 * \author Tamino Dauth
+	 */
 	function PrintLocals takes nothing returns nothing
-		call Cheat("war3err_DumpLocalHT") //JNGP
+		call Cheat("war3err_DumpLocalHT") // war3err
 	endfunction
 
 	/**
-	* PauseTracer: If bytecode logging is enabled, this pauses recording
-	* @author Tamino Dauth
-	*/
+	 * PauseTracer: If bytecode logging is enabled, this pauses recording.
+	 * \ingroup war3err
+	 * \author Tamino Dauth
+	 */
 	function PauseBytecodeLogging takes nothing returns nothing
-		call Cheat("PauseTracer") //JNGP
+		call Cheat("PauseTracer") // war3err
 	endfunction
 
 	/**
-	* ContinueTracer: If bytecode logging is enabled, this resumes recording
-	* @author Tamino Dauth
-	*/
+	 * ContinueTracer: If bytecode logging is enabled, this resumes recording.
+	 * \ingroup war3err
+	 * \author Tamino Dauth
+	 */
 	function ContinueBytecodeLogging takes nothing returns nothing
-		call Cheat("ContinueTracer") //JNGP
+		call Cheat("ContinueTracer") // war3err
 	endfunction
 
 	/**
-	* When the breakpoint is reached Warcraft 3 is frozen.
-	* @author Tamino Dauth
-	*/
+	 * When the breakpoint is reached Warcraft III is frozen.
+	 * \ingroup war3err
+	 * \author Tamino Dauth
+	 */
 	function Breakpoint takes nothing returns nothing
-		call Cheat("war3err_Break") //JNGP
+		call Cheat("war3err_Break") // war3err
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugPlayer takes integer number returns nothing
 		if (number < 0 or number >= bj_MAX_PLAYER_SLOTS) then
 			debug call PrintFunctionError("Player", "Invalid parameter number, value " + I2S(number) + ". Setting number to 0 to avoid game crash.")
@@ -267,11 +293,12 @@ endif
 	endfunction
 
 	globals
-		/// @todo Should be private, vJass bug.
+		/// \todo Should be private, vJass bug.
 		integer gameCacheCounter = 0
 	endglobals
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugInitGameCache takes string campaignFile returns nothing
 		if (gameCacheCounter == 256) then
 			debug call PrintFunctionError("InitGameCache", "Reached game cache maximum. Canceling function call.")
@@ -281,7 +308,8 @@ endif
 		//return InitGameCache(campaignFile)
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugSetUnitX takes unit whichUnit, real newX returns nothing
 		if (newX < GetRectMinX(bj_mapInitialPlayableArea) or newX > GetRectMaxX(bj_mapInitialPlayableArea)) then
 			debug call PrintFunctionError("SetUnitX", "Invalid parameter newX, value " + R2S(newX) + ". Canceling function call to avoid game crash.")
@@ -289,7 +317,8 @@ endif
 		endif
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugSetUnitY takes unit whichUnit, real newY returns nothing
 		if (newY < GetRectMinY(bj_mapInitialPlayableArea) or newY > GetRectMaxY(bj_mapInitialPlayableArea)) then
 			debug call PrintFunctionError("SetUnitY", "Invalid parameter newY, value " + R2S(newY) + ". Canceling function call to avoid game crash.")
@@ -297,7 +326,8 @@ endif
 		endif
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugCreateUnit takes player id, integer unitid, real x, real y, real face returns nothing
 		if (x < GetRectMinX(bj_mapInitialPlayableArea) or x > GetRectMaxX(bj_mapInitialPlayableArea) or y < GetRectMinY(bj_mapInitialPlayableArea) or y > GetRectMaxY(bj_mapInitialPlayableArea)) then
 			debug call PrintFunctionError("CreateUnit", "Invalid parameter x or y, values " + R2S(x) + " and " + R2S(y) + ". Canceling function call to avoid game crash.")
@@ -306,7 +336,8 @@ endif
 		//return CreateUnit(id, unitid, x, y, face)
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugRestoreUnit takes gamecache cache, string missionKey, string key, player forWhichPlayer, real x, real y, real facing returns nothing
 		if (not HaveStoredUnit(cache, missionKey, key)) then
 			debug call PrintFunctionError("RestoreUnit", "Stored unit does not exist in game cache. Canceling function call to avoid game crash.")
@@ -315,22 +346,26 @@ endif
 		//return RestoreUnit(cache, missionKey, key, forWhichPlayer, x, y, facing)
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugSetImageRender takes image whichImage, boolean flag returns nothing
 		debug call PrintFunctionError("SetImageRender", "Does not work, use SetImageRenderAlways instead.")
 	endfunction
 
-	/// @todo Should be private, vJass bug.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
 	function DebugDestroyTrigger takes trigger whichTrigger returns nothing
-		/// @todo CHECK IF TRIGGER RUNS
+		/// \todo CHECK IF TRIGGER RUNS
 	endfunction
 
+	/// \ingroup nativedebug
 	private function FlushTimer takes timer whichTimer returns nothing
 		call AHashTable.global().removeHandleBoolean(whichTimer, "DebugTimerIsPeriodic")
 		call AHashTable.global().removeHandleBoolean(whichTimer, "DebugTimerRuns")
 		call AHashTable.global().removeHandleTrigger(whichTimer, "DebugTimerTrigger")
 	endfunction
 
+	/// \ingroup nativedebug
 	private function TriggerActionTimerExpires takes nothing returns nothing
 		if (not AHashTable.global().handleBoolean(GetExpiredTimer(), "DebugTimerIsPeriodic")) then
 			call FlushTimer(GetExpiredTimer()) // do not flush everything!
@@ -338,6 +373,7 @@ endif
 		endif
 	endfunction
 
+	/// \ingroup nativedebug
 	function DebugTimerStart takes timer whichTimer, real timeout, boolean periodic, code handlerFunc returns nothing
 		local trigger whichTrigger = CreateTrigger()
 		call TriggerRegisterTimerExpireEvent(whichTrigger, whichTimer)
@@ -348,16 +384,19 @@ endif
 		set whichTrigger = null
 	endfunction
 
+	/// \ingroup nativedebug
 	function DebugPauseTimer takes timer whichTimer returns nothing
 		call AHashTable.global().setHandleBoolean(whichTimer, "DebugTimerRuns", false)
 	endfunction
 
+	/// \ingroup nativedebug
 	function DebugResumeTimer takes timer whichTimer returns nothing
 		call AHashTable.global().setHandleBoolean(whichTimer, "DebugTimerRuns", true)
 	endfunction
 
-	/// @todo Should be private, vJass bug.
-	/// - Zerstörte Timer laufen trotz ihrer Zerstörung ab. Man muss einen Timer anhalten bevor man ihn zerstört.
+	/// \ingroup nativedebug
+	/// \todo Should be private, vJass bug.
+	/// Destroyed timer will continue running until finished. You have to stop it manually before its destruction!
 	function DebugDestroyTimer takes timer whichTimer returns nothing
 		if (AHashTable.global().handleBoolean(whichTimer, "DebugTimerRuns")) then
 			debug call Print("Timer with id " + I2S(GetHandleId(whichTimer)) + " has not been stopped before destroying it.")
@@ -368,6 +407,7 @@ endif
 		call AHashTable.global().flushHandle(whichTimer)
 	endfunction
 
+	/// \ingroup nativedebug
 	function DebugShowInterface takes boolean flag, real fadeDuration returns nothing
 		if (fadeDuration == 0.0 and flag) then
 			debug call PrintFunctionError("ShowInterface", "Don't use 0.0 for fade duration when enabling flag since it will prevent unit portraits from working correctly.")
@@ -376,18 +416,31 @@ endif
 
 /// \todo Seems to prevent map from being able to be started.
 static if (DEBUG_MODE and A_DEBUG_NATIVES) then
+	/// \ingroup nativedebug
 	hook Player DebugPlayer
+	/// \ingroup nativedebug
 	hook InitGameCache DebugInitGameCache
+	/// \ingroup nativedebug
 	hook SetUnitX DebugSetUnitX
+	/// \ingroup nativedebug
 	hook SetUnitY DebugSetUnitY
+	/// \ingroup nativedebug
 	hook CreateUnit DebugCreateUnit
+	/// \ingroup nativedebug
 	hook RestoreUnit DebugRestoreUnit
+	/// \ingroup nativedebug
 	hook SetImageRender DebugSetImageRender
+	/// \ingroup nativedebug
 	hook DestroyTrigger DebugDestroyTrigger
+	/// \ingroup nativedebug
 	hook TimerStart DebugTimerStart
+	/// \ingroup nativedebug
 	hook PauseTimer DebugPauseTimer
+	/// \ingroup nativedebug
 	hook ResumeTimer DebugResumeTimer
+	/// \ingroup nativedebug
 	hook DestroyTimer DebugDestroyTimer
+	/// \ingroup nativedebug
 	hook ShowInterface DebugShowInterface
 endif
 

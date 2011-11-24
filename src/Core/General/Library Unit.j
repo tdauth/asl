@@ -31,7 +31,7 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 	* Hintergrund: Wie ihr wisst kann man ja über eine Unitgroup iterieren (und diese dabei leeren)
 	* (Die Gruppe nenne ich einfach mal g):
 	*
-	* @code
+	* \code
 	* local unit u
 	* loop
 	* 	set u = FirstOfGroup(g)
@@ -41,7 +41,7 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 	*
 	* 	call GroupRemoveUnit(g,u)
 	* endloop
-	* @endcode
+	* \endcode
 	*
 	* Tja, nur blöd dass das buggy ist, sobald einmal eine unit in der Gruppe aus dem Spiel
 	* entfernt wurde ohne sie vorher ordnungsgemäß aus der Gruppe zu removen. Das wusste ich bisher
@@ -87,9 +87,9 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 	* der Gruppe war.
 	*
 	* Hoffe ich kann euch damit die Stunden des Bugfixen die ich hatte ersparen...
-	* @author gexxo
-	* @param g Used unit group.
-	* @return Returns the first unit of group g. If the group is empty it will return null.
+	* \author gexxo
+	* \param g Used unit group.
+	* \return Returns the first unit of group g. If the group is empty it will return null.
 	*/
 	function FirstOfGroupSave takes group g returns unit
 		local unit u = FirstOfGroup(g) //Try a normal first of group
@@ -119,31 +119,31 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 		return u //Return the unit we wanted
 	endfunction
 
-	/// @author Tamino Dauth
-	/// @todo Probably bugged, do not use.
+	/// \author Tamino Dauth
+	/// \todo Probably bugged, do not use.
 	function MoveItemToSlot takes unit whichUnit, item usedItem, integer slot returns boolean
 		return IssueTargetOrderById(whichUnit, A_ORDER_ID_MOVE_SLOT_0 + slot, usedItem)
 	endfunction
 
-	/// @author Tamino Dauth
-	/// @todo Probably bugged, do not use.
+	/// \author Tamino Dauth
+	/// \todo Probably bugged, do not use.
 	function UseItemOfSlot takes unit whichUnit, integer slot returns boolean
 		return IssueImmediateOrderById(whichUnit, A_ORDER_ID_USE_SLOT_0 + slot)
 	endfunction
 
-	/// @author Tamino Dauth
-	/// @todo Probably bugged, do not use.
+	/// \author Tamino Dauth
+	/// \todo Probably bugged, do not use.
 	function UseItemOfSlotOnTarget takes unit whichUnit, integer slot, widget target returns boolean
 		return IssueTargetOrderById(whichUnit, A_ORDER_ID_USE_SLOT_0 + slot, target)
 	endfunction
 
-	/// @author Tamino Dauth
-	/// @todo Probably bugged, do not use.
+	/// \author Tamino Dauth
+	/// \todo Probably bugged, do not use.
 	function UseItemOfSlotOnPoint takes unit whichUnit, integer slot, real x, real y returns boolean
 		return IssuePointOrderById(whichUnit, A_ORDER_ID_USE_SLOT_0 + slot, x, y)
 	endfunction
 
-	/// @author Tamino Dauth
+	/// \author Tamino Dauth
 	function UnitDropSlot takes unit whichUnit, integer slot0, integer slot1 returns boolean
 		local item slotItem = UnitItemInSlot(whichUnit, slot0)
 		local boolean result = UnitDropItemSlot(whichUnit, slotItem, slot1)

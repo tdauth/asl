@@ -1,12 +1,13 @@
-/// @todo Do not use this library, it is unfinished!
 library AStructSystemsCharacterFocus requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreMathsRect, ALibraryCoreMathsHandle, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceTextTag, ALibraryCoreEnvironmentUnit, AStructCoreStringFormat, AStructSystemsCharacterAbstractCharacterSystem
 
 	/**
-	* Should provide character focusing as in games like Gothic.
-	* Text tags are used as focus titles.
-	* @todo Untested!
-	* @todo Remove worker trigger options and add hero icon of target -> AHeroIcon!
-	*/
+	 * \brief Should provide character focusing as in games like Gothic. Text tags are used as focus titles.
+	 * \todo Finish!
+	 * \todo Remove worker trigger options and add hero icon of target -> \ref AHeroIcon !
+	 * \sa AView
+	 * \sa AMovement
+	 * \sa AFight
+	 */
 	struct AFocus extends AAbstractCharacterSystem
 		// static construction membes
 		private static real m_refreshRate
@@ -163,7 +164,7 @@ library AStructSystemsCharacterFocus requires optional ALibraryCoreDebugMisc, AS
 			call PauseUnit(this.m_worker, true)
 
 			set this.m_workerTrigger = CreateTrigger()
-			/// @todo Add events and action
+			/// \todo Add events and action
 		endmethod
 
 		public static method create takes ACharacter character returns thistype
@@ -209,11 +210,11 @@ library AStructSystemsCharacterFocus requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/**
-		* @param refreshRate 1.0 //If this value is 0.0 there is no text
-		* @param range 500.0
-		* @param angle 30.0 //Grad 0-360
-		* @param workerUnitType 'HPEA'
-		*/
+		 * \param refreshRate 1.0 //If this value is 0.0 there is no text
+		 * \param range 500.0
+		 * \param angle 30.0 //Grad 0-360
+		 * \param workerUnitType 'HPEA'
+		 */
 		public static method init takes real refreshRate, integer workerUnitType returns nothing
 			// static construction members
 			debug if (refreshRate <= 0.0) then

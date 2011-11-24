@@ -1,4 +1,4 @@
-library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSystemStruct, optional ALibraryCoreDebugMisc, ALibraryCoreGeneralPlayer, AStructCoreInterfaceMultiboardBar, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceMultiboard, AStructSystemsCharacterCharacter
+library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDebugMisc, ALibraryCoreGeneralPlayer, AStructCoreInterfaceMultiboardBar, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceMultiboard, AStructSystemsCharacterCharacter
 
 	/// \todo Should be contained by \ref ACharactersScheme, vJass bug.
 	function interface ACharactersSchemeMaxExperience takes unit hero returns integer
@@ -32,13 +32,11 @@ library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSyste
 		// static members
 		private static trigger m_refreshTrigger
 		private static multiboard m_multiboard
-		private static AMultiboardBar array m_experienceBar[12] //bj_MAX_PLAYERS /// @todo vJass bug
-		private static AMultiboardBar array m_hitPointsBar[12] //bj_MAX_PLAYERS /// @todo vJass bug
-		private static AMultiboardBar array m_manaBar[12] //bj_MAX_PLAYERS /// @todo vJass bug
-		private static boolean array m_destroyed[12] //bj_MAX_PLAYERS /// @todo vJass bug
+		private static AMultiboardBar array m_experienceBar[12] /// \todo \ref bj_MAX_PLAYERS
+		private static AMultiboardBar array m_hitPointsBar[12] /// \todo \ref bj_MAX_PLAYERS, vJass bug
+		private static AMultiboardBar array m_manaBar[12] /// \todo \ref bj_MAX_PLAYERS
+		private static boolean array m_destroyed[12] /// \todo \ref bj_MAX_PLAYERS
 		private static integer m_maxPlayers
-
-		implement ASystemStruct
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ACharactersScheme\"")
 
@@ -47,10 +45,6 @@ library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSyste
 		endmethod
 
 		private method onDestroy takes nothing returns nothing
-		endmethod
-
-		private static method onInit takes nothing returns nothing
-			call thistype.setName("ACharactersScheme")
 		endmethod
 
 		private static method firstColumnExists takes nothing returns boolean
@@ -241,12 +235,12 @@ library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSyste
 		endmethod
 
 		/**
-		* Call this method before you use this struct!
-		* Call this after a trigger sleep action, multiboard is created!
-		* Call this AFTER character creation/character class selection
-		* @param refreshRate Should be bigger than 0.0.
-		* @param experienceFormula Function which returns the maximum experience of a hero.
-		*/
+		 * Call this method before you use this struct!
+		 * Call this after a trigger sleep action, multiboard is created!
+		 * Call this AFTER character creation/character class selection
+		 * \param refreshRate Should be bigger than 0.0.
+		 * \param experienceFormula Function which returns the maximum experience of a hero.
+		 */
 		public static method init takes real refreshRate, boolean showPlayerName, boolean showUnitName, boolean showLevel, integer experienceLength, ACharactersSchemeMaxExperience experienceFormula, integer hitPointsLength, integer manaLength, string textTitle, string textLevel, string textLeftGame returns nothing
 			//static start members
 			set thistype.m_refreshRate = refreshRate
@@ -266,7 +260,6 @@ library AStructSystemsCharacterCharactersScheme requires AModuleCoreGeneralSyste
 			//static members
 			call thistype.createRefreshTrigger()
 			call thistype.createMultiboard()
-			call thistype.initialize()
 		endmethod
 
 		public static method setExperienceBarValueIconForCharacter takes ACharacter character, integer length, string valueIcon returns nothing

@@ -1,17 +1,18 @@
 library AStructCoreInterfaceArrowKeys
 
 	/**
-	* Functions following this function interface can be used as keypress event responses.
-	* @param key Parameter values: 0-up, 1-down, 2-right, 3-left
-	* @param pressed true-key was pressed, false-key was released
-	*/
+	 * Functions following this function interface can be used as keypress event responses.
+	 * \param key Parameter values: \p AArrowKeys.keyUp, \p AArrowKeys.keyDown, \p AArrowKeys.keyLeft, \p AArrowKeys.keyRight
+	 * \param pressed true-key was pressed, false-key was released
+	 */
 	function interface AArrowKeysOnPressAction takes AArrowKeys arrowKeys, integer key, boolean pressed returns nothing
 
 	/**
-	* @author Anitarf
-	* @author Tamino Dauth
-	* @link http://www.wc3c.net/showthread.php?t=101271
-	*/
+	 * Use \ref playerArrowKeys() to refer to each player's instance.
+	 * \author Anitarf
+	 * \author Tamino Dauth
+	 * <a href="http://www.wc3c.net/showthread.php?t=101271">source</a>
+	 */
 	struct AArrowKeys
 		public static constant integer keyUp = 0
 		public static constant integer keyDown = 1
@@ -51,7 +52,7 @@ library AStructCoreInterfaceArrowKeys
 		private static trigger m_releaseLeftTrigger
 		private static trigger m_pressRightTrigger
 		private static trigger m_releaseRightTrigger
-		private static thistype array m_playerArrowKeys[12] /// @todo @global bj_MAX_PLAYERS, vJass bug.
+		private static thistype array m_playerArrowKeys[12] /// \todo Use \ref bj_MAX_PLAYERS, vJass bug.
 		// dynamic members
 		// these are the "quick press" variables. They work similarly to the variables above,
 		// except that they aren't set to 0/false when a key is released. If you are checking

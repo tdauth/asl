@@ -179,7 +179,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 
 			call this.createUpgradeTrigger()
 			call this.createCastTrigger()
-			
+
 			return this
 		endmethod
 
@@ -221,9 +221,8 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 			return IsUnitDeadBJ(target)
 		endmethod
 
-		/// \todo Add IsUnitStunned
 		public static method allyChannelLoopCondition takes unit target returns boolean
-			return IsUnitDeadBJ(target)// or
+			return IsUnitDeadBJ(target) or IsUnitType(target, UNIT_TYPE_STUNNED)
 		endmethod
 	endstruct
 

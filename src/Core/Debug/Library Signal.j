@@ -1,4 +1,4 @@
-/// @author Tamino Dauth
+/// \author Tamino Dauth
 library ALibraryCoreDebugSignal requires ALibraryCoreDebugMisc, AStructCoreGeneralSignal
 
 	//! runtextmacro A_SIGNAL("private", "MouseMovementSignal", "real x, real y", "x, y")

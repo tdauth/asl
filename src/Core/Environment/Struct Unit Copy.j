@@ -1,11 +1,11 @@
 library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, AStructCoreGeneralHashTable
 
 	/**
-	* Unit copies can be used to create copies of units which will be refreshed automatically after starting it.
-	* User can specify which properties should be copied and which not or alternatively overwrite method AUnitCopy.onCopy in his derived structure.
-	* @note Does not copy unit's location automatically since this doesn't mostly make sense.
-	* @see AHeroIcon
-	*/
+	 * Unit copies can be used to create copies of units which will be refreshed automatically after starting it.
+	 * User can specify which properties should be copied and which not or alternatively overwrite method AUnitCopy.onCopy in his derived structure.
+	 * \note Does not copy unit's location automatically since this doesn't mostly make sense.
+	 * \sa AHeroIcon
+	 */
 	struct AUnitCopy
 		// dynamic members
 		private boolean m_copyVisibility
@@ -59,17 +59,17 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		// construction members
 
 		/**
-		* @return Returns the original unit which is copied.
-		*/
+		 * \return Returns the original unit which is copied.
+		 */
 		public method unit takes nothing returns unit
 			return this.m_unit
 		endmethod
 
 
 		/**
-		* @return Returns the unit copy's refresh time. This is the time interval in which the unit copy is refreshed.
-		* You set this value when creating the unit copy. It's not dynamic.
-		*/
+		 * \return Returns the unit copy's refresh time. This is the time interval in which the unit copy is refreshed.
+		 * You set this value when creating the unit copy. It's not dynamic.
+		 */
 		public method refreshTime takes nothing returns real
 			return this.m_refreshTime
 		endmethod
@@ -77,17 +77,19 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		// members
 
 		/**
-		* @return Returns the copy of the original unit. Usually you shouldn't modify this unit.
-		* Should only be used in your custom onCopy method (@todo Should be protected, vJass limit).
-		*/
+		 * \return Returns the copy of the original unit. Usually you shouldn't modify this unit.
+		 * Should only be used in your custom onCopy method (\todo Should be protected, vJass limit).
+		 */
 		public method unitCopy takes nothing returns unit
 			return this.m_unitCopy
 		endmethod
 
 		/**
-		* @return Returns true if the unit copy's refreshment is paused at the moment.
-		* @see AUnitCopy.pause, AUnitCopy.resume, AUnitCopy.isEnabled
-		*/
+		 * \return Returns true if the unit copy's refreshment is paused at the moment.
+		 * \sa pause()
+		 * \sa resume()
+		 * \sa isEnabled()
+		 */
 		public method isPaused takes nothing returns boolean
 			return this.m_isPaused
 		endmethod
@@ -95,13 +97,13 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		// methods
 
 		/**
-		* The unit copy doesn't react on state events since there aren't events for all required states (such as hero attributes).
-		* Therefore it is refreshed all x seconds where x is value of AUnitCopy.refreshTime which is set on unit copy's creation.
-		* For refreshing all necessary attributes this method is called.
-		* Since it is stub you can overwrite it in your derived structure and change attributes treatment.
-		*/
+		 * The unit copy doesn't react on state events since there aren't events for all required states (such as hero attributes).
+		 * Therefore it is refreshed all x seconds where x is value of \ref refreshTime() which is set on unit copy's creation.
+		 * For refreshing all necessary attributes this method is called.
+		 * Since it is stub you can overwrite it in your derived structure and change attributes treatment.
+		 */
 		public stub method onCopy takes nothing returns nothing
-			/// @todo Copy revival?
+			/// \todo Copy revival?
 			if (this.copyDeath()) then
 				call SetUnitState(this.unitCopy(), UNIT_STATE_MAX_LIFE, GetUnitState(this.unit(), UNIT_STATE_MAX_LIFE))
 				call SetUnitState(this.unitCopy(), UNIT_STATE_LIFE, GetUnitState(this.unit(), UNIT_STATE_LIFE))
@@ -166,24 +168,25 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		endmethod
 
 		/**
-		* Starts unit copy's refreshment.
-		* @note This method has to be called manually. Refreshment doesn't start automatically after creation.
-		*/
+		 * Starts unit copy's refreshment.
+		 * \note This method has to be called manually. Refreshment doesn't start automatically after creation.
+		 */
 		public method start takes nothing returns nothing
 			call TimerStart(this.m_refreshTimer, this.m_refreshTime, true, function thistype.timerFunctionRefresh)
 		endmethod
 
 		/**
-		* Opposite of AUnitCopy.isPaused.
-		*/
+		 * Opposite of \ref isPaused().
+		 */
 		public method isEnabled takes nothing returns boolean
 			return not this.isPaused()
 		endmethod
 
 		/**
-		* Resumes unit copy's refreshment.
-		* @see AUnitCopy.pause, AUnitCopy.enable
-		*/
+		 * Resumes unit copy's refreshment.
+		 * \sa pause()
+		 * \sa enable()
+		 */
 		public method resume takes nothing returns nothing
 			if (not this.isPaused()) then
 				return
@@ -192,16 +195,17 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		endmethod
 
 		/**
-		* Equal to AUnitCopy.resume but stub for overwriting.
-		*/
+		 * Equal to \ref resume() but stub for overwriting.
+		 */
 		public stub method enable takes nothing returns nothing
 			call this.resume()
 		endmethod
 
 		/**
-		* Pauses unit copy's refreshment.
-		* @see AUnitCopy.resume, AUnitCopy.disable
-		*/
+		 * Pauses unit copy's refreshment.
+		 * \sa resume()
+		 * \sa disable()
+		 */
 		public method pause takes nothing returns nothing
 			if (this.isPaused()) then
 				return
@@ -210,8 +214,8 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		endmethod
 
 		/**
-		* Equal to AUnitCopy.pause but stub for overwriting.
-		*/
+		 * Equal to \ref pause() but stub for overwriting.
+		 */
 		public stub method disable takes nothing returns nothing
 			call this.pause()
 		endmethod
@@ -225,15 +229,15 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		endmethod
 
 		/**
-		* Creates a new unit copy.
-		* @param whichUnit Unit which the copy is created from.
-		* @param refreshTime Time interval (seconds) which is used for unit copy's refreshment.
-		* @param x X coordinate of unit copy's location.
-		* @param y Y coordinate of unit copy's location.
-		* @param facing Facing angle (degree) of unit copy.
-		* @return Returns a newly created unit copy instance.
-		* @note This doesn't start unit copy's refreshment. Call AUnitCopy.start to start and AUnitCopy.resume or AUnitCopy.pause to resume or to pause unit copy.
-		*/
+		 * Creates a new unit copy.
+		 * \param whichUnit Unit which the copy is created from.
+		 * \param refreshTime Time interval (seconds) which is used for unit copy's refreshment.
+		 * \param x X coordinate of unit copy's location.
+		 * \param y Y coordinate of unit copy's location.
+		 * \param facing Facing angle (degree) of unit copy.
+		 * \return Returns a newly created unit copy instance.
+		 * \note This doesn't start unit copy's refreshment. Call \ref start() to start and \ref resume() or \ref pause() to resume or to pause unit copy.
+		 */
 		public static method create takes unit whichUnit, real refreshTime, real x, real y, real facing returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members

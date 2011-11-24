@@ -371,7 +371,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				exitwhen (duration <= 0.0)
 				if (playerHasSkipped[GetPlayerId(user)]) then
 					//if (AInfo.skipKey != KEY_ESCAPE) then
-						//call ClearScreenMessagesForPlayer(user) /// @todo Does not do anything.
+						//call ClearScreenMessagesForPlayer(user) /// \todo Does not do anything.
 					//endif
 					set playerHasSkipped[GetPlayerId(user)] = false
 					call StopSound(usedSound, false, false) // stop sound since speech could have been skipped by player

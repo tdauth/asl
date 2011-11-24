@@ -1,6 +1,6 @@
 library ALibraryCoreMathsPoint
 
-	/// @return Returns the z value of point with coordinates @param x and @param y.
+	/// \return Returns the z value of point with coordinates \p x and \p y.
 	function GetTerrainZ takes real x, real y returns real
 		local location usedLocation = Location(x, y)
 		local real z = GetLocationZ(usedLocation)
@@ -43,12 +43,12 @@ library ALibraryCoreMathsPoint
 
 		return -(A * x + B * y + D) / C
 	endfunction
-	
+
 	/**
-	* Doesn't use z-values.
-	* \return Returns the distance between two points.
-	* \sa GetDistanceBetweenPoints
-	*/
+	 * Doesn't use z-values.
+	 * \return Returns the distance between two points.
+	 * \sa GetDistanceBetweenPoints()
+	 */
 	function GetDistanceBetweenPointsWithoutZ takes real x0, real y0, real x1, real y1 returns real
 		local real distanceX = (x1 - x0)
 		local real distanceY = (y1 - y0)
@@ -56,10 +56,10 @@ library ALibraryCoreMathsPoint
 	endfunction
 
 	/**
-	* Uses z-values.
-	* \return Returns the distance between two points.
-	* \sa GetDistanceBetweenPointsWithoutZ
-	*/
+	 * Uses z-values.
+	 * \return Returns the distance between two points.
+	 * \sa GetDistanceBetweenPointsWithoutZ()
+	 */
 	function GetDistanceBetweenPoints takes real x0, real y0, real z0, real x1, real y1, real z1 returns real
 		local real distanceX = (x1 - x0)
 		local real distanceY = (y1 - y0)
@@ -68,37 +68,37 @@ library ALibraryCoreMathsPoint
 	endfunction
 
 	/**
-	* Z has to be ignored since you're unable to create a location with its z value.
-	* @return Returns the centre between two points by using their coordinates.
-	*/
+	 * Z has to be ignored since you're unable to create a location with its z value.
+	 * \return Returns the centre between two points by using their coordinates.
+	 */
 	function GetCentreBetweenPoints takes real x0, real y0, real x1, real y1 returns location
 		return Location(((x0 + x1) / 2.0), ((y0 + y1) / 2.0))
 	endfunction
 
 	/**
-	* @return Returns x value of a polar projection.
-	* @see GetPolarProjectionY
-	* @see GetPolarProjectionOfPoint
-	*/
+	 * \return Returns x value of a polar projection.
+	 * \sa GetPolarProjectionY()
+	 * \sa GetPolarProjectionOfPoint()
+	 */
 	function GetPolarProjectionX takes real x, real angle, real distance returns real
 		return (x + distance * CosBJ(angle))
 	endfunction
 
 	/**
-	* @return Returns y value of a polar projection.
-	* @see GetPolarProjectionX
-	* @see GetPolarProjectionOfPoint
-	*/
+	 * \return Returns y value of a polar projection.
+	 * \sa GetPolarProjectionX()
+	 * \sa GetPolarProjectionOfPoint()
+	 */
 	function GetPolarProjectionY takes real y, real angle, real distance returns real
 		return (y + distance * SinBJ(angle))
 	endfunction
 
 	/**
-	* @return Returns the polar projection location of a point by using its coordinates.
-	* @see GetPolarProjectionX
-	* @see GetPolarProjectionY
-	* @see PolarProjectionBJ
-	*/
+	 * \return Returns the polar projection location of a point by using its coordinates.
+	 * \sa GetPolarProjectionX
+	 * \sa GetPolarProjectionY
+	 * \sa PolarProjectionBJ
+	 */
 	function GetPolarProjectionOfPoint takes real x, real y, real angle, real distance returns location
 		local real resultX = GetPolarProjectionX(x, angle, distance)
 		local real resultY = GetPolarProjectionY(y, angle, distance)
@@ -106,18 +106,18 @@ library ALibraryCoreMathsPoint
 	endfunction
 
 	/**
-	* @return Returns angle between to points by using their coordinates.
-	* @see GetAngleBetweenPointsFromCentre
-	* @see AngleBetweenPoints
-	*/
+	 * \return Returns angle between to points by using their coordinates.
+	 * \sa GetAngleBetweenPointsFromCentre()
+	 * \sa AngleBetweenPoints()
+	 */
 	function GetAngleBetweenPoints takes real x0, real y0, real x1, real y1 returns real
 		return Atan2BJ((y1 - y0), (x1 - x0))
 	endfunction
 
 	/**
-	* @return Returns angle between to points by using their coordinates and a centre.
-	* @see GetAngleBetweenPoints
-	*/
+	 * \return Returns angle between to points by using their coordinates and a centre.
+	 * \sa GetAngleBetweenPoints()
+	 */
 	function GetAngleBetweenPointsFromCentre takes real centreX, real centreY, real x0, real y0, real x1, real y1 returns real
 		local real ax = (x0 - centreX)
 		local real ay = (y0 - centreY)

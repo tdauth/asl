@@ -1,4 +1,3 @@
-/// @author Opossum
 library AStructCoreInterfaceThirdPersonCamera requires AStructCoreInterfaceArrowKeys
 
 	/**
@@ -42,7 +41,7 @@ library AStructCoreInterfaceThirdPersonCamera requires AStructCoreInterfaceArrow
 		// static construction members
 		private static boolean m_useArrowKeys
 		// static members
-		private static thistype array m_playerThirdPersonCamera[12] /// @todo bj_MAX_PLAYERS
+		private static thistype array m_playerThirdPersonCamera[12] /// \todo bj_MAX_PLAYERS
 		private static location m_location
 		private static real m_distanceM
 		private static real m_distanceT

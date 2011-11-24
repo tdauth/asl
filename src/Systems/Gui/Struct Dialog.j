@@ -1,12 +1,12 @@
 library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibraryCoreStringConversion, AStructCoreGeneralHashTable, AStructCoreGeneralVector, AStructCoreStringFormat, AStructSystemsGuiDialogButton
 
 	/**
-	* Provides a kind of wrapper struct for common Warcraft 3 dialogs.
-	* Actually it's not only a wrapper since it's expands the whole functionality of dialogs by using @struct ADialogButton instances.
-	* Besides it allows user to add more than 12 (or 16? Warcraft 3 limit) buttons by adding next and previous page buttons and splitting
-	* all 10-button groups into pages.
-	* @todo Should become forced-based (when player leaves other players could select).
-	*/
+	 * \brief Provides a kind of wrapper struct for common Warcraft III dialogs.
+	 * Actually it's not only a wrapper since it's expands the whole functionality of dialogs by using \ref ADialogButton instances.
+	 * Besides it allows user to add more than \ref AMaxDialogButtons (Warcraft III limit) buttons by adding next and previous page buttons and splitting
+	 * all 10-button groups into pages.
+	 * \todo Should become forced-based (when player leaves other players could select).
+	 */
 	struct ADialog
 		// static constant members
 		public static constant integer maxPageButtons = 10
@@ -38,7 +38,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			if (this.m_maxPageNumber == 0) then
 				return this.m_message
 			endif
-			/// @todo Fix InsertLineBreaks
+			/// \todo Fix InsertLineBreaks
 			return InsertLineBreaks(IntegerArg(IntegerArg(StringArg(thistype.m_textMessage, this.m_message), this.m_currentPage + 1), this.m_maxPageNumber + 1), thistype.maxMessageChars)
 		endmethod
 
@@ -48,8 +48,9 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		* Changes the dialog's message.
 		* Dialog messages are displayed in the top of the dialog window.
 		* The shown message can be queried by ADialog.modifiedMessage.
-		* @note Line breaks will be inserted automatically so there won't be any long messages which cross the window's border (ADialog.maxMessageChars).
-		* @see ADialog.message, ADialog.modifiedMessage
+		* \note Line breaks will be inserted automatically so there won't be any long messages which cross the window's border (ADialog.maxMessageChars).
+		* \sa message()
+		* \sa modifiedMessage()
 		*/
 		public method setMessage takes string message returns nothing
 			set this.m_message = message
@@ -59,9 +60,9 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		/**
-		* @return Returns the unmodified message of the dialog.
-		* @see ADialog.modifiedMessage
-		*/
+		 * \return Returns the unmodified message of the dialog.
+		 * \sa modifiedMessage()
+		 */
 		public method message takes nothing returns string
 			return this.m_message
 		endmethod
@@ -96,7 +97,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			call DialogDisplay(this.m_player, this.m_dialog, displayed)
 		endmethod
 
-		/// @return Returns if the dialog is displayed to player.
+		/// \return Returns if the dialog is displayed to player.
 		public method isDisplayed takes nothing returns boolean
 			return this.m_isDisplayed
 		endmethod
@@ -117,7 +118,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			return this.m_currentPage
 		endmethod
 
-		/// @return Returns the number of the last page (starting from 0).
+		/// \return Returns the number of the last page (starting from 0).
 		/// For example: If there are three pages this method will return 2.
 		public method maxPageNumber takes nothing returns integer
 			return this.m_maxPageNumber
@@ -181,7 +182,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			return this.addExtendedDialogButtonIndex(text, false, false, 0)
 		endmethod
 
-		/// @todo Friend relation to struct ADialogButton, do not use!
+		/// \todo Friend relation to \ref ADialogButton, do not use!
 		public method addDialogButtonInstance takes ADialogButton instance returns integer
 			if (this.m_dialogButtons.size() - this.m_maxPageNumber * thistype.maxPageButtons == ADialog.maxPageButtons) then
 				set this.m_maxPageNumber = this.m_maxPageNumber + 1
@@ -190,7 +191,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			return this.m_dialogButtons.backIndex()
 		endmethod
 
-		/// @todo Friend relation to struct ADialogButton, do not use!
+		/// \todo Friend relation to \ref ADialogButton, do not use!
 		public method removeDialogButtonInstanceByIndex takes integer index returns nothing
 			if (this.m_dialogButtons.size() - this.m_maxPageNumber * thistype.maxPageButtons == 0) then
 				set this.m_maxPageNumber = this.m_maxPageNumber - 1
@@ -220,7 +221,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			call DialogClear(this.m_dialog)
 		endmethod
 
-		/// Friend relation to @struct ADialogButton.
+		/// Friend relation to \ref ADialogButton.
 		public method setDisplayedByButton takes boolean displayed returns nothing
 			set this.m_isDisplayed = displayed
 		endmethod

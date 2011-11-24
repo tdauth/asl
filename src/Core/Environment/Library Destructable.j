@@ -1,14 +1,18 @@
 library ALibraryCoreEnvironmentDestructable
-	
-	/// @author PitzerMike
+
+	/**
+	 * \author PitzerMike
+	 * <a href="http://www.wc3c.net/showthread.php?t=103927">source</a>
+	 */
 	function IsDestructableDead takes destructable usedDestructable returns boolean
 		return GetDestructableLife(usedDestructable) <= 0.405
 	endfunction
-	
+
 	/**
-	* You could use globals instead of locals for dummy and player.
-	* @author PitzerMike
-	*/
+	 * You could use globals instead of locals for dummy and player.
+	 * \author PitzerMike
+	 * <a href="http://www.wc3c.net/showthread.php?t=103927">source</a>
+	 */
 	function IsDestructableTree takes destructable usedDestructable returns boolean
 		local player neutralPassivePlayer = Player(PLAYER_NEUTRAL_PASSIVE)
 		local boolean isInvulnerable = IsDestructableInvulnerable(usedDestructable)
@@ -27,18 +31,19 @@ library ALibraryCoreEnvironmentDestructable
 		set neutralPassivePlayer = null
 		return result
 	endfunction
-	
+
 	/**
-	* Creates a dummy unit which tries to harvest the filtered destructable.
-	* It should only used by filters.
-	* @return Returns true if the filtered destructable is a tree.
-	* @author PitzerMike
-	*/
+	 * Creates a dummy unit which tries to harvest the filtered destructable.
+	 * It should only used by filters.
+	 * \return Returns true if the filtered destructable is a tree.
+	 * \author PitzerMike
+	 * <a href="http://www.wc3c.net/showthread.php?t=103927">source</a>
+	 */
 	function TreeFilter takes nothing returns boolean
 		local destructable filterDestructable = GetFilterDestructable()
 		local boolean result = IsDestructableTree(filterDestructable)
 		set filterDestructable = null
 		return result
 	endfunction
-		
+
 endlibrary

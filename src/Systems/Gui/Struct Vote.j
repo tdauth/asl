@@ -56,12 +56,12 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 	function interface AVoteResultAction takes AVote vote returns nothing
 
 	/**
-	* Provides simple vote functionality for players by using Warcraft III dialogs.
+	* \brief Provides simple vote functionality for players by using Warcraft III dialogs.
 	* Players can be added and removed dynamically.
-	* Use \ref AVote.setRecognizePlayerLeavings() to prevent endless votes when a player leaves the game.
-	* The vote's result action can either be specified by using \ref AVote.setResultAction() and a custom function or by extending your custom struct by AVote and overwriting \ref AVote.onResult().
-	* Votes has to be started by using \ref AVote.start().
-	* @note There should always be only one running vote per player. Use AVote.playerVote to get a player's running vote and \ref AVote.runs() to check if the vote is running.
+	* Use \ref setRecognizePlayerLeavings() to prevent endless votes when a player leaves the game.
+	* The vote's result action can either be specified by using \ref setResultAction() and a custom function or by extending your custom struct by AVote and overwriting \ref onResult().
+	* Votes has to be started by using \ref start().
+	* \note There should always be only one running vote per player. Use \ref playerVote() to get a player's running vote and \ref runs() to check if the vote is running.
 	*/
 	struct AVote
 		// static construction members
@@ -146,8 +146,8 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 		endmethod
 
 		/**
-		* @return Returns the vote's result. If there isn't any yet it returns -1.
-		*/
+		 * \return Returns the vote's result. If there isn't any yet it returns -1.
+		 */
 		public method addVote takes player whichPlayer, integer choice returns integer
 			local AVotePlayer data = this.player(whichPlayer)
 			local AIntegerListIterator iterator
@@ -187,7 +187,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 			return result
 		endmethod
 
-		/// @return Returns player's whichPlayer running vote. If there is no running vote for player whichPlayer it returns 0.
+		/// \return Returns player's \p whichPlayer running vote. If there is no running vote for player whichPlayer it returns 0.
 		public static method playerVote takes player whichPlayer returns thistype
 			return AHashTable.global().handleInteger(whichPlayer, "AVote")
 		endmethod
@@ -241,7 +241,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 			endloop
 		endmethod
 
-		/// @todo Remove event, impossible.
+		/// \todo Remove event, impossible.
 		public method removePlayer takes player whichPlayer returns boolean
 			local AVotePlayer data = this.player(whichPlayer)
 			if (data != 0) then
@@ -281,7 +281,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 			endif
 		endmethod
 
-		/// @return Returns the choice player whichPlayer voted for. If player whichPlayer is not a member of the vote or he hasn't already voted yet it returns -1.
+		/// \return Returns the choice player whichPlayer voted for. If player whichPlayer is not a member of the vote or he hasn't already voted yet it returns -1.
 		public method playerChoice takes player whichPlayer returns integer
 			local AVotePlayer data = this.player(whichPlayer)
 			if (data == 0) then

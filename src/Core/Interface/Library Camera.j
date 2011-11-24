@@ -1,10 +1,11 @@
 library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALibraryCoreGeneralPlayer, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsRect
 
 	/**
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see PanCameraToWithZ, PanCameraToTimedLocForPlayer
-	*/
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa PanCameraToWithZ()
+	 * \sa PanCameraToTimedLocForPlayer()
+	 */
 	function PanCameraToWithZForPlayer takes player whichPlayer, real x, real y, real zOffset returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call PanCameraToWithZ(x, y, zOffset)
@@ -12,10 +13,11 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see PanCameraToTimedWithZ, PanCameraToTimedLocForPlayer
-	*/
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa PanCameraToTimedWithZ()
+	 * \sa PanCameraToTimedLocForPlayer()
+	 */
 	function PanCameraToTimedWithZForPlayer takes player whichPlayer, real x, real y, real zOffset, real duration returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call PanCameraToTimedWithZ(x, y, zOffset, duration)
@@ -23,10 +25,11 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see PanCameraToTimed, SmartCameraPanForPlayer
-	*/
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa PanCameraToTimed()
+	 * \sa SmartCameraPanForPlayer()
+	 */
 	function SmartCameraPan takes real x, real y, real duration returns nothing
 		local real dist = GetDistanceBetweenPoints(x, y, 0.0, GetCameraTargetPositionX(), GetCameraTargetPositionY(), 0.0)
 		if (dist >= bj_SMARTPAN_TRESHOLD_SNAP) then
@@ -41,11 +44,13 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* Similar to SmartCameraPanBJ but does not use location.
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see SmartCameraPanBJ, PanCameraToTimed, SmartCameraPan
-	*/
+	 * Similar to \ref SmartCameraPanBJ() but does not use location.
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa SmartCameraPanBJ()
+	 * \sa PanCameraToTimed()
+	 * \sa SmartCameraPan()
+	 */
 	function SmartCameraPanForPlayer takes player whichPlayer, real x, real y, real duration returns nothing
 		local real dist
 		if (GetLocalPlayer() == whichPlayer) then
@@ -54,10 +59,11 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see PanCameraToTimedWithZ, SmartCameraPanWithZForPlayer
-	*/
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa PanCameraToTimedWithZ()
+	 * \sa SmartCameraPanWithZForPlayer()
+	 */
 	function SmartCameraPanWithZ takes real x, real y, real zOffset, real duration returns nothing
 		local real distance = GetDistanceBetweenPoints(x, y, 0.0, GetCameraTargetPositionX(), GetCameraTargetPositionY(), 0.0)
 		if (distance >= bj_SMARTPAN_TRESHOLD_SNAP) then
@@ -72,11 +78,13 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* Similar to SmartCameraPanBJ but does not use location and uses Z value.
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see SmartCameraPanBJ, PanCameraToTimedWithZ, SmartCameraPanWithZ
-	*/
+	 * Similar to \ref SmartCameraPanBJ() but does not use location and uses Z value.
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa SmartCameraPanBJ()
+	 * \sa PanCameraToTimedWithZ()
+	 * \sa SmartCameraPanWithZ()
+	 */
 	function SmartCameraPanWithZForPlayer takes player whichPlayer, real x, real y, real zOffset, real duration returns nothing
 		if (GetLocalPlayer() == whichPlayer) then
 			call SmartCameraPanWithZ(x, y, zOffset, duration)
@@ -84,21 +92,21 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* Similar to SetCameraRotateMode but uses degree not radian.
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see SetCameraRotateMode
-	*/
+	 * Similar to \ref SetCameraRotateMode() but uses degree not radian.
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa SetCameraRotateMode()
+	 */
 	function RotateCameraAround takes real x, real y, real degrees, real duration returns nothing
 		call SetCameraRotateMode(x, y, bj_DEGTORAD * degrees, duration)
 	endfunction
 
 	/**
-	* Similar to RotateCameraAroundLocBJ but does not use location.
-	* @author Tamino Dauth
-	* @todo Test!
-	* @see RotateCameraAroundLocBJ
-	*/
+	 * Similar to \ref RotateCameraAroundLocBJ() but does not use location.
+	 * \author Tamino Dauth
+	 * \todo synchron?
+	 * \sa RotateCameraAroundLocBJ()
+	 */
 	function RotateCameraAroundForPlayer takes player whichPlayer, real x, real y, real degrees, real duration returns nothing
 		local player localPlayer = GetLocalPlayer()
 		if (localPlayer == whichPlayer) then
@@ -109,9 +117,27 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 
 
 	/**
-	* Generic camera functions for data types with location property.
-	* @see SetCameraPosition, SetCameraPositionForPlayer, SetCameraPositionLocForPlayer, SetCameraQuickPosition, SetCameraQuickPositionLoc, SetCameraQuickPositionForPlayer, SetCameraQuickPositionLocForPlayer, PanCameraTo, PanCameraToTimed, PanCameraToWithZ, PanCameraToTimedWithZ, PanCameraToForPlayer, PanCameraToLocForPlayer, PanCameraToTimedForPlayer, PanCameraToTimedLocForPlayer, PanCameraToTimedLocWithZForPlayer, SmartCameraPanBJ,  SetCameraRotateMode, RotateCameraAroundLocBJ
-	*/
+	 * Generic camera functions for data types with location property.
+	 * \sa SetCameraPosition()
+	 * \sa SetCameraPositionForPlayer()
+	 * \sa SetCameraPositionLocForPlayer()
+	 * \sa SetCameraQuickPosition()
+	 * \sa SetCameraQuickPositionLoc()
+	 * \sa SetCameraQuickPositionForPlayer()
+	 * \sa SetCameraQuickPositionLocForPlayer()
+	 * \sa PanCameraTo()
+	 * \sa PanCameraToTimed()
+	 * \sa PanCameraToWithZ()
+	 * \sa PanCameraToTimedWithZ()
+	 * \sa PanCameraToForPlayer()
+	 * \sa PanCameraToLocForPlayer()
+	 * \sa PanCameraToTimedForPlayer()
+	 * \sa PanCameraToTimedLocForPlayer()
+	 * \sa PanCameraToTimedLocWithZForPlayer()
+	 * \sa SmartCameraPanBJ()
+	 * \sa SetCameraRotateMode()
+	 * \sa RotateCameraAroundLocBJ()
+	 */
 	//! textmacro ACameraTextMacro takes TYPE, TYPENAME
 		function SetCameraPosition$TYPENAME$ takes $TYPE$ which$TYPENAME$ returns nothing
 			call SetCameraPosition(Get$TYPENAME$X(which$TYPENAME$), Get$TYPENAME$Y(which$TYPENAME$))
@@ -187,9 +213,9 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	//! endtextmacro
 
 	/**
-	* There are already some location related camera functions which use identifier "Loc" instead of "Location".
-	* However, some implementations are missing so we just create a new set of functions.
-	*/
+	 * There are already some location related camera functions which use identifier "Loc" instead of "Location".
+	 * However, some implementations are missing so we just create a new set of functions.
+	 */
 	//! runtextmacro ACameraTextMacro("location", "Location")
 	//! runtextmacro ACameraTextMacro("rect", "Rect")
 	//! runtextmacro ACameraTextMacro("widget", "Widget")
@@ -217,7 +243,7 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		call SetCameraBoundsForPlayer(user, minX, minY, minX, maxY, maxX, maxY, maxX, minY)
 	endfunction
 
-	/// @todo Desynchronization!
+	/// \todo Desynchronization!
 	function GetCameraTargetPositionOfPlayer takes player user returns location
 		local player localPlayer = GetLocalPlayer()
 		local location cameraTargetPosition = null
@@ -231,7 +257,7 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		return cameraTargetPosition
 	endfunction
 
-	/// @todo Desynchronization!
+	/// \todo Desynchronization!
 	function GetCameraTargetPositionXOfPlayer takes player user returns real
 		local player localPlayer = GetLocalPlayer()
 		local real value = 0.0
@@ -245,7 +271,7 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		return value
 	endfunction
 
-	/// @todo Desynchronization!
+	/// \todo Desynchronization!
 	function GetCameraTargetPositionYOfPlayer takes player user returns real
 		local player localPlayer = GetLocalPlayer()
 		local real value = 0.0
@@ -259,7 +285,7 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		return value
 	endfunction
 
-	/// @todo Desynchronization!
+	/// \todo Desynchronization!
 	function GetCameraTargetPositionZOfPlayer takes player user returns real
 		local player localPlayer = GetLocalPlayer()
 		local real value = 0.0
@@ -273,7 +299,7 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		return value
 	endfunction
 
-	/// @todo Desynchronization!
+	/// \todo Desynchronization!
 	function GetCameraFieldOfPlayer takes player user, camerafield cameraField returns real
 		local player localPlayer = GetLocalPlayer()
 		local real cameraFieldValue = 0.0

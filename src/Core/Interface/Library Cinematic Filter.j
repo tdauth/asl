@@ -1,10 +1,9 @@
 library ALibraryCoreInterfaceCinematicFilter
 
 	/**
-	* @author KaTTaNa
-	* @todo Crashes the game?!
-	* @state unstable
-	*/
+	 * \author KaTTaNa
+	 * \todo Crashes the game?!
+	 */
 	function ShowGenericCinematicFilterForPlayer takes player user, real duration, blendmode bmode, string tex, real red0, real green0, real blue0, real trans0, real red1, real green1, real blue1, real trans1 returns nothing
 		local player localPlayer = GetLocalPlayer()
 		if (localPlayer == user) then
@@ -20,8 +19,8 @@ library ALibraryCoreInterfaceCinematicFilter
 		endif
 		set localPlayer = null
 	endfunction
-	
-	/// @author Tamino Dauth
+
+	/// \author Tamino Dauth
 	function ShowBlackScreenCinematicFilterForPlayer takes player user, real duration returns nothing
 		local player localPlayer = GetLocalPlayer()
 		if (localPlayer == user) then
@@ -37,8 +36,8 @@ library ALibraryCoreInterfaceCinematicFilter
 		endif
 		set localPlayer = null
 	endfunction
-	
-	/// @author Tamino Dauth
+
+	/// \author Tamino Dauth
 	function ShowBlackScreenCinematicFilter takes real duration returns nothing
 		call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
 		call SetCineFilterBlendMode(BLEND_MODE_NONE)

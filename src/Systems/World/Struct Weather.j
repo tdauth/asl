@@ -215,7 +215,7 @@ library AStructSystemsWorldWeather requires optional ALibraryCoreDebugMisc, AStr
 			call this.removeWeatherEffects()
 		endmethod
 
-		/// @todo Set all sky types (maybe add custom skies)
+		/// \todo Set all sky types (maybe add custom skies)
 		public static method init takes nothing returns nothing
 			// static construction members
 			set thistype.m_weatherTypeEffectId[thistype.weatherTypeAshenvaleRainHeavy] = 'RAhr'

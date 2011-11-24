@@ -1,6 +1,6 @@
 library AInterfaceCoreGeneralContainer
 
-	/// @todo Each container iterator struct should be extended by this interface, vJass bug.
+	/// \todo Each container iterator struct should be extended by this interface, vJass bug.
 	interface AIteratorInterface
 		public method isValid takes nothing returns boolean
 		public method hasNext takes nothing returns boolean
@@ -9,11 +9,11 @@ library AInterfaceCoreGeneralContainer
 		public method next takes nothing returns nothing
 		/// Similar to C++'s -- iterators operator.
 		public method previous takes nothing returns nothing
-		/// @todo JassHelper bug
+		/// \todo JassHelper bug
 		//public method operator== takes thistype other returns boolean
 	endinterface
 
-	/// @todo Each iterator-using container should be extended by this interface, vJass bug.
+	/// \todo Each iterator-using container should be extended by this interface, vJass bug.
 	interface AContainerInterface
 		public method begin takes nothing returns AIteratorInterface
 		public method end takes nothing returns AIteratorInterface
@@ -23,7 +23,7 @@ library AInterfaceCoreGeneralContainer
 		public method erase takes AIteratorInterface position returns nothing
 		public method randomIterator takes nothing returns AIteratorInterface
 		public method clear takes nothing returns nothing
-		/// @todo JassHelper bug
+		/// \todo JassHelper bug
 		//public method operator< takes thistype other returns boolean
 	endinterface
 
@@ -34,7 +34,7 @@ library AInterfaceCoreGeneralContainer
 
 	/**
 	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
-	 * \sa foreach
+	 * \ingroup foreach
 	 */
 	//! textmacro A_FOREACH takes CONTAINERVARIABLE
 		set aIterator = $CONTAINERVARIABLE$.begin()
@@ -44,7 +44,7 @@ library AInterfaceCoreGeneralContainer
 
 	/**
 	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
-	 * \sa foreach
+	 * \ingroup foreach
 	 */
 	//! textmacro A_FOREACH_2 takes VARIABLE, CONTAINERVARIABLE, ITERATORTYPE
 		set aIterator = $CONTAINERVARIABLE$.begin()
@@ -55,7 +55,7 @@ library AInterfaceCoreGeneralContainer
 
 	/**
 	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
-	 * \sa foreach
+	 * \ingroup foreach
 	 */
 	//! textmacro A_FOREACH_END
 			call aIterator.next()
@@ -65,7 +65,7 @@ library AInterfaceCoreGeneralContainer
 
 	/**
 	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
-	 * \sa foreach
+	 * \ingroup foreach
 	 */
 	//! textmacro A_REVERSE_FOREACH takes CONTAINERVARIABLE
 		set aIterator = $CONTAINERVARIABLE$.end()
@@ -75,7 +75,7 @@ library AInterfaceCoreGeneralContainer
 
 	/**
 	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
-	 * \sa foreach
+	 * \ingroup foreach
 	 */
 	//! textmacro A_REVERSE_FOREACH_2 takes VARIABLE, CONTAINERVARIABLE, ITERATORTYPE
 		set aIterator = $CONTAINERVARIABLE$.end()
@@ -86,7 +86,7 @@ library AInterfaceCoreGeneralContainer
 
 	/**
 	 * \warning There should not be any \ref TriggerSleepAction() call in foreach block.
-	 * \sa foreach
+	 * \ingroup foreach
 	 */
 	//! textmacro A_REVERSE_FOREACH_END
 			call aIterator.previous()
@@ -95,7 +95,7 @@ library AInterfaceCoreGeneralContainer
 	//! endtextmacro
 
 	/// Use this to clean up integer containers which store struct instances which has to be destroyed before removing them from container.
-	/// \sa foreach
+	/// \ingroup foreach
 	//! textmacro A_DESTROY takes CONTAINERVARIABLE, MEMBERTYPE
 		loop
 			exitwhen ($CONTAINERVARIABLE$.empty())

@@ -98,12 +98,12 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 		endmethod
 
 		/**
-		* @param user If user is null, dynamic lightning will be visible for all players.
-		*/
-		public static method create takes player user, string usedCode, real interval, unit firstUnit, unit secondUnit returns thistype
+		 * \param whichPlayer If whichPlayer is null, dynamic lightning will be visible for all players.
+		 */
+		public static method create takes player whichPlayer, string usedCode, real interval, unit firstUnit, unit secondUnit returns thistype
 			local thistype this = thistype.allocate()
 			// construction members
-			set this.m_player = user
+			set this.m_player = whichPlayer
 			set this.m_code = usedCode
 			set this.m_interval = interval
 			// dynamic members

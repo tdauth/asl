@@ -1,13 +1,14 @@
 /// Provides several functions for unit handling.
-/// @author Tamino Dauth
+/// \author Tamino Dauth
 library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreGeneralHashTable
 
 	/**
-	* Adds or removes the move ability to unit \p whichUnit.
-	* \author Tamino Dauth
-	* \param whichUnit Unit which the ability is added to.
-	* \param movable If this value is true the ability will be added to unit \p whichUnit, otherwise it will be removed.
-	*/
+	 * Adds or removes the move ability to unit \p whichUnit.
+	 * \author Tamino Dauth
+	 * \param whichUnit Unit which the ability is added to.
+	 * \param movable If this value is true the ability will be added to unit \p whichUnit, otherwise it will be removed.
+	 * \sa MakeUnitAttackable()
+	 */
 	function MakeUnitMovable takes unit whichUnit, boolean movable returns nothing
 		if (movable) then
 			call UnitAddAbility(whichUnit, 'Amov')
@@ -17,11 +18,12 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	endfunction
 
 	/**
-	* Adds or removes the attack ability to unit \p whichUnit.
-	* @author Tamino Dauth
-	* \param whichUnit Unit which the ability is added to.
-	* \param attackable If this value is true the ability will be added to unit \p whichUnit, otherwise it will be removed.
-	*/
+	 * Adds or removes the attack ability to unit \p whichUnit.
+	 * \author Tamino Dauth
+	 * \param whichUnit Unit which the ability is added to.
+	 * \param attackable If this value is true the ability will be added to unit \p whichUnit, otherwise it will be removed.
+	 * \sa MakeUnitMovable()
+	 */
 	function MakeUnitAttackable takes unit whichUnit, boolean attackable returns nothing
 		if (attackable) then
 			call UnitAddAbility(whichUnit, 'Aatk')
@@ -30,20 +32,20 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		endif
 	endfunction
 
-	/// @todo Doesn't work.
-	/// @author Tamino Dauth
-	/// @return Returns true if unit @param usedUnit is invulnerable.
-	function IsUnitInvulnerable takes unit usedUnit returns boolean
-		return (GetUnitAbilityLevel(usedUnit, 'Bvul') > 0)
+	/// \todo Doesn't work.
+	/// \author Tamino Dauth
+	/// \return Returns true if unit \p whichUnit is invulnerable.
+	function IsUnitInvulnerable takes unit whichUnit returns boolean
+		return (GetUnitAbilityLevel(whichUnit, 'Bvul') > 0)
 	endfunction
 
 	/**
-	* \todo Function does not support all alliance states (only \ref bj_ALLIANCE_NEUTRAL, \ref bj_ALLIANCE_ALLIED and \ref bj_ALLIANCE_UNALLIED).
-	* \author Tamino Dauth
-	* \return Returns the alliance state of the two unit's owners.
-	*/
-	function GetUnitAllianceStateToUnit takes unit usedUnit, unit otherUnit returns integer
-		local player usedUnitOwner = GetOwningPlayer(usedUnit)
+	 * \todo Function does not support all alliance states (only \ref bj_ALLIANCE_NEUTRAL, \ref bj_ALLIANCE_ALLIED and \ref bj_ALLIANCE_UNALLIED).
+	 * \author Tamino Dauth
+	 * \return Returns the alliance state of the two unit's owners.
+	 */
+	function GetUnitAllianceStateToUnit takes unit whichUnit, unit otherUnit returns integer
+		local player usedUnitOwner = GetOwningPlayer(whichUnit)
 		local player otherUnitOwner = GetOwningPlayer(otherUnit)
 		local integer allianceState = -1
 		if (IsPlayerAlly(usedUnitOwner, otherUnitOwner)) then
@@ -61,16 +63,17 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	endfunction
 
 	/**
-	* Origin: http://www.wc3c.net/showthread.php?t=102721
-	* In WC3, most debuff and stun spells have a decreased duration
-	* against heroes, creeps with a high enough level (\ref A_SPELL_RESISTANCE_CREEP_LEVEL) and units with
-	* resistant skin, while other spells such as Polymorph don't
-	* even work against such units. This function checks if a unit
-	* matches any of these criteria that would make it resistant to
-	* such spells, so you can make triggered spells work that way.
-	* \author Anitarf
-	* \sa A_SPELL_RESISTANCE_CREEP_LEVEL, IsUnitSpellImmune
-	*/
+	 * In WC3, most debuff and stun spells have a decreased duration
+	 * against heroes, creeps with a high enough level (\ref A_SPELL_RESISTANCE_CREEP_LEVEL) and units with
+	 * resistant skin, while other spells such as Polymorph don't
+	 * even work against such units. This function checks if a unit
+	 * matches any of these criteria that would make it resistant to
+	 * such spells, so you can make triggered spells work that way.
+	 * \author Anitarf
+	 * \sa A_SPELL_RESISTANCE_CREEP_LEVEL
+	 * \sa IsUnitSpellImmune()
+	 * <a href="http://www.wc3c.net/showthread.php?t=102721">source</a>
+	 */
 	function IsUnitSpellResistant takes unit u returns boolean
 		local player owner = GetOwningPlayer(u)
 		local boolean result = IsUnitType(u, UNIT_TYPE_HERO) or IsUnitType(u, UNIT_TYPE_RESISTANT) or (GetPlayerId(owner) >= PLAYER_NEUTRAL_AGGRESSIVE and GetUnitLevel(u) >= A_SPELL_RESISTANCE_CREEP_LEVEL) //the level at which creeps gain spell resistance
@@ -79,58 +82,65 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	endfunction
 
 	/**
-	 * Origin: http://www.wc3c.net/showthread.php?t=102721
+	 * <a href="http://www.wc3c.net/showthread.php?t=102721">source</a>
 	 * \author Anitarf
-	 * \sa IsUnitSpellResistant
+	 * \sa IsUnitSpellResistant()
 	 */
 	function IsUnitSpellImmune takes unit u returns boolean
 		return IsUnitType(u, UNIT_TYPE_MAGIC_IMMUNE)
 	endfunction
 
 	/**
-	* Other functions available for use are GetFullDamage and GetReducedDamage.
-	* GetFullDamage, when passed the actual damage a unit takes (In most cases,
-	* GetEventDamage from EVENT_UNIT_DAMAGED event callbacks) and a unit's armor,
-	* it will return how much damage was dealt before armor reduction. Similarly,
-	* GetReducedDamage, when given the base damage and armor, will return how much
-	* damage will be dealt after armor is considered. These functions DO NOT
-	* consider armor types in their calculations, so any further reductions or
-	* bonuses due to that will need to be considered BEFORE using these functions.
-	* I recommend using your damage detection system to modify and build your own
-	* armor types anyways.
-	*
-	* You can use the ObjectMerger call below in order to generate the ability for
-	* keeping units with maximum life lower than DAMAGE_TEST from dying when
-	* using GetUnitArmor on them. If you do not plan on editing the 'AIlz' ability
-	* in your map, you can keep the ObjectMerger call commented out and replace
-	* 'lif&' in the configuration constants with 'AIlz'. The 'AIlz' ability adds
-	* 50 max life, which is plenty for the script.
-	*
-	* Function Listing --
-	* function GetUnitArmor takes unit u returns real
-	* function GetReducedDamage takes real baseDamage, real armor returns real
-	* function GetFullDamage takes real damage, real armor returns real
-	*/
+	 * \defgroup unitproperties Unit properties
+	 * Other functions available for use are \ref GetFullDamage() and \ref GetReducedDamage().
+	 * GetFullDamage, when passed the actual damage a unit takes (In most cases,
+	 * GetEventDamage from \ref EVENT_UNIT_DAMAGED event callbacks) and a unit's armor,
+	 * it will return how much damage was dealt before armor reduction. Similarly,
+	 * GetReducedDamage, when given the base damage and armor, will return how much
+	 * damage will be dealt after armor is considered. These functions DO NOT
+	 * consider armor types in their calculations, so any further reductions or
+	 * bonuses due to that will need to be considered BEFORE using these functions.
+	 * I recommend using your damage detection system to modify and build your own
+	 * armor types anyways.
+	 *
+	 * You can use the ObjectMerger call in \ref Creation_Unit_Properties.j in order to generate the ability for
+	 * keeping units with maximum life lower than \ref DAMAGE_TEST from dying when
+	 * using \ref GetUnitArmor() on them. If you do not plan on editing the 'AIlz' ability
+	 * in your map, you can ignore the file's import and its ObjectMerger call and replace
+	 * 'lif&' in the configuration constants with 'AIlz'. The 'AIlz' ability adds
+	 * 50 max life, which is plenty for the script.
+	 * \todo Support LIFE_BONUS_SPELL_ID configuration in ASL.
+	 *
+	 * Function Listing --
+	 * function GetUnitArmor takes unit u returns real
+	 * function GetReducedDamage takes real baseDamage, real armor returns real
+	 * function GetFullDamage takes real damage, real armor returns real
+	 */
 	globals
 		// Values that should be changed for your map
-		/// @author Rising_Dusk
+		/// \author Rising_Dusk
+		/// \ingroup unitproperties
 		private constant real ARMOR_REDUCTION_MULTIPLIER = 0.06
-		/// @author Rising_Dusk
+		/// \author Rising_Dusk
+		/// \ingroup unitproperties
 		private constant integer LIFE_BONUS_SPELL_ID = 'lif&'
 		// Values that do not need to be changed
-		/// @author Rising_Dusk
+		/// \author Rising_Dusk
+		/// \ingroup unitproperties
 		private constant real ARMOR_INVULNERABLE = 917451.519
-		/// @author Rising_Dusk
+		/// \author Rising_Dusk
+		/// \ingroup unitproperties
 		private constant real DAMAGE_TEST = 16.
-		/// @author Rising_Dusk
+		/// \author Rising_Dusk
+		/// \ingroup unitproperties
 		private constant real DAMAGE_LIFE = 30.
-		/// @author Rising_Dusk
+		/// \author Rising_Dusk
+		/// \ingroup unitproperties
 		private constant real NATLOG_094 = -0.061875
 	endglobals
 
-	////! external ObjectMerger w3a AIlz lif& anam "GetUnitArmorLifeBonus" ansf "" Ilif 1 30 aite 0
-
-	/// @author Rising_Dusk
+	/// \author Rising_Dusk
+	/// \ingroup unitproperties
 	function GetUnitArmor takes unit u returns real
 		local real life = GetWidgetLife(u)
 		local real test = life
@@ -177,7 +187,8 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		return 0.0
 	endfunction
 
-	/// @author Rising_Dusk
+	/// \author Rising_Dusk
+	/// \ingroup unitproperties
 	function GetReducedDamage takes real baseDamage, real armor returns real
 		if (armor >= 0.0) then
 			return baseDamage * (1.0 - ((armor * ARMOR_REDUCTION_MULTIPLIER) / (1.0 + ARMOR_REDUCTION_MULTIPLIER * armor)))
@@ -185,7 +196,8 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		return baseDamage * (2.0 -Pow(0.94, -armor))
 	endfunction
 
-	/// @author Rising_Dusk
+	/// \author Rising_Dusk
+	/// \ingroup unitproperties
 	function GetFullDamage takes real damage, real armor returns real
 		if (armor >= 0.0) then
 			return damage / (1.0 -((armor * ARMOR_REDUCTION_MULTIPLIER) / (1.0 + ARMOR_REDUCTION_MULTIPLIER * armor)))
@@ -194,7 +206,12 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	endfunction
 
 	/**
+	 * \return Returns the experience which a hero gets from killing a unit with level \p unitLevel.
 	 * \author HaiZhung, Tamino Dauth
+	 * \sa GetUnitXP()
+	 * \sa GetUnitHeroXP()
+	 * \sa GetHeroLevelMaxXP()
+	 * \sa GetHeroMaxXP()
 	 */
 	function GetUnitLevelXP takes integer unitLevel returns integer
 		local integer result = 25 // default XP
@@ -208,15 +225,25 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	endfunction
 
 	/**
+	 * \return Returns the experience which a hero gets from killing unit \p whichUnit.
 	 * \author HaiZhung, Tamino Dauth
+	 * \sa GetUnitLevelXP()
+	 * \sa GetUnitHeroXP()
+	 * \sa GetHeroLevelMaxXP()
+	 * \sa GetHeroMaxXP()
 	 */
 	function GetUnitXP takes unit whichUnit returns integer
 		return GetUnitLevelXP(GetUnitLevel(whichUnit))
 	endfunction
 
 	/**
-	 * Considers default creep experience reduction table.
+	 * \return Returns the experience which \p hero gets from killing unit \p whichUnit.
+	 * \note Considers default creep experience reduction table.
 	 * \author HaiZhung, Tamino Dauth
+	 * \sa GetUnitLevelXP()
+	 * \sa GetUnitXP()
+	 * \sa GetHeroLevelMaxXP()
+	 * \sa GetHeroMaxXP()
 	 */
 	function GetUnitHeroXP takes unit whichUnit, unit hero returns integer
 		if (GetOwningPlayer(whichUnit) == Player(PLAYER_NEUTRAL_AGGRESSIVE)) then
@@ -225,6 +252,15 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		return GetUnitXP(whichUnit)
 	endfunction
 
+	/**
+	 * \return Returns the maximum required experience which is required to pass \p herolevel and level up.
+	 * \note Considers default experience table.
+	 * \author HaiZhung, Tamino Dauth
+	 * \sa GetUnitLevelXP()
+	 * \sa GetUnitXP()
+	 * \sa GetHeroXP()
+	 * \sa GetHeroMaxXP()
+	 */
 	function GetHeroLevelMaxXP takes integer heroLevel returns integer
 		local integer result = 0 // level 1 XP
 		local integer i = 2
@@ -236,6 +272,15 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		return result
 	endfunction
 
+	/**
+	 * \return Returns the maximum required experience which is required to pass the current level of \p hero and level up.
+	 * \note Considers default experience table.
+	 * \author HaiZhung, Tamino Dauth
+	 * \sa GetUnitLevelXP()
+	 * \sa GetUnitXP()
+	 * \sa GetHeroXP()
+	 * \sa GetHeroLevelMaxXP()
+	 */
 	function GetHeroMaxXP takes unit hero returns integer
 		return GetHeroLevelMaxXP(GetHeroLevel(hero))
 	endfunction
@@ -256,7 +301,7 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	 * Use \ref GetUnitCollisionSize to use predefined maximum collision size and iterations of map.
 	 * \author Vexoiran, Tamino Dauth
 	 * \sa FlushUnitCollisionSizes, FlushUnitTypeCollisionSize, GetUnitCollisionSize
-	 * \link http://www.wc3c.net/showthread.php?t=101309
+	 * <a href="http://www.wc3c.net/showthread.php?t=101309">source</a>
 	 */
 	function GetUnitCollisionSizeEx takes unit u, real maxCollisionSize, integer iterations returns real
 		local integer i = 0

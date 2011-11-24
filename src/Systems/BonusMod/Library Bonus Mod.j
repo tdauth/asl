@@ -1,5 +1,5 @@
 /**
-* The Bonus Mod (originally created by @author weaaddar) is a famous system
+* The Bonus Mod (originally created by \author weaaddar) is a famous system
 * for modifing specific unit properties where Jass natives are missed and can not be used.
 * It uses a special method by adding and removing property-modifying abilities to a unit.
 * For this reason it allows the user to modify damage, armour, hit points, mana, sight range, hit point regeneration and mana regeneration of a unit.
@@ -102,7 +102,7 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 	function AUnitSetBonus takes unit whichUnit, integer bonusType, integer amount returns boolean
 		local integer x
 		local integer i
-		local integer bit = 0 /// @todo test for JassParser
+		local integer bit = 0 /// \todo test for JassParser
 		local boolean negative
 		local boolean mana
 		debug if (whichUnit == null or bonusType < 0 or bonusType >= A_BONUS_MAX_TYPES) then
@@ -204,7 +204,6 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 			return true
 		endif
 		if (bonusType == A_BONUS_TYPE_LIFE or bonusType == A_BONUS_TYPE_MANA or bonusType == A_BONUS_TYPE_SIGHT_RANGE) then
-			//set amount = (amount / BonusBigValuesFactor) * BonusBigValuesManaFactor /// @todo Baradé, ?!!
 			if (bonusType == A_BONUS_TYPE_LIFE) then
 				set l = GetWidgetLife(whichUnit)
 				set mod = ModuloReal(l, BonusBigValuesFactor)
@@ -220,6 +219,7 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 				set s = "ABonusModLeftMana"
 				set min = 0
 			endif
+			//set amount = (amount / BonusBigValuesFactor) * BonusBigValuesManaFactor /// \todo Baradé, ?!!
 			set amount = amount + hashTable.handleInteger(whichUnit, s)
 			if (amount < 0) and (l + amount < 1) then
 				set x = R2I(min + mod - l)
@@ -235,11 +235,11 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 	endfunction
 
 	/**
-	 * The same as \ref AUnitAddBonus with a negative amount but a little bit more logic and readable in my opinion.
+	 * The same as \ref AUnitAddBonus() with a negative amount but a little bit more logic and readable in my opinion.
 	 * Removes bonus of a specific property to unit.
-	 * @author Tamino Dauth
-	 * @param whichUnit Unit which should loose bonus.
-	 * @param bonusType Property type which is used for removing bonus.
+	 * \author Tamino Dauth
+	 * \param whichUnit Unit which should loose bonus.
+	 * \param bonusType Property type which is used for removing bonus.
 	 * Possible values are:
 	 * \ref A_BONUS_TYPE_DAMAGE
 	 * \ref A_BONUS_TYPE_ARMOR

@@ -40,21 +40,21 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 	 */
 	//! textmacro A_MAP takes STRUCTPREFIX, NAME, ELEMENTTYPE, KEYTYPE, NULLVALUE, KEYNULLVALUE, COMPARATOR, STRUCTSPACE, NODESPACE, ITERATORSPACE
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$UnaryPredicate takes $ELEMENTTYPE$ value, $KEYTYPE$ key returns boolean
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$BinaryPredicate takes $ELEMENTTYPE$ value0, $KEYTYPE$ key0, $ELEMENTTYPE$ value1, $KEYTYPE$ key1 returns boolean
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$UnaryFunction takes $ELEMENTTYPE$ value, $KEYTYPE$ key returns nothing
 
 		/// Generator.
 		/// Allows filling some elements with the return value.
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$Generator takes nothing returns $ELEMENTTYPE$
 
-		/// @todo Should be a part of \ref $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$BinaryOperation  takes $ELEMENTTYPE$ value0, $KEYTYPE$ key0, $ELEMENTTYPE$ value1, $KEYTYPE$ key1 returns $ELEMENTTYPE$
 
 		private struct $NAME$Node[$NODESPACE$]
@@ -201,8 +201,8 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			endmethod
 
 			/**
-			* @todo If you want to implement toBack and toFront (like Qt does) you'll have to save parent struct instance ...
-			*/
+			 * \todo If you want to implement toBack and toFront (like Qt does) you'll have to save parent struct instance ...
+			 */
 
 			public static method create takes nothing returns thistype
 				local thistype this = thistype.allocate()

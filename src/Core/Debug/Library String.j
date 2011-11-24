@@ -70,8 +70,8 @@ library ALibraryCoreDebugString requires AStructCoreDebugBenchmark, ALibraryCore
 		debug call Print("RemoveSubString - Result is \"" + RemoveSubString(testString, 0, StringLength(testParameter0)) + "\"")
 		debug call Print("RemoveString - Result is \"" + RemoveString(testString, testParameter0) + "\"")
 		debug call Print("InsertString - Result is \"" + InsertString(testString, 0, testParameter0) + "\"")
-		debug call Print("MoveSubString - Result is \"" + MoveSubString(testString, 0, StringLength(testParameter0), 0) + "\"") /// @todo Move to old position to prevent crashes
-		debug call Print("MoveString - Result is \"" + MoveString(testString, testParameter0, 0) + "\"") /// @todo Move to old position to prevent crashes
+		debug call Print("MoveSubString - Result is \"" + MoveSubString(testString, 0, StringLength(testParameter0), 0) + "\"") /// \todo Move to old position to prevent crashes
+		debug call Print("MoveString - Result is \"" + MoveString(testString, testParameter0, 0) + "\"") /// \todo Move to old position to prevent crashes
 		debug call Print("ReverseString - Result is \"" + ReverseString(testString) + "\"")
 		debug if (StringMatch(testString, testParameter0, true)) then
 			debug call Print("StringMatch - Result is true.")

@@ -29,7 +29,7 @@ library AStructSystemsCharacterTalkLog requires AStructCoreGeneralVector, AStruc
 		endmethod
 	endstruct
 
-	/// @todo Should be private, vJass bug.
+	/// \todo Should be private, vJass bug.
 	struct AInfoData
 		public AInfo m_info
 		public AIntegerVector m_speeches

@@ -186,21 +186,21 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	endstruct
 
 	/**
-	* This struct provides an interface to the character's inventory which is based on the default Warcraft 3 The Frozen Throne
-	* inventory with 6 slots.
-	* A unit ability can be used to open and close rucksack.
-	* Rucksack uses the same interface as equipment since there are only 6 available item slots in Warcraft.
-	* Abilities of equipment will be hold when character is opening his rucksack.
-	* Rucksack item abilities do not affect!
-	* You can only use usable items like potions in rucksack which should always have type ITEM_TYPE_CHARGED!
-	* In rucksack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
-	* In equipment there shouldn't be any charges.
-	* If you add an item to character triggers will be run and firstly it will be tried to equip added item to character.
-	* If this doesn't work (e. g. it's not an equipable item) it will be added to rucksack.
-	* You do not have to care if rucksack is being opened at that moment.
-	* @todo Use UnitDropItemSlot instead of item removals.
-	* @todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
-	*/
+	 * This struct provides an interface to the character's inventory which is based on the default Warcraft 3 The Frozen Throne
+	 * inventory with 6 slots.
+	 * A unit ability can be used to open and close rucksack.
+	 * Rucksack uses the same interface as equipment since there are only 6 available item slots in Warcraft.
+	 * Abilities of equipment will be hold when character is opening his rucksack.
+	 * Rucksack item abilities do not affect!
+	 * You can only use usable items like potions in rucksack which should always have type ITEM_TYPE_CHARGED!
+	 * In rucksack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
+	 * In equipment there shouldn't be any charges.
+	 * If you add an item to character triggers will be run and firstly it will be tried to equip added item to character.
+	 * If this doesn't work (e. g. it's not an equipable item) it will be added to rucksack.
+	 * You do not have to care if rucksack is being opened at that moment.
+	 * \todo Use \ref UnitDropItemSlot() instead of item removals.
+	 * \todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
+	 */
 	struct AInventory extends AAbstractCharacterSystem
 		public static constant integer maxItemsPerPage = 4
 		// static construction members
@@ -572,7 +572,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 		endmethod
 
-		/// Removes the first found item with item type id @param itemTypeId.
+		/// Removes the first found item with item type id \p itemTypeId.
 		public method removeFromRucksackByTypeId takes integer itemTypeId, boolean drop returns nothing
 			local integer i = 0
 			loop
@@ -613,9 +613,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_rucksackItemData[index] = 0
 		endmethod
 
-
-
-		/// @return Returns the rucksack item index by a Warcraft inventory slot number.
+		/// \return Returns the rucksack item index by a Warcraft inventory slot number.
 		public method slotRucksackIndex takes integer slot returns integer
 			debug if (slot >= thistype.maxRucksackItemsPerPage or slot < 0) then
 				debug call this.print("Wrong inventory slot: " + I2S(slot) + ".")
@@ -694,8 +692,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		* Usually you do not have to call this method. The system handles itself.
-		*/
+		 * Usually you do not have to call this method. The system handles itself.
+		 */
 		public method disable takes nothing returns nothing
 			call super.disable()
 			if (this.m_rucksackIsEnabled) then
@@ -704,7 +702,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.disableEquipment()
 			endif
 
-			/// @todo wait for calling methods above?
+			/// \todo wait for calling methods above?
 			call DisableTrigger(this.m_openTrigger)
 			call DisableTrigger(this.m_orderTrigger)
 			call DisableTrigger(this.m_pickupTrigger)
@@ -813,9 +811,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		* Shows the current page in the inventory of the character's unit
-		* In general you do not have to call this method. The system handles itself.
-		*/
+		 * Shows the current page in the inventory of the character's unit
+		 * In general you do not have to call this method. The system handles itself.
+		 */
 		public method enable takes nothing returns nothing
 			call super.enable()
 			if (this.m_rucksackIsEnabled) then
@@ -824,14 +822,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.enableEquipment()
 			endif
 
-			/// @todo wait for calling methods above?
+			/// \todo wait for calling methods above?
 			call EnableTrigger(this.m_openTrigger)
 			call EnableTrigger(this.m_orderTrigger)
 			call EnableTrigger(this.m_pickupTrigger)
 			call EnableTrigger(this.m_dropTrigger)
 		endmethod
 
-		/// @return Returns the slot of the equipped item. If no item was found it returns -1.
+		/// \return Returns the slot of the equipped item. If no item was found it returns -1.
 		public method hasItemEquipped takes integer itemTypeId returns integer
 			local integer i = 0
 			loop
@@ -844,7 +842,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return -1
 		endmethod
 
-		/// @return Returns the slot of the rucksack item. If not item was found it returns -1.
+		/// \return Returns the slot of the rucksack item. If not item was found it returns -1.
 		public method hasItemTypeInRucksack takes integer itemTypeId returns integer
 			local integer i = 0
 			loop
@@ -1086,7 +1084,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.setRucksackItem(index, inventoryItemData, add)
 		endmethod
 
-		/// @todo Added item player check!
+		/// \todo Added item player check!
 		private method equipItem takes item usedItem, boolean dontMoveToRucksack, boolean swapWithAlreadyEquipped, boolean showEquipMessage returns nothing
 			local AItemType itemType
 			local integer equipmentType
@@ -1533,7 +1531,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			if (this.m_rucksackIsEnabled) then
 				// page items
 				if (GetItemTypeId(usedItem) == thistype.m_leftArrowItemType) then
-					/// @todo Item is created on character's position, too.
+					/// \todo Item is created on character's position, too.
 					call RemoveItem(usedItem)
 					set usedItem = null
 					call TriggerSleepAction(0.0) // wait until removal
@@ -1542,7 +1540,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call EnableTrigger(this.m_pickupTrigger)
 					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textDropPageItem)
 				elseif (GetItemTypeId(usedItem) == thistype.m_rightArrowItemType) then
-					/// @todo Item is created on character's position, too.
+					/// \todo Item is created on character's position, too.
 					call RemoveItem(usedItem)
 					set usedItem = null
 					call TriggerSleepAction(0.0) // wait until removal
@@ -1710,10 +1708,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		* @param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in rucksack.
-		* @param openRucksackAbilityId This ability is added to the character's unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
-		* @param allowPickingUpFromOthers If this value is true characters are allowed to pick up items which are owned by other playing users (human controlled).
-		*/
+		 * \param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in rucksack.
+		 * \param openRucksackAbilityId This ability is added to the character's unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
+		 * \param allowPickingUpFromOthers If this value is true characters are allowed to pick up items which are owned by other playing users (human controlled).
+		 */
 		public static method init takes integer leftArrowItemType, integer rightArrowItemType, integer openRucksackAbilityId, boolean allowPickingUpFromOthers, string textUnableToEquipItem, string textEquipItem, string textUnableToAddRucksackItem, string textAddItemToRucksack, string textUnableToMoveRucksackItem, string textDropPageItem, string textMovePageItem, string textOwnedByOther returns nothing
 			// static construction members
 			set thistype.m_leftArrowItemType = leftArrowItemType
@@ -1733,7 +1731,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method unitAddItemToSlotById takes unit whichUnit, integer itemType, integer slot returns boolean
 			local boolean result
 			local boolean isBeingPaused
-			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			/// \todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
 			if (IsUnitPaused(whichUnit)) then
 				set isBeingPaused = true
 				call PauseUnit(whichUnit, false)
@@ -1750,7 +1748,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method unitDropItemPoint takes unit whichUnit, item whichItem, real x, real y returns boolean
 			local boolean result
 			local boolean isBeingPaused
-			/// @todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			/// \todo TEST, Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
 			if (IsUnitPaused(whichUnit)) then
 				set isBeingPaused = true
 				call PauseUnit(whichUnit, false)

@@ -30,9 +30,9 @@ library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreG
 		// methods
 
 		/**
-		* Fills an existing Warcraft-3-like group with all members of the group.
-		* @param whichGroup Group which is filled with all group members.
-		*/
+		 * Fills an existing Warcraft-3-like group with all members of the group.
+		 * \param whichGroup Group which is filled with all group members.
+		 */
 		public method fillGroup takes group whichGroup returns nothing
 			local integer i = 0
 			loop
@@ -43,9 +43,9 @@ library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreG
 		endmethod
 
 		/**
-		* Creates a new Warcraft-3-like group from the group.
-		* @return Returns a newly created group.
-		*/
+		 * Creates a new Warcraft-III-like group from the group.
+		 * \return Returns a newly created group.
+		 */
 		public method group takes nothing returns group
 			local group whichGroup = CreateGroup()
 			call this.fillGroup(whichGroup)
@@ -53,17 +53,17 @@ library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreG
 		endmethod
 
 		/**
-		* Simple forEach wrapper (equal to units.forEach).
-		*/
+		 * Simple forEach wrapper (equal to units.forEach).
+		 */
 		public method forGroup takes AUnitVectorUnaryFunction forFunction returns nothing
 			call this.m_units.forEach(forFunction)
 		endmethod
 
 		/**
-		* Adds all units of group @param whichGroup to the group.
-		* @param destroy If this value is true group @param whichGroup will be destroyed after it has been added.
-		* @param clear If this value is true group @param whichGroup will be cleared after it has been added. This value has no effect if @param destroy is already true. If both parameters are false group @param whichGroup won't change. Unfortunately the method has to re-add all units (limited Warcraft 3 natives).
-		*/
+		 * Adds all units of group \p whichGroup to the group.
+		 * \param destroy If this value is true group \p whichGroup will be destroyed after it has been added.
+		 * \param clear If this value is true group \p whichGroup will be cleared after it has been added. This value has no effect if \p destroy is already true. If both parameters are false group \p whichGroup won't change. Unfortunately the method has to re-add all units (limited Warcraft III natives).
+		 */
 		public method addGroup takes group whichGroup, boolean destroy, boolean clear returns nothing
 			local unit firstOfGroup
 			local integer i

@@ -1,6 +1,7 @@
 library AStructSystemsCharacterPvp requires ALibraryCoreInterfaceLeaderboard, ALibraryCoreStringConversion, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector
 
-	/// @todo Add config options for scoring.
+	/// \todo Add config options for scoring.
+	/// \todo Finish and test!
 	struct APvp
 		// static initialization members
 		private static boolean m_useLeaderboard
@@ -35,7 +36,7 @@ library AStructSystemsCharacterPvp requires ALibraryCoreInterfaceLeaderboard, AL
 			return true
 		endmethod
 
-		/// @todo Use of player vector would be much easier.
+		/// \todo Use of player vector would be much easier. Use \ref AForce?
 		public method showMessage takes string message returns nothing
 			local integer i = 0
 			local APlayerList owners = APlayerList.create()
@@ -57,8 +58,8 @@ library AStructSystemsCharacterPvp requires ALibraryCoreInterfaceLeaderboard, AL
 		endmethod
 
 		/**
-		* Note that there has to be a seperated start position for each entered unit.
-		*/
+		 * Note that there has to be a seperated start position for each entered unit.
+		 */
 		public stub method unitEnters takes unit whichUnit returns integer
 			if (this.m_units.size() == this.m_startX.size()) then
 				return -1

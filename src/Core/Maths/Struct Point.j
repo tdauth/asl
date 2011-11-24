@@ -1,11 +1,11 @@
 library AStructCoreMathsPoint requires ALibraryCoreMathsPoint, ALibraryCoreMathsRect
 
 	/**
-	* APoint provides a 2-dimensional location similar to Warcraft 3's data type but as vJass structure usable for inheritance.
-	*/
+	 * \brief APoint provides a 2-dimensional location similar to Warcraft III's data type \ref location but as vJass structure usable for inheritance.
+	 */
 	struct APoint
 		// dynamic members
-		private real m_x /// @todo Should be protected, vJass limit.
+		private real m_x /// \todo Should be protected, vJass limit.
 		private real m_y
 
 		// dynamic members

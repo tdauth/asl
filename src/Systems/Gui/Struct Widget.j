@@ -1,21 +1,21 @@
 library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibraryCoreEnvironmentSound, AStructSystemsGuiGui, AStructSystemsGuiMainWindow
 
-	/// @todo Should be a static method of @struct AWidget, vJass bug.
+	/// \todo Should be a static method of \ref AWidget, vJass bug.
 	function interface AWidgetOnHitAction takes AWidget usedWidget returns nothing
 
-	/// @todo Should be a static method of @struct AWidget, vJass bug.
+	/// \todo Should be a static method of \ref AWidget, vJass bug.
 	function interface AWidgetOnTrackAction takes AWidget usedWidget returns nothing
 
 	struct AWidget
-		//static start members
+		// static construction members
 		private static string m_onHitSoundPath
 		private static string m_onTrackSoundPath
-		//dynamic members
+		// dynamic members
 		private boolean m_shown
 		private integer m_shortcut // Wenn das Tastenkürzel gedr?ckt wird, wird auch die onHitFunction ausgeführt. Die Tastenkürzel werden über eine ausgewählte Einheit mit entsprechenden Fähigkeiten gesteuert.
 		private string m_tooltip
 		private real m_tooltipSize
-		//start members
+		// construction members
 		private AMainWindow m_mainWindow
 		private real m_x
 		private real m_y
@@ -24,7 +24,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 		private string m_modelFilePath
 		private AWidgetOnHitAction m_onHitAction
 		private AWidgetOnTrackAction m_onTrackAction
-		//members
+		// members
 		private integer m_index
 		private trackable m_trackable
 		private trigger m_onHitTrigger
@@ -116,13 +116,13 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 			return this.m_tooltipSize
 		endmethod
 
-		// start members
+		// construction members
 
 		public method mainWindow takes nothing returns AMainWindow
 			return this.m_mainWindow
 		endmethod
 
-		/// Friend relation to @struct ALayout, do not use since widgets are static!
+		/// Friend relation to \ref ALayout, do not use since widgets are static!
 		public method setX takes real x returns nothing
 			set this.m_x = x
 		endmethod
@@ -131,7 +131,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 			return this.m_x
 		endmethod
 
-		/// Friend relation to @struct ALayout, do not use since widgets are static!
+		/// Friend relation to \ref ALayout, do not use since widgets are static!
 		public method setY takes real y returns nothing
 			set this.m_y = y
 		endmethod
@@ -213,8 +213,8 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 		endmethod
 
 		/**
-		* @param modelFilePath Model file path for the trackable model. If there aren't any onHitActions or onTrackActions this value could be null.
-		*/
+		 * \param modelFilePath Model file path for the trackable model. If there aren't any onHitActions or onTrackActions this value could be null.
+		 */
 		public static method create takes AMainWindow mainWindow, real x, real y, real sizeX, real sizeY, string modelFilePath, AWidgetOnHitAction onHitAction, AWidgetOnTrackAction onTrackAction returns thistype
 			local thistype this = thistype.allocate()
 			//dynamic members

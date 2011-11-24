@@ -1,11 +1,11 @@
 library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, ALibraryCoreMathsReal, ALibraryCoreMathsPoint, ALibraryCoreMathsUnit
 
-	/// @todo Should be a part of @struct AJump, vJass bug.
+	/// \todo Should be a part of \ref AJump, vJass bug.
 	function interface AJumpAlightAction takes unit usedUnit returns nothing
 
 	/**
-	* @todo Test and fix @struct AMissile first and use vectors for this struct, too afterwards.
-	*/
+	 * \todo Test and fix \ref AMissile first and use vectors for this struct, too afterwards.
+	 */
 	struct AJump
 		//static start members
 		private static real m_refreshRate
@@ -94,7 +94,7 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			set this.m_unit = null
 		endmethod
 
-		/// @todo fast creation can cause crashes. behaviour is not change if vector members are erased in this method and not in destructor.
+		/// \todo fast creation can cause crashes. behaviour is not change if vector members are erased in this method and not in destructor.
 		private static method timerFunction takes nothing returns nothing
 			local thistype jump
 			local integer i = thistype.m_jumps.backIndex()

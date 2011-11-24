@@ -1,6 +1,6 @@
 library ALibraryCoreMathsIndex requires optional ALibraryCoreDebugMisc
 
-	/// @todo private causes an error
+	/// \todo private causes an error
 	debug function DebugCheckIndex takes integer index returns nothing
 		debug if (index > JASS_MAX_ARRAY_SIZE) then
 			debug call Print("Index is too high: " + I2S(index))

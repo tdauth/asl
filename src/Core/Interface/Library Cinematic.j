@@ -1,10 +1,11 @@
 library ALibraryCoreInterfaceCinematic
 
 	/**
-	* @author Tamino Dauth
-	* @todo Test it!
-	* @see EndCinematicScene, CancelCineSceneBJ
-	*/
+	 * \author Tamino Dauth
+	 * \todo Test it!
+	 * \sa EndCinematicScene()
+	 * \sa CancelCineSceneBJ()
+	 */
 	function EndCinematicSceneForPlayer takes player whichPlayer returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call EndCinematicScene()
@@ -12,10 +13,11 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* Smaller function than the real function (SetCinematicSceneBJ
-	* You don't have to use player forces.
-	* @see SetCinematicSceneBJ, TransmissionFromUnitWithNameBJ
-	*/
+	 * Smaller function than the real function \ref SetCinematicSceneBJ()
+	 * You don't have to use player forces.
+	 * \sa SetCinematicSceneBJ()
+	 * \sa TransmissionFromUnitWithNameBJ()
+	 */
 	function SetCinematicSceneForPlayer takes player user, integer unitType, player owner, string title, string text, real sceneTime, real voiceTime returns nothing
 		local player localPlayer = GetLocalPlayer()
 		local playercolor playerColour = GetPlayerColor(owner)
@@ -27,10 +29,11 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* Does not init cinematic behaviour, wait for sound and ping the minimap.
-	* @author Tamino Dauth
-	* @see TransmissionFromUnitTypeWithNameBJ, TransmissionFromUnit
-	*/
+	 * Does not init cinematic behaviour, wait for sound and ping the minimap.
+	 * \author Tamino Dauth
+	 * \sa TransmissionFromUnitTypeWithNameBJ()
+	 * \sa TransmissionFromUnit()
+	 */
 	function TransmissionFromUnitType takes integer unitType, player owner, string name, string text, sound playedSound returns nothing
 		local playercolor playerColor = GetPlayerColor(owner)
 		local real time
@@ -45,10 +48,11 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* Same differences like @function TransmissionFromUnitType and additionally does not add unit's indicator.
-	* @author Tamino Dauth
-	* @see TransmissionFromUnitWithNameBJ, TransmissionFromUnitType
-	*/
+	 * Same differences like \ref TransmissionFromUnitType() and additionally does not add unit's indicator.
+	 * \author Tamino Dauth
+	 * \sa TransmissionFromUnitWithNameBJ()
+	 * \sa TransmissionFromUnitType()
+	 */
 	function TransmissionFromUnit takes unit usedUnit, string text, sound playedSound returns nothing
 		local player owner = GetOwningPlayer(usedUnit)
 		call TransmissionFromUnitType(GetUnitTypeId(usedUnit), owner, GetUnitName(usedUnit), text, playedSound)
@@ -56,11 +60,10 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* Shows a transmission with text @param text and sound @param playedSound from unit @param usedUnit for player @param usedPlayer.
-	* @param playedSound If this value is null sound duration will be @global bj_NOTHING_SOUND_DURATION.
-	* @author Tamino Dauth
-	* @state untested
-	*/
+	 * Shows a transmission with text \p text and sound \p playedSound from unit \p usedUnit for player \p usedPlayer.
+	 * \param playedSound If this value is null sound duration will be \ref bj_NOTHING_SOUND_DURATION.
+	 * \author Tamino Dauth
+	 */
 	function TransmissionFromUnitForPlayer takes player usedPlayer, unit usedUnit, string text, sound playedSound returns nothing
 		local player localPlayer = GetLocalPlayer()
 		local player owner = GetOwningPlayer(usedUnit)
@@ -83,8 +86,8 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* @see GetTransmissionDuration
-	*/
+	 * \sa GetTransmissionDuration()
+	 */
 	function GetSimpleTransmissionDuration takes sound playedSound returns real
 		if (playedSound != null) then
 			return GetSoundDurationBJ(playedSound)
@@ -93,9 +96,10 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* Alternate function without using forces.
-	* @see ClearTextMessagesBJ, ClearTextMessages
-	*/
+	 * Alternate function without using forces.
+	 * \sa ClearTextMessagesBJ()
+	 * \sa ClearTextMessages()
+	 */
 	function ClearScreenMessagesForPlayer takes player user returns nothing
 		local player localPlayer = GetLocalPlayer()
 		if (user == localPlayer) then
@@ -105,8 +109,10 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* @see ShowInterface, ShowInterfaceForceOn, ShowInterfaceForceOff
-	*/
+	 * \sa ShowInterface()
+	 * \sa ShowInterfaceForceOn()
+	 * \sa ShowInterfaceForceOff()
+	 */
 	function SetInterfaceForPlayer takes player whichPlayer, boolean show, real fadeDuration returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call ShowInterface(show, fadeDuration)
@@ -114,8 +120,10 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* @see EnableUserControl, SetUserControlForceOn, SetUserControlForceOff
-	*/
+	 * \sa EnableUserControl()
+	 * \sa SetUserControlForceOn()
+	 * \sa SetUserControlForceOff()
+	 */
 	function SetUserControlForPlayer takes player whichPlayer, boolean enable returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call EnableUserControl(enable)
@@ -123,8 +131,15 @@ library ALibraryCoreInterfaceCinematic
 	endfunction
 
 	/**
-	* Alternate function without using forces. Combines functions @function SetUserUIForPlayer and @function SetUserControlForPlayer.
-	* @see SetInterfaceForPlayer, SetUserControlForPlayer, SetUserControlForceOn, SetUserControlForceOff, ShowInterfaceForceOn, ShowInterfaceForceOff, ShowInterface, EnableUserControl
+	 * Alternate function without using forces. Combines functions \ref SetUserUIForPlayer() and \ref SetUserControlForPlayer().
+	 * \sa SetInterfaceForPlayer()
+	 * \sa SetUserControlForPlayer()
+	 * \sa SetUserControlForceOn()
+	 * \sa SetUserControlForceOff()
+	 * \sa ShowInterfaceForceOn()
+	 * \sa ShowInterfaceForceOff()
+	 * \sa ShowInterface()
+	 * \sa EnableUserControl()
 	*/
 	function SetUserInterfaceForPlayer takes player user, boolean show, boolean enableControl returns nothing
 		local player localPlayer = GetLocalPlayer()

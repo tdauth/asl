@@ -1828,7 +1828,7 @@ function RegisterDestDeathInRegionEnum takes nothing returns nothing
 endfunction
 
 //===========================================================================
-/// @note Changed return type to nothing.
+/// \note Changed return type to nothing.
 function TriggerRegisterDestDeathInRegionEvent takes trigger trig, rect r returns nothing
     set bj_destInRegionDiesTrig = trig
     set bj_destInRegionDiesCount = 0
@@ -7818,7 +7818,7 @@ function GroupTargetItemOrder takes group whichGroup, string order, widget targe
 endfunction
 
 //===========================================================================
-/// @todo Return type is destructable.
+/// \todo Return type is destructable.
 function GetDyingDestructable takes nothing returns widget
     return GetTriggerWidget()
 endfunction

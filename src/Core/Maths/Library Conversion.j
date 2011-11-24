@@ -1,12 +1,12 @@
 library ALibraryCoreMathsConversion requires optional ALibraryCoreDebugMisc, ALibraryCoreStringMisc
 
 	/**
-	* Converts an integer into any numeral system
-	* The A in I2A stands for alpha-numeric.
-	* @param value The integer value which will be converted.
-	* @param chars The character pool of the numeral system.
-	* @return Returns the converted value as string.
-	*/
+	 * Converts an integer into any numeral system
+	 * The A in I2A stands for alpha-numeric.
+	 * \param value The integer value which will be converted.
+	 * \param chars The character pool of the numeral system.
+	 * \return Returns the converted value as string.
+	 */
 	function I2A takes integer value, string chars returns string
 		local string alphanumeric = ""
 		local integer index = 0
@@ -24,12 +24,12 @@ library ALibraryCoreMathsConversion requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 
 	/**
-	* Converts a number from any numeral system into an integer.
-	* The A in A2I stands for alpha-numeric.
-	* @param alphanumeric The alpha-numeric string which will be converted.
-	* @param chars The character pool of the numeral system.
-	* @return Returns the converted integer.
-	*/
+	 * Converts a number from any numeral system into an integer.
+	 * The A in A2I stands for alpha-numeric.
+	 * \param alphanumeric The alpha-numeric string which will be converted.
+	 * \param chars The character pool of the numeral system.
+	 * \return Returns the converted integer.
+	 */
 	function A2I takes string alphanumeric, string chars returns integer
 		local integer value = 0
 		local integer index = 1
@@ -41,9 +41,9 @@ library ALibraryCoreMathsConversion requires optional ALibraryCoreDebugMisc, ALi
 		endloop
 		return value
 	endfunction
-	
-	/// @author Vexorian
-	/// \link http://www.wc3c.net/showthread.php?t=101407
+
+	/// \author Vexorian
+	/// <a href="http://www.wc3c.net/showthread.php?t=101407">source</a>
 	function I2Roman takes integer n returns string
 		local string r=""
 		if n > 3999 or n < 1 then
@@ -119,19 +119,17 @@ library ALibraryCoreMathsConversion requires optional ALibraryCoreDebugMisc, ALi
 
 
 	//! textmacro ALibraryCoreMathsConversionMacro takes TYPENAME, CHARS
-		/// @state untested
 		function I2$TYPENAME$ takes integer Integer returns string
-			return I2A(Integer, "$CHARS$")
+			return I2A(Integer, $CHARS$)
 		endfunction
 
-		/// @state untested
 		function $TYPENAME$2I takes string $TYPENAME$ returns integer
-			return A2I($TYPENAME$, "$CHARS$")
+			return A2I($TYPENAME$, $CHARS$)
 		endfunction
 	//! endtextmacro
 
-	//! runtextmacro ALibraryCoreMathsConversionMacro("Binary", "01")
-	//! runtextmacro ALibraryCoreMathsConversionMacro("Octal", "01234567")
-	//! runtextmacro ALibraryCoreMathsConversionMacro("Hexadecimal", "0123456789ABCDEF")
+	//! runtextmacro ALibraryCoreMathsConversionMacro("Binary", "\"01\"")
+	//! runtextmacro ALibraryCoreMathsConversionMacro("Octal", "\"01234567\"")
+	//! runtextmacro ALibraryCoreMathsConversionMacro("Hexadecimal", "\"0123456789ABCDEF\"")
 
 endlibrary

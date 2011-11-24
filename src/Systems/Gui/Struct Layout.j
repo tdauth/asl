@@ -9,7 +9,7 @@ library AStructSystemsGuiLayout requires optional ALibraryCoreDebugMisc, AStruct
 		endmethod
 
 		/**
-		 * @return If it returns true @method ALayoutMemberData.data returns a \ref ALayout instance otherwise it returns a \ref AWidgetData instance.
+		 * \return If it returns true \ref ALayoutMemberData.data returns a \ref ALayout instance otherwise it returns a \ref AWidgetData instance.
 		 */
 		public method isLayout takes nothing returns boolean
 			return this.m_isLayout
@@ -29,7 +29,7 @@ library AStructSystemsGuiLayout requires optional ALibraryCoreDebugMisc, AStruct
 	 * Do this before showing any of them to set their right position.
 	 * After they were shown first time you shouldn't change their x and y values since widgets are static (because of trackables).
 	 * Besides you should note that layouts use \ref AWidget.sizeX and \ref AWidget.sizeY to get widget's size.
-	 * @todo Untested!
+	 * \todo Untested!
 	 */
 	struct ALayout
 		// construction members

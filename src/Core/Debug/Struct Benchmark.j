@@ -1,4 +1,4 @@
-library AStructCoreDebugBenchmark requires AModuleCoreGeneralSystemStruct, AStructCoreGeneralAsl, AStructCoreGeneralVector
+library AStructCoreDebugBenchmark requires AStructCoreGeneralAsl, AStructCoreGeneralVector
 
 	/**
 	 * \brief ABenchmark can be used for time measurement of important code parts.
@@ -15,29 +15,28 @@ library AStructCoreDebugBenchmark requires AModuleCoreGeneralSystemStruct, AStru
 	 * \todo Debugging handles doesn't work for handles which are created during map initialization since \ref thistype.onInit() and \ref thistype.init() are called later.
 	 */
 	struct ABenchmark
+		private static constant boolean workaround = A_JAPI or A_RTC /// \todo static ifs do not support or expressions, vJass bug.
 		// static members
 		private static AIntegerVector m_benchmarks
 static if (A_DEBUG_HANDLES) then
 		private static boolean m_suspend
-		private static AUnitVector m_units
-		private static AItemVector m_items
-		private static ADestructableVector m_destructables
+		private static AUnitVector m_units = 0
+		private static AItemVector m_items = 0
+		private static ADestructableVector m_destructables = 0
 endif
 		// dynamic members
 		private string m_identifier
 		// members
 		private boolean m_isRunning
 		private real m_time
-static if (A_JAPI or A_RTC) then
+static if workaround then
 		private integer m_stopWatch
 else
 		private timer m_timer
 endif
 		private integer m_index
 
-		implement ASystemStruct
-
-		//dynamic members
+		// dynamic members
 
 		public method setIdentifier takes string identifier returns nothing
 			set this.m_identifier = identifier
@@ -47,7 +46,7 @@ endif
 			return this.m_identifier
 		endmethod
 
-		//members
+		// members
 
 		public method isRunning takes nothing returns boolean
 			return this.m_isRunning
@@ -57,13 +56,17 @@ endif
 			return this.m_time
 		endmethod
 
-		//methods
+		// methods
 
-		/// @todo When timer ends it should be started again and elapsed time should be added to member variable.
+		/// \todo When timer ends it should be started again and elapsed time should be added to member variable.
 		public method start takes nothing returns nothing
-			set this.m_isRunning = true
+			if (this.isRunning()) then
+				call PauseTimer(this.m_timer)
+			else
+				set this.m_isRunning = true
+			endif
 			set this.m_time = 0.0
-static if (A_JAPI or A_RTC) then
+static if workaround then
 			set this.m_stopWatch = StopWatchCreate()
 else
 			call TimerStart(this.m_timer, 99999.0, false, null)
@@ -71,8 +74,11 @@ endif
 		endmethod
 
 		public method stop takes nothing returns nothing
+			if (not this.isRunning()) then
+				return
+			endif
 			set this.m_isRunning = false
-static if (A_JAPI or A_RTC) then
+static if workaround then
 			set this.m_time = 1000 * StopWatchMark(this.m_stopWatch)
 			call StopWatchDestroy(this.m_stopWatch)
 			set this.m_stopWatch = -1
@@ -88,27 +94,27 @@ endif
 
 		public static method create takes string identifier returns thistype
 			local thistype this = thistype.allocate()
-			//dynamic members
+			// dynamic members
 			set this.m_identifier = identifier
-			//members
+			// members
 			set this.m_isRunning = false
 			set this.m_time = 0
-static if (A_JAPI or A_RTC) then
+static if workaround then
 			set this.m_stopWatch = -1 //0?
 else
 			set this.m_timer = CreateTimer()
 endif
-			//static members
+			// static members
 			call thistype.m_benchmarks.pushBack(this)
 			set this.m_index = thistype.m_benchmarks.backIndex()
 			return this
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
-			//static members
+			// static members
 			call thistype.m_benchmarks.erase(this.m_index)
-			//members
-static if (A_JAPI or A_RTC) then
+			// members
+static if workaround then
 			if (this.m_stopWatch != -1) then
 				call StopWatchDestroy(this.m_stopWatch)
 			endif
@@ -118,12 +124,8 @@ else
 endif
 		endmethod
 
-		private static method onInit takes nothing returns nothing
-			call thistype.setName("ABenchmark")
-		endmethod
-
 		public static method init takes nothing returns nothing
-			//static members
+			// static members
 			set thistype.m_benchmarks = AIntegerVector.create()
 static if (A_DEBUG_HANDLES) then
 			set thistype.m_suspend = false
@@ -131,12 +133,10 @@ static if (A_DEBUG_HANDLES) then
 			set thistype.m_items = AItemVector.create()
 			set thistype.m_destructables = ADestructableVector.create()
 endif
-			call thistype.initialize()
 		endmethod
 
 		public static method cleanUp takes nothing returns nothing
-			call thistype.uninitialize()
-			//static members
+			// static members
 			loop
 				exitwhen (thistype.m_benchmarks.empty())
 				call thistype(thistype.m_benchmarks.back()).destroy()
@@ -234,7 +234,7 @@ static if (A_DEBUG_HANDLES) then
 
 		private static method createUnit takes player id, integer unitid, real x, real y, real face returns nothing
 			local unit whichUnit
-			if (thistype.initialized() and not thistype.m_suspend) then
+			if (thistype.m_units != 0 and not thistype.m_suspend) then
 				set thistype.m_suspend = true
 				set whichUnit = CreateUnit(id, unitid, x, y, face)
 				call thistype.m_units.pushBack(whichUnit)
@@ -245,14 +245,14 @@ static if (A_DEBUG_HANDLES) then
 		endmethod
 
 		private static method removeUnit takes unit whichUnit returns nothing
-			if (thistype.initialized() and not thistype.m_suspend) then
+			if (thistype.m_units != 0 and not thistype.m_suspend) then
 				call thistype.m_units.remove(whichUnit)
 			endif
 		endmethod
 
 		private static method createItem takes integer itemid, real x, real y returns nothing
 			local item whichItem
-			if (thistype.initialized() and not thistype.m_suspend) then
+			if (thistype.m_items != 0 and not thistype.m_suspend) then
 				set thistype.m_suspend = true
 				set whichItem = CreateItem(itemid, x, y)
 				call thistype.m_items.pushBack(whichItem)
@@ -263,14 +263,14 @@ static if (A_DEBUG_HANDLES) then
 		endmethod
 
 		private static method removeItem takes item whichItem returns nothing
-			if (thistype.initialized() and not thistype.m_suspend) then
+			if (thistype.m_items != 0 and not thistype.m_suspend) then
 				call thistype.m_items.remove(whichItem)
 			endif
 		endmethod
 
 		private static method createDestructable takes integer objectid, real x, real y, real face, real scale, integer variation returns nothing
 			local destructable whichDestructable
-			if (thistype.initialized() and not thistype.m_suspend) then
+			if (thistype.m_destructables != 0 and not thistype.m_suspend) then
 				set thistype.m_suspend = true
 				set whichDestructable = CreateDestructable(objectid, x, y, face, scale, variation)
 				call thistype.m_destructables.pushBack(whichDestructable)
@@ -281,7 +281,7 @@ static if (A_DEBUG_HANDLES) then
 		endmethod
 
 		private static method removeDestructable takes destructable d returns nothing
-			if (thistype.initialized() and not thistype.m_suspend) then
+			if (thistype.m_destructables != 0 and not thistype.m_suspend) then
 				call thistype.m_destructables.remove(d)
 			endif
 		endmethod

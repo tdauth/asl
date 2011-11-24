@@ -135,7 +135,7 @@ endif
 		debug call playerState(A_TEXT_PLAYER_STATE_FOOD_CAP, GetTriggerPlayer(), amount, PLAYER_STATE_RESOURCE_FOOD_CAP)
 	endfunction
 
-	/// @todo Add some information.
+	/// \todo Add some information.
 	private function info takes ACheat cheat returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(triggerPlayer)
@@ -194,7 +194,7 @@ endif
 		call KillUnit(GetEnumUnit())
 	endfunction
 
-	/// @todo If no unit is selected, kill an item or a destructable
+	/// \todo If no unit is selected, kill an item or a destructable
 	private function kill takes ACheat cheat returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
 		local group selectedUnits = GetUnitsSelectedAll(triggerPlayer)

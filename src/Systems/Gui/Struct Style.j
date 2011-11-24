@@ -1,11 +1,11 @@
 library AStructSystemsGuiStyle requires ALibraryCoreDebugMisc
 
 	/**
-	* Defines custom GUI style for a single main window.
-	* Note that there're only pre-defined styles for some Warcraft 3 races at the moment.
-	* GUI files of races "Demon", "Naga" and "Panda" are delivered with wc3sdk's data archives.
-	* @see MainWindow
-	*/
+	 * Defines custom GUI style for a single main window.
+	 * Note that there're only pre-defined styles for some Warcraft III races at the moment.
+	 * GUI files of races "Demon", "Naga" and "Panda" are delivered with "Die Macht des Feuers".
+	 * \sa MainWindow
+	 */
 	struct AStyle
 		private static thistype m_human
 		private static thistype m_orc

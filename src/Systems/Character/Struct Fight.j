@@ -1,7 +1,10 @@
-/// The fps common.j file is required.
-/// @todo Do not use this library, it is unfinished!
 library AStructSystemsCharacterFight requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter
 
+	/**
+	 * \todo Finish!
+	 * \sa AMovement
+	 * \sa AView
+	 */
 	struct AFight extends AAbstractCharacterSystem
 		// static construction members
 		private static boolean m_useFps
@@ -118,12 +121,12 @@ library AStructSystemsCharacterFight requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/**
-		* @param useFps false, new implementation, uses the left mouse key
-		* @param order "move"
-		* @param time 0.5
-		* @param hitAnimation "attack"
-		* @param angle 20.0
-		*/
+		 * \param useFps false, new implementation, uses the left mouse key
+		 * \param order "move"
+		 * \param time 0.5
+		 * \param hitAnimation "attack"
+		 * \param angle 20.0
+		 */
 		public static method init takes boolean useFps, string order, real time, string hitAnimation, real angle returns nothing
 			debug if (useFps and not Asl.useRtc()) then
 				debug call thistype.staticPrint("FPS is enabled but RtC isn't.")

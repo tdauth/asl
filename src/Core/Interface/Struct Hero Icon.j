@@ -1,14 +1,13 @@
 library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCoreGeneralUnit, ALibraryCoreInterfaceCamera, AStructCoreEnvironmentUnitCopy, AStructCoreGeneralHashTable
 
 	/**
-	* AHeroIcon provides the feature to add custom hero icons of user-defined units which do not have necessarily to be real heros.
-	* Customly added hero icons can be used to refer to heroes of allied players if you have no
-	* shared advanced control (alliance type ALLIANCE_SHARED_ADVANCED_CONTROL).
-	* There will be usual hero icons in the left of screen and all unit orders targeting the icons
-	* will be forwarded automatically to the actual hero.
-	* Besides selections and selections by double clicks will be forwarded correctly (double clicks move trigger player's camera to the actual hero).
-	*
-	*/
+	 * \brief AHeroIcon provides the feature to add custom hero icons of user-defined units which do not have necessarily to be real heros.
+	 * Customly added hero icons can be used to refer to heroes of allied players if you have no
+	 * shared advanced control (alliance type \ref ALLIANCE_SHARED_ADVANCED_CONTROL).
+	 * There will be usual hero icons in the left of screen and all unit orders targeting the icons
+	 * will be forwarded automatically to the actual hero.
+	 * Besides selections and selections by double clicks will be forwarded correctly (double clicks move trigger player's camera to the actual hero).
+	 */
 	struct AHeroIcon extends AUnitCopy
 		// dynamic members
 		private boolean m_recognizeAllianceChanges
@@ -23,8 +22,8 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 		// dynamic members
 
 		/**
-		* @param recognizeAllianceChanges This value is initially true if icon owner is not the same as unit owner. If this value is true hero icon will be disabled automatically when alliance is changed to shared advaned control (ALLIANCE_SHARED_ADVANCED_CONTROL) and unit is a hero that there aren't two hero icons.
-		*/
+		 * \param recognizeAllianceChanges This value is initially true if icon owner is not the same as unit owner. If this value is true hero icon will be disabled automatically when alliance is changed to shared advaned control (\ref ALLIANCE_SHARED_ADVANCED_CONTROL) and unit is a hero that there aren't two hero icons.
+		 */
 		public method setRecognizeAllianceChanges takes boolean recognizeAllianceChanges returns nothing
 			set this.m_recognizeAllianceChanges = recognizeAllianceChanges
 		endmethod
@@ -47,7 +46,6 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 				return
 			endif
 			// change owner that hero icon is displayed again
-			debug call Print("Enable hero icon of unit " + GetUnitName(this.unit()) + " with unit copy unit " + GetUnitName(this.unitCopy()) + " for player " + GetPlayerName(this.player()))
 			call SetUnitOwner(this.unitCopy(), this.player(), false)
 			call super.enable()
 			call EnableTrigger(this.m_selectionTrigger)
@@ -135,7 +133,7 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 
 			// unit has to be hero that it can be shown as icon
 			if (not IsUnitType(this.unitCopy(), UNIT_TYPE_HERO)) then
-				//call UnitAddType(this.unitCopy(), UNIT_TYPE_HERO) /// @todo Hero icon isn't shown
+				//call UnitAddType(this.unitCopy(), UNIT_TYPE_HERO) /// \todo Hero icon isn't shown
 				debug call this.print("WARNING: AHeroIcon - Unit is not a hero. Icon will be missing.")
 			endif
 

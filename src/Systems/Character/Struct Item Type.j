@@ -1,17 +1,17 @@
 library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralVector, ALibraryCoreMathsConversion, AStructSystemsCharacterClass, AStructSystemsCharacterCharacter
 
 	/**
-	* Represents an item type, not an item object!
-	* Custom item types have to exist during the whole game.
-	* They provide more information than is reachable by default JASS item natives.
-	* You can check some usual item type requirements such as character strength, level or class.
-	* Besides you can specify all item type abilities to get real inventory support since
-	* permanent abilities have to be added to character's unit when rucksack/equipment is closed.
-	* Non-equipment item types usually do not have to be created explicity. If an item type
-	* has no custom it is treated like a usual rucksack item.
-	* @note Requirement is only checked by AInventory when item is equipped!
-	* @todo Add struct AEquipmentType as more abstract type.
-	*/
+	 * \brief Represents an item type, not an item object!
+	 * Custom item types have to exist during the whole game.
+	 * They provide more information than is reachable by default JASS item natives.
+	 * You can check some usual item type requirements such as character strength, level or class.
+	 * Besides you can specify all item type abilities to get real inventory support since
+	 * permanent abilities have to be added to character's unit when rucksack/equipment is closed.
+	 * Non-equipment item types usually do not have to be created explicity. If an item type
+	 * has no custom it is treated like a usual rucksack item.
+	 * \note Requirement is only checked by \ref AInventory when item is equipped!
+	 * \todo Add struct AEquipmentType as more abstract type.
+	 */
 	struct AItemType
 		// static constant members
 		/// Use this as equipment type if it's a rucksack item.
@@ -174,11 +174,11 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		endmethod
 
 		/**
-		* Each custom item type is associated with an item type id when it is created.
-		* Each item type id should only have one custom item type!
-		* @param equipmentType If this value is -1 (AItemType.equipmentTypeNone) it will always be added to rucksack.
-		* @param requiredClass If this value is 0 no specific class is required.
-		*/
+		 * Each custom item type is associated with an item type id when it is created.
+		 * Each item type id should only have one custom item type!
+		 * \param equipmentType If this value is -1 (\ref AItemType.equipmentTypeNone) it will always be added to rucksack.
+		 * \param requiredClass If this value is 0 no specific class is required.
+		 */
 		public static method create takes integer itemType, integer equipmentType, integer requiredLevel, integer requiredStrength, integer requiredAgility, integer requiredIntelligence, AClass requiredClass returns thistype
 			local thistype this = thistype.allocate()
 			// construction members

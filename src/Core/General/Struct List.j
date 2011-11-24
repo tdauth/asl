@@ -8,21 +8,21 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 	 */
 	//! textmacro A_LIST takes STRUCTPREFIX, NAME, ELEMENTTYPE, NULLVALUE, STRUCTSPACE, NODESPACE, ITERATORSPACE
 
-		/// @todo Should be a part of @struct $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$UnaryPredicate takes $ELEMENTTYPE$ value returns boolean
 
-		/// @todo Should be a part of @struct $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$BinaryPredicate takes $ELEMENTTYPE$ value0, $ELEMENTTYPE$ value1 returns boolean
 
-		/// @todo Should be a part of @struct $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$UnaryFunction takes $ELEMENTTYPE$ value returns nothing //Rückgabewert wurde vorerst rausgenommen, bis ich weiß, was er bringt
 
 		/// Generator.
 		/// Allows filling some elements with the return value.
-		/// @todo Should be a part of @struct $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$Generator takes nothing returns $ELEMENTTYPE$
 
-		/// @todo Should be a part of @struct $NAME$, vJass bug.
+		/// \todo Should be a part of \ref $NAME$, vJass bug.
 		$STRUCTPREFIX$ function interface $NAME$BinaryOperation  takes $ELEMENTTYPE$ value0, $ELEMENTTYPE$ value1 returns $ELEMENTTYPE$
 
 		private struct $NAME$Node[$NODESPACE$]
@@ -120,8 +120,8 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* @todo If you want to implement toBack and toFront (like Qt does) you'll have to save parent struct instance ...
-			*/
+			 * \todo If you want to implement toBack and toFront (like Qt does) you'll have to save parent struct instance ...
+			 */
 			public static method create takes nothing returns thistype
 				local thistype this = thistype.allocate()
 				set this.m_node = 0
@@ -180,8 +180,8 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* @return Returns the first element value of list.
-			*/
+			 * \return Returns the first element value of list.
+			 */
 			public method front takes nothing returns $ELEMENTTYPE$
 				if (this.m_front == 0) then
 					return $NULLVALUE$
@@ -191,8 +191,8 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* @return Returns the last element value of list.
-			*/
+			 * \return Returns the last element value of list.
+			 */
 			public method back takes nothing returns $ELEMENTTYPE$
 				if (this.m_back == 0) then
 					return $NULLVALUE$
@@ -206,7 +206,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* Inserts a new element at the beginning of the list, right before its current first element. The content of this new element is initialized to @param value.
+			* Inserts a new element at the beginning of the list, right before its current first element. The content of this new element is initialized to \p value.
 			* This effectively increases the list size by one.
 			*/
 			public method pushFront takes $ELEMENTTYPE$ value returns nothing
@@ -241,10 +241,10 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* Adds a new element at the end of the list, right after its current last
-			* element. The content of this new element is initialized to @param value.
-			* This effectively increases the list size by one.
-			*/
+			 * Adds a new element at the end of the list, right after its current last
+			 * element. The content of this new element is initialized to \p value.
+			 * This effectively increases the list size by one.
+			 */
 			public method pushBack takes $ELEMENTTYPE$ value returns nothing
 				local $NAME$Node node = this.m_back
 				set this.m_back = $NAME$Node.create()
@@ -298,9 +298,9 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* The list container is extended by inserting new elements before the element at position @param position with value @param value.
-			* This effectively increases the container size by @param number.
-			*/
+			 * The list container is extended by inserting new elements before the element at position \p position with value \p value.
+			 * This effectively increases the container size by \p number.
+			 */
 			public method insertNumber takes $NAME$Iterator position, integer number, $ELEMENTTYPE$ value returns nothing
 				local $NAME$Node previousNode = position.node().previous()
 				local $NAME$Node tmpNode
@@ -372,9 +372,9 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* Searches the container for an element with a value of @param value and returns an iterator to it
-			* if found, otherwise it returns 0.
-			*/
+			 * Searches the container for an element with a value of \p value and returns an iterator to it
+			 * if found, otherwise it returns 0.
+			 */
 			public method find takes $ELEMENTTYPE$ value returns $NAME$Iterator
 				local $NAME$Node node = this.m_front
 				local $NAME$Iterator result = 0
@@ -403,16 +403,16 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* Removes from the list all the elements with a specific value.
-			* This reduces the list size by the amount of elements removed.
-			*
-			* Unlike member function @method List.erase, which erases elements by their
-			* position (iterator), this function (@method List.remove) removes elements by their value.
-			*
-			* A similar function, @method List.removeIf, exists, which allows for a condition other than a plain value comparison to be performed on each element in order to determine the elements to be removed.
-			*
-			* @param value Value of the elements to be removed.
-			*/
+			 * Removes from the list all the elements with a specific value.
+			 * This reduces the list size by the amount of elements removed.
+			 *
+			 * Unlike member function \ref erase(), which erases elements by their
+			 * position (iterator), this function (\ref remove()) removes elements by their value.
+			 *
+			 * A similar function, \ref removeIf(), exists, which allows for a condition other than a plain value comparison to be performed on each element in order to determine the elements to be removed.
+			 *
+			 * \param value Value of the elements to be removed.
+			 */
 			public method remove takes $ELEMENTTYPE$ value returns nothing
 				local $NAME$Iterator iterator
 				loop
@@ -425,17 +425,17 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 
 			/**
 			Remove elements fulfilling condition
-			* Removes from the list all the elements for which predicate @param predicate
+			* Removes from the list all the elements for which predicate \p predicate
 			* returns true.
 			* This reduces the list size by the amount of elements removed.
 			*
-			* Predicate @param predicate can be implemented as any typed expression *
-			* taking one argument of the same type as the list and returning a @type boolean
+			* Predicate \p predicate can be implemented as any typed expression *
+			* taking one argument of the same type as the list and returning a \ref boolean
 			*
 			* The function calls predicate(i.data()) for each element (where i is an iterator to that element).
 			* Any of the elements in the list for which this returns true, is removed from the container.
 			*
-			* @param predicate Unary predicate that, taking a value of the same type as those contained in the list object, returns true for those values to be removed from the container, and false for those remaining.
+			* \param predicate Unary predicate that, taking a value of the same type as those contained in the list object, returns true for those values to be removed from the container, and false for those remaining.
 			*/
 			public method removeIf takes $NAME$UnaryPredicate predicate returns nothing
 				local $NAME$Iterator iterator = this.begin()
@@ -454,7 +454,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* Copies elements in range @param first, @param last into list starting at position @param position.
+			* Copies elements in range \p first, \p last into list starting at position \p position.
 			* This function will skip copying automatically if end of destionation list is reached.
 			*/
 			public method copyNumber takes $NAME$Iterator first, $NAME$Iterator last, $NAME$Iterator position returns nothing
@@ -469,8 +469,8 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			/**
-			* Copies all elements into list starting at position @param position.
-			* There should be left enough space after at position @param position otherwise copying is being skipped automatically.
+			* Copies all elements into list starting at \p position.
+			* There should be left enough space after at \p position otherwise copying is being skipped automatically.
 			*/
 			public method copy takes $NAME$Iterator position returns nothing
 				local $NAME$Node node = this.m_front
@@ -566,7 +566,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 				return this
 			endmethod
 
-			/// Creates a list by filling it with elements of list @param other.
+			/// Creates a list by filling it with elements of list \p other.
 			public static method createByOther takes thistype other returns thistype
 				local thistype this = thistype.createWithSize(other.size(), $NULLVALUE$)
 				local $NAME$Iterator start = this.begin()

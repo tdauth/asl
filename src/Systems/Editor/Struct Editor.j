@@ -1,9 +1,9 @@
 library AStructSystemsEditorEditor requires AStructCoreGeneralGroup, AStructCoreGeneralVector, AStructSystemsGuiGui
 
 	/**
-	* Provides a selection storage.
-	* @todo Should store containers of different types.
-	*/
+	 * Provides a selection storage.
+	 * \todo Should store containers of different types.
+	 */
 	private struct AEditorSelection
 		// construction members
 		private AEditor m_editor
@@ -26,7 +26,7 @@ library AStructSystemsEditorEditor requires AStructCoreGeneralGroup, AStructCore
 				set this.m_location = null
 			endif
 			if (this.m_region != null) then
-				/// @todo Remove rects.
+				/// \todo Remove rects.
 				call RemoveRegion(this.m_region)
 				set this.m_region = null
 			endif
@@ -73,10 +73,10 @@ library AStructSystemsEditorEditor requires AStructCoreGeneralGroup, AStructCore
 	endstruct
 
 	/**
-	* Editor implementation for game runtime.
-	* Could be useful for Dungeon Master-like maps.
-	* @todo Completely unfinished.
-	*/
+	 * Editor implementation for game runtime.
+	 * Could be useful for Dungeon Master-like maps.
+	 * \todo Completely unfinished.
+	 */
 	struct AEditor
 		// static members
 		private static thistype array m_playerEditor[bj_MAX_PLAYERS]

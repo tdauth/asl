@@ -98,7 +98,6 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 				call PlaySound(this.soundPath())
 			endif
 
-			/// @todo For corresponding player only.
 			if (thistype.m_useQuestLog) then
 				if (this.character() == 0 or GetLocalPlayer() == this.character().player()) then
 					call FlashQuestDialogButton()

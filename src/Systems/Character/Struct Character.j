@@ -117,7 +117,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 
 		/**
 		 * Each character has its own owner. Each playing player can own exact one character.
-		 * @return Returns character's owning player
+		 * \return Returns character's owning player
 		 */
 		public method player takes nothing returns player
 			return this.m_player
@@ -125,7 +125,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 
 		/**
 		 * Characters are represented by units in game.
-		 * @return Returns character's unit.
+		 * \return Returns character's unit.
 		 */
 		public method unit takes nothing returns unit
 			return this.m_unit
@@ -433,8 +433,8 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		endmethod
 
 		/**
-		* Call this method to restore the whole character data into game cache @param cache on key @param missionKey.
-		*/
+		 * Call this method to restore the whole character data into game cache \p cache on key \p missionKey.
+		 */
 		public method restore takes gamecache cache, string missionKey, real x, real y, real facing returns nothing
 			local integer i
 			local integer spellsCount
@@ -443,7 +443,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			call RemoveUnit(this.m_unit)
 			set this.m_unit = null
 			set this.m_unit = RestoreUnit(cache, missionKey, "Unit", this.m_player, x, y, facing)
-			/// @todo call refresh unit actions
+			/// \todo call refresh unit actions
 			if (thistype.m_useViewSystem) then
 				call this.m_view.restore(cache, missionKey, "View")
 			endif
@@ -480,12 +480,12 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endloop
 		endmethod
 
-		/// Friend relation to @struct ASpell, don't use.
+		/// Friend relation to \ref ASpell, don't use.
 		public method addSpell takes ASpell spell returns nothing
 			call this.m_spells.pushBack(spell)
 		endmethod
 
-		/// Friend relation to @struct ASpell, don't use.
+		/// Friend relation to \ref ASpell, don't use.
 		public method removeSpell takes ASpell spell returns nothing
 			call this.m_spells.remove(spell)
 		endmethod
@@ -714,18 +714,24 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 
 		/**
 		 * Call this method before you use this class!
-		 * @param destroyOnPlayerLeaves If this value is true the character will be destroyed when his owner leaves game.
-		* @param shareOnPlayerLeaves If this value is true control over character will be shared with other character owners.
-		* @param destroyOnDeath If this value is false the character will be set unmovable when he dies otherwise he will be destroyed.
-		* @param useViewSystem Shows if the view system is used.
-		* @param useFocusSystem Shows if the focus system is used.
-		* @param useMovementSystem Shows if the movement system is used.
-		* @param useFightSystem Shows if the fight system is used.
-		* @param useRevivalSystem Shows if the revival system is used.
-		* @param useInventorySystem Shows if the inventory system is used.
-		* @param useTalkLogSystem Shows if the talk log system is used.
-		* \sa AView, AFocus, AMovement, AFight, ARevival, AInventory, ATalkLog
-		*/
+		 * \param destroyOnPlayerLeaves If this value is true the character will be destroyed when his owner leaves game.
+		 * \param shareOnPlayerLeaves If this value is true control over character will be shared with other character owners.
+		 * \param destroyOnDeath If this value is false the character will be set unmovable when he dies otherwise he will be destroyed.
+		 * \param useViewSystem Shows if the view system is used.
+		 * \param useFocusSystem Shows if the focus system is used.
+		 * \param useMovementSystem Shows if the movement system is used.
+		 * \param useFightSystem Shows if the fight system is used.
+		 * \param useRevivalSystem Shows if the revival system is used.
+		 * \param useInventorySystem Shows if the inventory system is used.
+		 * \param useTalkLogSystem Shows if the talk log system is used.
+		 * \sa AView
+		 * \sa AFocus
+		 * \sa AMovement
+		 * \sa AFight
+		 * \sa ARevival
+		 * \sa AInventory
+		 * \sa ATalkLog
+		 */
 		public static method init takes boolean doAlwaysAddExperience, boolean removeUnitOnDestruction, boolean destroyOnPlayerLeaves, boolean shareOnPlayerLeaves, boolean destroyOnDeath, boolean useViewSystem, boolean useFocusSystem, boolean useMovementSystem, boolean useFightSystem, boolean useRevivalSystem, boolean useInventorySystem, boolean useTalkLogSystem returns nothing
 			// static initialization members
 			set thistype.m_doAlwaysAddExperience = doAlwaysAddExperience
@@ -800,9 +806,10 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		/**
 		 * Each human playing player can own exact one character.
 		 * Use this method to set the unit of a player character.
-		 * @param user The owner of the character.
-		 * @param usedUnit The unit of the character.
-		 * @return Returns player character.
+		 * \param user The owner of the character.
+		 * \param usedUnit The unit of the character.
+		 * \return Returns player character.
+		 * \sa playerCharacter()
 		 */
 		public static method setPlayerCharacter takes player user, unit usedUnit returns thistype
 			local thistype character = thistype.create(user, usedUnit)
@@ -818,21 +825,21 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			set thistype.m_playerCharacter[GetPlayerId(character.player())] = character
 		endmethod
 
-		/// @param user The owner of the character.
-		/// @return The character instance.
+		/// \param user The owner of the character.
+		/// \return The character instance.
 		public static method playerCharacter takes player user returns thistype
 			return thistype.m_playerCharacter[GetPlayerId(user)]
 		endmethod
 
 		/// If character will be destroyed automaticly you don't have to call this method.
-		/// @param user The owner of the character.
+		/// \param user The owner of the character.
 		public static method destroyPlayerCharacter takes player user returns nothing
 			call thistype.destroy(thistype.m_playerCharacter[GetPlayerId(user)])
 		endmethod
 
-		//static convenience methods
+		// static convenience methods
 
-		/// @todo You could also check it by only comparing with the units owner character unit.
+		/// \todo You could also check it by only comparing with the units owner character unit.
 		public static method getCharacterByUnit takes unit usedUnit returns thistype
 			return AHashTable.global().handleInteger(usedUnit, "ACharacter")
 		endmethod

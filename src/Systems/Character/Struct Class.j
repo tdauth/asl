@@ -56,17 +56,17 @@ library AStructSystemsCharacterClass requires AStructCoreGeneralVector
 
 		// construction members
 
-		/// Friend relation to @struct AClassSelection, don't use.
+		/// Friend relation to \ref AClassSelection, don't use.
 		public method unitType takes nothing returns integer
 			return this.m_unitType
 		endmethod
 
-		/// Friend relation to @struct AClassSelection, don't use.
+		/// Friend relation to \ref AClassSelection, don't use.
 		public method animation takes nothing returns string
 			return this.m_animation
 		endmethod
 
-		/// Friend relation to @struct AClassSelection, don't use.
+		/// Friend relation to \ref AClassSelection, don't use.
 		public method soundPath takes nothing returns string
 			return this.m_soundPath
 		endmethod
@@ -99,7 +99,7 @@ library AStructSystemsCharacterClass requires AStructCoreGeneralVector
 			return whichUnit
 		endmethod
 
-		/// @param unitType Should be the type of a hero
+		/// \param unitType Should be the type of a hero
 		public static method create takes integer unitType, string animation, string soundPath returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members

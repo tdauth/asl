@@ -1,17 +1,17 @@
 library ALibraryCoreEnvironmentTerrain initializer init requires AStructCoreGeneralVector, ALibraryCoreMathsRect
 
 	/**
-	* Original description:
-	* The function SetTerrainPathable sets a single 32x32 space on the pathing grid. However, SetTerrainType sets a
-	* 128x128 space on the terrain grid, and does not change the pathing for that space. If you want to change the
-	* pathing, you'd have to change the pathing for 16 individual points per terrain space. This function rectifies
-	* the situation by allowing you to change the pathing for a single space on the terrain grid, instead of a single
-	* space on the pathing grid.
-	* Note: In my tests, the alignment was correct. However, there might be cases where this isn't true, so if there
-	* is a problem I will change the numbers as needed.
-	* @author Shvegait
-	* @link http://www.wc3jass.com/
-	*/
+	 * Original description:
+	 * The function \ref SetTerrainPathable() sets a single 32x32 space on the pathing grid. However, \ref SetTerrainType() sets a
+	 * 128x128 space on the terrain grid, and does not change the pathing for that space. If you want to change the
+	 * pathing, you'd have to change the pathing for 16 individual points per terrain space. This function rectifies
+	 * the situation by allowing you to change the pathing for a single space on the terrain grid, instead of a single
+	 * space on the pathing grid.
+	 * \note Note: In my tests, the alignment was correct. However, there might be cases where this isn't true, so if there
+	 * is a problem I will change the numbers as needed.
+	 * \author Shvegait
+	 * <a href="http://www.wc3jass.com/">source</a>
+	 */
 	function SetTerrainSpacePathable takes real x, real y, pathingtype pathingType, boolean flag returns nothing
 		local real newX = x + 64.0
 		local real newY = y + 64.0
@@ -33,7 +33,7 @@ library ALibraryCoreEnvironmentTerrain initializer init requires AStructCoreGene
 	endfunction
 
 	/**
-	By Anitarf from @link http://www.wc3c.net/showpost.php?p=1114433&postcount=52
+	By Anitarf from <a href="http://www.wc3c.net/showpost.php?p=1114433&postcount=52">Wc3C.net<a>
 	I might as well just post our findings here, since they mostly pertain to this specific resource.
 
 	The IsTerrainPathable() native, which is one of the two foundations of this resource, has some peculiar quirks. The first and most obvious of those is the fact that it's return value is the opposite of what you would expect it to be: The native returns true if the terrain is not pathable and false if it is. So, rather than answering the question "Is the terrain pathable here?", it answers the question "Is pathing blocked here?".
@@ -89,35 +89,55 @@ library ALibraryCoreEnvironmentTerrain initializer init requires AStructCoreGene
 	//*
 
 	/**
-	* @author Rising_Dusk
-	*/
+	 * \author Rising_Dusk
+	 * \sa IsTerrainShallowWater()
+	 * \sa IsTerrainLand()
+	 * \sa IsTerrainPlatform()
+	 * \sa IsTerrainWalkable()
+	 * \sa IsTerrainPathable()
+	 */
 	function IsTerrainDeepWater takes real x, real y returns boolean
 		return not IsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY) and IsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY)
 	endfunction
 
 	/**
-	* @author Rising_Dusk
-	*/
+	 * \author Rising_Dusk
+	 * \sa IsTerrainDeepWater()
+	 * \sa IsTerrainLand()
+	 * \sa IsTerrainPlatform()
+	 * \sa IsTerrainWalkable()
+	 * \sa IsTerrainPathable()
+	 */
 	function IsTerrainShallowWater takes real x, real y returns boolean
 		return not IsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY) and not IsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY) and IsTerrainPathable(x, y, PATHING_TYPE_BUILDABILITY)
 	endfunction
 
 	/**
-	* @author Rising_Dusk
-	*/
+	 * \author Rising_Dusk
+	 * \sa IsTerrainDeepWater()
+	 * \sa IsTerrainShallowWater()
+	 * \sa IsTerrainPlatform()
+	 * \sa IsTerrainWalkable()
+	 * \sa IsTerrainPathable()
+	 */
 	function IsTerrainLand takes real x, real y returns boolean
 		return IsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY)
 	endfunction
 
 	/**
-	* The IsTerrainPlatform works for any preplaced walkable destructable. It will
-	* return true over bridges, destructable ramps, elevators, and invisible
-	* platforms. Walkable destructables created at runtime do not create the same
-	* pathing hole as preplaced ones do, so this will return false for them. All
-	* other functions except IsTerrainWalkable return false for platforms, because
-	* the platform itself erases their pathing when the map is saved.
-	* @author Rising_Dusk
-	*/
+	 * The IsTerrainPlatform works for any preplaced walkable destructable. It will
+	 * return true over bridges, destructable ramps, elevators, and invisible
+	 * platforms. Walkable destructables created at runtime do not create the same
+	 * pathing hole as preplaced ones do, so this will return false for them. All
+	 * other functions except \ref IsTerrainWalkable() return false for platforms, because
+	 * the platform itself erases their pathing when the map is saved.
+	 * \author Rising_Dusk
+	 * \sa IsTerrainDeepWater()
+	 * \sa IsTerrainShallowWater()
+	 * \sa IsTerrainLand()
+	 * \sa IsTerrainWalkable()
+	 * \sa IsTerrainPathable()
+	 */
 	function IsTerrainPlatform takes real x, real y returns boolean
 		return not IsTerrainPathable(x, y, PATHING_TYPE_FLOATABILITY) and not IsTerrainPathable(x, y, PATHING_TYPE_WALKABILITY) and not IsTerrainPathable(x, y, PATHING_TYPE_BUILDABILITY)
 	endfunction
@@ -134,9 +154,9 @@ library ALibraryCoreEnvironmentTerrain initializer init requires AStructCoreGene
 	endfunction
 
 	/**
-	* @param maxRange Maximum range deviation which the function will still return true for.
-	* @author Vexorian, Rising_Dusk, Tamino Dauth
-	*/
+	 * \param maxRange Maximum range deviation which the function will still return true for.
+	 * \author Vexorian, Rising_Dusk, Tamino Dauth
+	 */
 	function IsTerrainWalkable takes real x, real y, real maxRange returns boolean
 		local rect Find = RectFromPointSize(x, y, 128.0, 128.0)
 		local item Item = CreateItem('wolg', x, y)

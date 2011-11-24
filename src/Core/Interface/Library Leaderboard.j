@@ -1,13 +1,13 @@
 library ALibraryCoreInterfaceLeaderboard
 
-	/// Shows or hides leaderboard @param usedLeaderboard for player @param user.
-	function ShowLeaderboardForPlayer takes player user, leaderboard usedLeaderboard, boolean show returns nothing
-		local player localPlayer = GetLocalPlayer()
-		call PlayerSetLeaderboard(user, usedLeaderboard)
-		if (user == localPlayer) then
-			call LeaderboardDisplay(usedLeaderboard, show)
+	/**
+	 * Shows or hides leaderboard \p whichLeaderboard for player \p whichPlayer.
+	 */
+	function ShowLeaderboardForPlayer takes player whichPlayer, leaderboard whichLeaderboard, boolean show returns nothing
+		call PlayerSetLeaderboard(whichPlayer, whichLeaderboard)
+		if (whichPlayer == GetLocalPlayer()) then
+			call LeaderboardDisplay(whichLeaderboard, show)
 		endif
-		set localPlayer = null
 	endfunction
 
 endlibrary
