@@ -5,7 +5,7 @@ library AStructCoreGeneralAsl requires optional ALibraryCoreDebugMisc, ALibraryC
 		public static constant string rtcVersion = "1.0"
 		public static constant string japiVersion = "1.0"
 		public static constant string maintainer = "Tamino Dauth"
-		public static constant string website = "https://gitorious.org/advanced-script-library"
+		public static constant string website = "https:/gitorious.org/advanced-script-library" // https://gitorious.org/advanced-script-library
 
 		private static method create takes nothing returns thistype
 			return 0

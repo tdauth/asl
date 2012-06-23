@@ -19,6 +19,10 @@ Installation/Usage:
 -- JassHelper:
 JassHelper 0.A.2.A is required since there is an unknown bug in higher version (0.A.2.B) which prevents
 code from being compiled correctly.
+Read the following posts for further information:
+http://www.wc3c.net/showpost.php?p=1132707&postcount=3630
+http://www.wc3c.net/showpost.php?p=1132728&postcount=3632
+
 Options [forcemethodevaluate] and [noimplicitthis] are supported!
 
 -- Code integration:
@@ -41,14 +45,14 @@ globals
 	constant integer A_MAX_COLLISION_SIZE_ITERATIONS = 10 // used by function GetUnitCollisionSize
 	constant integer A_SPELL_RESISTANCE_CREEP_LEVEL = 6 // used by function IsUnitSpellResistant
 	// used by function GetTimeString()
-	constant string A_TEXT_TIME_VALUE = tr("0%1%")
-	constant string A_TEXT_TIME_PAIR = GetLocalizedString("%1%:%2%")
+	constant string A_TEXT_TIME_VALUE = "0%1%"
+	constant string A_TEXT_TIME_PAIR = "%1%:%2%"
 	// used by ATalk
-	constant string A_TEXT_EXIT = GetLocalizedString("Exit")
-	constant string A_TEXT_BACK = GetLocalizedString("Back")
-	constant string A_TEXT_TARGET_TALKS_ALREADY = GetLocalizedString("Target is already talking.")
+	constant string A_TEXT_EXIT = "Exit"
+	constant string A_TEXT_BACK = "Back"
+	constant string A_TEXT_TARGET_TALKS_ALREADY = "Target is already talking."
 	// used by ADialog
-	constant string A_TEXT_DIALOG_BUTTON = GetLocalizedString("[%1%] %2%")
+	constant string A_TEXT_DIALOG_BUTTON = "[%1%] %2%" // first one is the button short cut (integer), second one is the button text (string)
 endglobals
 
 If you're using debug mode and ASL's debug utilities (ASystemsDebug) you'll have to defined lots of cheat strings.
@@ -56,6 +60,8 @@ For default English strings you can import a pre-defined file using:
 //! import "Systems/Debug/Text en.j"
 
 WARNING: Apparently, GetLocalizedString() in constant strings crashes the game in map selection!
+
+WARNING: Using % chars in the custom map script leads to unexpected results. You should define the globals somewhere else if possible.
 
 -- Trigger editor integration:
 Import the following files with their corresponding paths to enable various data types and functions in World Editor's trigger editor:

@@ -15,7 +15,8 @@ library AStructCoreDebugBenchmark requires AStructCoreGeneralAsl, AStructCoreGen
 	 * \todo Debugging handles doesn't work for handles which are created during map initialization since \ref thistype.onInit() and \ref thistype.init() are called later.
 	 */
 	struct ABenchmark
-		private static constant boolean workaround = A_JAPI or A_RTC /// \todo static ifs do not support or expressions, vJass bug.
+		/// \todo static ifs do not support or expressions, vJass bug.
+		private static constant boolean workaround = (A_JAPI or A_RTC)
 		// static members
 		private static AIntegerVector m_benchmarks
 static if (A_DEBUG_HANDLES) then

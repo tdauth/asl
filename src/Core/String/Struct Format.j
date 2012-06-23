@@ -33,33 +33,31 @@ library AStructCoreStringFormat requires ALibraryCoreStringMisc, optional ALibra
 			return this.m_text
 		endmethod
 
+		/**
+		 * This text macro generates a new method for a specified argument type which can be used when formatting strings.
+		 * Searches for the first type token \p TYPECHARS (in form of %<type char like i>) and replaces it by \p value.
+		 * If none is found it searches for the next position token (in form of %1% or %2% ...) and replaces it by \p value.
+		 * \param NAME Name of the argument method (usually it is equal to its type char).
+		 * \param TYPE JASS/vJass type of the argument.
+		 * \param CONVERSION Conversion call from argument to string (like "I2S(value)").
+		 * \param PARAMETERS Optional parameter list which can be accessed in the \p CONVERSION parameter as well (useful for real precision parameters).
+		 */
 		//! textmacro AFormatMethod takes NAME, TYPE, TYPECHARS, CONVERSION, PARAMETERS
 			public method $NAME$ takes $TYPE$ value $PARAMETERS$ returns thistype
-				local string positionString = "%" + I2S(this.m_position + 1) + "%"
-				local boolean isFirst = true
-				local integer index
-				loop
+				local string positionString = "%$TYPECHARS$"
+				local integer index = FindString(this.m_text, positionString)
+				if (index == -1) then
+					set positionString = "%" + I2S(this.m_position + 1) + "%"
 					set index = FindString(this.m_text, positionString)
-					if (index == -1) then
-						// replace only one %typechar value
-						if (isFirst) then
-							set index = FindString(this.m_text, "%$TYPECHARS$")
-							if (index != -1) then
-								set this.m_text = SubString(this.m_text, 0, index) + $CONVERSION$ + SubString(this.m_text, index + StringLength("%$TYPECHARS$"), StringLength(this.m_text))
-								set this.m_position = this.m_position + 1 // increase because of exiting loop
-							else
-								debug call this.print("Format error in string \"" + this.m_text + "\" at position " + I2S(this.m_position) + ".")
-								return this // do not increase position?
-							endif
-						endif
-						exitwhen (true)
-					else
-						set this.m_text = SubString(this.m_text, 0, index) + $CONVERSION$ + SubString(this.m_text, index + StringLength(positionString), StringLength(this.m_text))
-						set isFirst = false
-					endif
-
-				endloop
-				set this.m_position = this.m_position + 1
+				endif
+				
+				if (index != -1) then
+					set this.m_text = SubString(this.m_text, 0, index) + $CONVERSION$ + SubString(this.m_text, index + StringLength(positionString), StringLength(this.m_text))
+					set this.m_position = this.m_position + 1
+				else
+					debug call this.print("Format error in string \"" + this.m_text + "\" at position " + I2S(this.m_position) + " for token argument \"" + $CONVERSION$ + "\".")
+				endif
+				
 				return this
 			endmethod
 		//! endtextmacro
