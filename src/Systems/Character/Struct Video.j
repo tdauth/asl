@@ -40,14 +40,40 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		public method refresh takes nothing returns nothing
+			local ACharacter character = ACharacter.getCharacterByUnit(this.unit())
+			local integer i
+			local item whichItem
 			if (this.m_actor != null) then
 				call RemoveUnit(this.m_actor)
 				set this.m_actor = null
 			endif
 			set this.m_actor = CopyUnit(this.unit(), GetUnitX(this.unit()), GetUnitY(this.unit()), GetUnitFacing(this.unit()), bj_UNIT_STATE_METHOD_MAXIMUM)
+			call PauseUnit(this.m_actor, false) // unpause before adding items!
+			// remove copied items of rucksack and add equipment
+			// TODO would be better performance when not copying items in CopyUnit in case rucksack is displayed
+			if (character != 0 and character.inventory() != 0 and character.inventory().rucksackIsEnabled()) then
+				set i = 0
+				loop
+					exitwhen (i == AInventory.maxEquipmentTypes)
+					set whichItem = UnitItemInSlot(this.m_actor, i)
+					if (whichItem != null) then
+						call RemoveItem(whichItem)
+						set whichItem = null
+					endif
+					if (character.inventory().equipmentItemData(i) != 0) then
+						if (UnitAddItemToSlotById(this.m_actor, character.inventory().equipmentItemData(i).itemTypeId(), i)) then
+							set whichItem = UnitItemInSlot(this.m_actor, i)
+							call character.inventory().equipmentItemData(i).assignToItem(whichItem)
+						debug else
+							debug call Print("Error when copying equipment item of character " + I2S(character) + " of equipment type " + I2S(i) + ".")
+						endif
+					endif
+					set i = i + 1
+				endloop
+			endif
 			//call SetUnitOwner(this.m_actor, newOwner, false)
 			call ShowUnit(this.m_actor, true)
-			call PauseUnit(this.m_actor, false)
+
 			call SelectUnit(this.m_actor, false)
 			call SetUnitInvulnerable(this.m_actor, true)
 			call IssueImmediateOrder(this.m_actor, "stop") // cancel orders.
@@ -756,7 +782,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			if (WaitCondition()) then
 				return true
 			endif
-			call TriggerSleepAction(interval)
+			call PolledWait(interval)
 		endloop
 		return false
 	endfunction

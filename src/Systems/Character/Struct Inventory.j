@@ -229,6 +229,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AInventory\"")
 
+		public method rucksackIsEnabled takes nothing returns boolean
+			return this.m_rucksackIsEnabled
+		endmethod
+
 		public method equipmentItemData takes integer equipmentType returns AInventoryItemData
 			debug if (equipmentType >= thistype.maxEquipmentTypes or equipmentType < 0) then
 				debug call this.print("Wrong equipment type: " + I2S(equipmentType) + ".")

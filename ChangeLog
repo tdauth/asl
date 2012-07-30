@@ -1,3 +1,7 @@
+2012-07-30 Tamino Dauth <tamino@cdauth.eu>
+* waitForCondition() uses PolledWait() now.
+* AVideo: Character equipment is copied in case rucksack is displayed.
+
 2012-05-20 Tamino Dauth <tamino@cdauth.eu>
 * AFormat: Simplified argument text macro.
 * AFormat: Improved API documentation.
