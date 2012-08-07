@@ -20,6 +20,7 @@
 * timeofday - Suspends or continue time of day or shows current.
 * benchmarks - Shows all benchmarks.
 * clearbenchmarks - Clears all benchmarks.
+* display - Displays or hides \ref Print() calls.
 * enable - Enables debug identifier(s).
 * disable - Disables debug identifier(s) or shows all disabled.
 * units - Shows all units.
@@ -57,6 +58,7 @@ static if (DEBUG_MODE) then
 		call Print("timeofday <stop/continue>")
 		call Print("benchmarks")
 		call Print("clearbenchmarks")
+		call Print("display")
 		call Print("enable <identifier>")
 		call Print("disable <identifier>")
 endif
@@ -354,6 +356,18 @@ endif
 		call ABenchmark.clearAll()
 	endfunction
 
+	private function display takes ACheat cheat returns nothing
+static if (DEBUG_MODE) then
+		set ADisplayPrint = not ADisplayPrint
+		// NOTE don't use Print itself ;)
+		if (ADisplayPrint) then
+			call BJDebugMsg(A_TEXT_DISPLAY_ENABLE)
+		else
+			call BJDebugMsg(A_TEXT_DISPLAY_DISABLE)
+		endif
+endif
+	endfunction
+
 	private function enable takes ACheat cheat returns nothing
 static if (DEBUG_MODE) then
 		local string identifier = cheat.argument()
@@ -456,6 +470,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("timeofday", true, timeofday)
 		call ACheat.create("benchmarks", true, benchmarks)
 		call ACheat.create("clearbenchmarks", true, clearbenchmarks)
+		call ACheat.create("display", true, display)
 		call ACheat.create("enable", false, enable)
 		call ACheat.create("disable", false, disable)
 endif

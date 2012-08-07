@@ -13,10 +13,8 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 	function interface AMainWindowOnHideAction takes AMainWindow mainWindow returns nothing
 
 	struct AMainWindow
-		// static construction members
-		private static camerasetup m_cameraSetup
-		private static string m_tooltipSoundPath
 		// dynamic members
+		private camerasetup m_cameraSetup
 		private AMainWindowOnShowCondition m_onShowCondition
 		private AMainWindowOnShowAction m_onShowAction
 		private AMainWindowOnHideCondition m_onHideCondition
@@ -24,6 +22,10 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 		private real m_tooltipX
 		private real m_tooltipY
 		private string m_tooltipBackgroundImageFilePath
+		private string m_tooltipSoundPath
+		private boolean m_useShortcuts
+		private boolean m_useSpecialShortcuts
+		private integer m_shortcut
 		// construction members
 		private AGui m_gui
 		private AStyle m_style
@@ -31,8 +33,6 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 		private real m_y
 		private real m_sizeX
 		private real m_sizeY
-		private boolean m_useShortcuts
-		private integer m_shortcut
 		// members
 		private integer m_index
 		private boolean m_isShown
@@ -46,7 +46,21 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AMainWindow\"")
 
-		//dynamic members
+		// dynamic members
+
+		public method cameraSetup takes nothing returns camerasetup
+			return this.m_cameraSetup
+		endmethod
+
+		/**
+		 * \param cameraSetup The camera setup which is used as the players view on the main window.
+		 */
+		public method setCameraSetup takes camerasetup cameraSetup returns nothing
+			set this.m_cameraSetup = cameraSetup
+			if (this.isShown.evaluate()) then
+				call CameraSetupApplyForPlayer(false, this.cameraSetup(), this.gui.evaluate().player(), 0.0)
+			endif
+		endmethod
 
 		/// The \p onShowCondition will be checked before the main window should be displayed.
 		/// If it returns false the main window won't be displayed.
@@ -110,6 +124,110 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 
 		public method tooltipBackgroundImageFilePath takes nothing returns string
 			return this.m_tooltipBackgroundImageFilePath
+		endmethod
+
+		/**
+		 * \param tooltipSoundPath Path of the sound which is played when player drags the cursor over the related object (which has its own tooltip). If this value is null there won't be played any sound.
+		 */
+		public method setTooltipSoundPath takes string tooltipSoundPath returns nothing
+			set this.m_tooltipSoundPath = tooltipSoundPath
+			if (tooltipSoundPath != null) then
+				call PreloadSoundFile(tooltipSoundPath) //ALibraryEnvironmentSound
+			endif
+		endmethod
+
+		public method tooltipSoundPath takes nothing returns string
+			return this.m_tooltipSoundPath
+		endmethod
+
+		public method useShortcuts takes nothing returns boolean
+			return this.m_useShortcuts
+		endmethod
+
+		public method useSpecialShortcuts takes nothing returns boolean
+			return this.m_useSpecialShortcuts
+		endmethod
+
+		/**
+		 * \param useShortcuts If true shortcuts and shortcut handler are enabled when windows is shown.
+		 */
+		public method setUseShortcuts takes boolean useShortcuts returns nothing
+			if (this.useShortcuts() == useShortcuts) then
+				return
+			endif
+			set this.m_useShortcuts = useShortcuts
+			if (this.isShown.evaluate()) then
+				if (useShortcuts) then
+					call this.m_gui.enableShortcuts()
+				else
+					call this.m_gui.disableShortcuts()
+					// enable them again
+					if (this.useSpecialShortcuts()) then
+						call this.m_gui.enableSpecialShortcuts()
+					endif
+				endif
+			endif
+		endmethod
+
+		/**
+		 * \param useSpecialShortcuts If this value is true and \p useShortcuts is not, special shortcuts will be still enabled. Otherwise, if \p useShortcuts is true, this value will be ignored.
+		 */
+		public method setUseSpecialShortcuts takes boolean useSpecialShortcuts returns nothing
+			if (this.useSpecialShortcuts() == useSpecialShortcuts) then
+				return
+			endif
+			set this.m_useSpecialShortcuts = useSpecialShortcuts
+			if (this.isShown.evaluate()) then
+				if (useSpecialShortcuts) then
+					call this.m_gui.enableSpecialShortcuts()
+				else
+					call this.m_gui.disableSpecialShortcuts()
+				endif
+			endif
+		endmethod
+
+		public method shortcut takes nothing returns integer
+			return this.m_shortcut
+		endmethod
+
+		private static method triggerActionPressShortcut takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger( GetTriggeringTrigger(), "this")
+			if (not this.isShown.evaluate()) then
+				call this.show.evaluate()
+			else
+				call this.hide.evaluate()
+			endif
+		endmethod
+
+		private method createShortcutTrigger takes nothing returns nothing
+			set this.m_shortcutTrigger = CreateTrigger()
+			call TriggerRegisterKeyEventForPlayer(this.gui.evaluate().player(), this.m_shortcutTrigger, this.shortcut(), true)
+			call TriggerAddAction(this.m_shortcutTrigger, function thistype.triggerActionPressShortcut)
+			call AHashTable.global().setHandleInteger(this.m_shortcutTrigger, "this", this)
+		endmethod
+
+		private method destroyShortcutTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_shortcutTrigger)
+			set this.m_shortcutTrigger = null
+		endmethod
+
+		/**
+		 * \param shortcut If this shortcut is pressed by the corresponding player, main window opens for him. If this value is -1 main window won't have any shortcut.
+		 */
+		public method setShortcut takes integer shortcut returns nothing
+			if (shortcut == this.shortcut()) then
+				return
+			endif
+static if (DEBUG_MODE) then
+				if (not KeyIsValid(shortcut)) then
+					call this.print("Shortcut has no valid key value.")
+				endif
+endif
+			set this.m_shortcut = shortcut
+			if (this.m_shortcutTrigger != null) then
+				call this.destroyShortcutTrigger()
+			endif
+			call this.createShortcutTrigger()
 		endmethod
 
 		// construction members
@@ -207,8 +325,8 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 				call ShowImage(this.m_tooltipBackground, true)
 
 			endif
-			if (thistype.m_tooltipSoundPath != null) then
-				call PlaySoundFileForPlayer(this.gui().player(), thistype.m_tooltipSoundPath)
+			if (this.tooltipSoundPath() != null) then
+				call PlaySoundFileForPlayer(this.gui().player(), this.tooltipSoundPath())
 			endif
 		endmethod
 
@@ -248,7 +366,9 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			call FogModifierStop(this.m_blackMaskModifier)
 			call FogModifierStart(this.m_visibilityModifier)
 			call ClearScreenMessagesForPlayer(this.gui().player())
-			call CameraSetupApplyForPlayer(false, thistype.m_cameraSetup, this.gui().player(), 0.0)
+			if (this.cameraSetup() != null) then
+				call CameraSetupApplyForPlayer(false, this.cameraSetup(), this.gui().player(), 0.0)
+			endif
 			call PanCameraToTimedForPlayer(this.gui().player(), x, y, 0.0)
 			call SetCameraBoundsToPointForPlayer(this.gui().player(), x, y) /// \todo DEBUG
 			//widgets
@@ -259,8 +379,10 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 				set i = i + 1
 			endloop
 
-			if (this.m_useShortcuts) then
+			if (this.useShortcuts()) then
 				call this.m_gui.enableShortcuts()
+			elseif (this.useSpecialShortcuts()) then
+				call this.m_gui.enableSpecialShortcuts()
 			endif
 			set this.m_isShown = true
 			call this.m_gui.hideShownMainWindowAndSetNew(this)
@@ -300,8 +422,10 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 				set i = i + 1
 			endloop
 
-			if (this.m_useShortcuts) then
+			if (this.useShortcuts()) then
 				call this.m_gui.disableShortcuts()
+			elseif (this.useSpecialShortcuts()) then
+				call this.m_gui.disableSpecialShortcuts()
 			endif
 			set this.m_isShown = false
 			call this.m_gui.resetShownMainWindow()
@@ -319,36 +443,14 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			call this.m_widgets.erase(index)
 		endmethod
 
-		private static method triggerActionPressShortcut takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			if (not this.m_isShown) then
-				call this.show()
-			else
-				call this.hide()
-			endif
-			set triggeringTrigger = null
-		endmethod
-
-		private method createShortcutTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
-			set this.m_shortcutTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterKeyEventForPlayer(this.gui().player(), this.m_shortcutTrigger, this.m_shortcut, true)
-			set triggerAction = TriggerAddAction(this.m_shortcutTrigger, function thistype.triggerActionPressShortcut)
-			call AHashTable.global().setHandleInteger(this.m_shortcutTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
-		endmethod
-
 		/**
 		 * \param x Top left edge x.
 		 * \param y Top left edge y.
-		 * \param shortcut If this value is -1 main window won't have any shortcut.
 		 */
-		public static method create takes AGui gui, AStyle style, real x, real y, real sizeX, real sizeY, boolean useShortcuts, integer shortcut returns thistype
+		public static method create takes AGui gui, AStyle style, real x, real y, real sizeX, real sizeY returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
+			set this.m_cameraSetup = null
 			set this.m_onShowCondition  = 0
 			set this.m_onShowAction = 0
 			set this.m_onHideCondition = 0
@@ -356,6 +458,10 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			set this.m_tooltipX = -1.0
 			set this.m_tooltipY = -1.0
 			set this.m_tooltipBackgroundImageFilePath = null
+			set this.m_tooltipSoundPath = null
+			set this.m_useShortcuts = false
+			set this.m_useSpecialShortcuts = true
+			set this.m_shortcut = -1
 			// construction members
 			set this.m_gui = gui
 			set this.m_style = style
@@ -373,8 +479,6 @@ static if (DEBUG_MODE) then
 endif
 			set this.m_sizeX = sizeX
 			set this.m_sizeY = sizeY
-			set this.m_useShortcuts = useShortcuts
-			set this.m_shortcut = shortcut
 			// members
 			set this.m_index = gui.dockMainWindow(this)
 			set this.m_widgets = AIntegerVector.create()
@@ -385,24 +489,17 @@ endif
 			set this.m_visibilityModifier = CreateFogModifierRect(this.gui().player(), FOG_OF_WAR_VISIBLE, this.m_fogModifierRect, true, false)
 			set this.m_blackMaskModifier = CreateFogModifierRect(this.gui().player(), FOG_OF_WAR_MASKED, this.m_fogModifierRect, true, false)
 			call FogModifierStart(this.m_blackMaskModifier)
+			set this.m_shortcutTrigger = null
 
-			if (shortcut != -1) then
-static if (DEBUG_MODE) then
-				if (not KeyIsValid(shortcut)) then
-					call this.print("Shortcut has no valid key value.")
-				endif
-endif
-				call this.createShortcutTrigger()
-			endif
 			return this
 		endmethod
 
-		public static method createByRectSize takes AGui gui, AStyle style, real x, real y, rect whichRect, boolean useShortcuts, integer shortcut returns thistype
-			return thistype.create(gui, style, x, y, GetRectWidthBJ(whichRect), GetRectHeightBJ(whichRect), useShortcuts, shortcut)
+		public static method createByRectSize takes AGui gui, AStyle style, real x, real y, rect whichRect returns thistype
+			return thistype.create(gui, style, x, y, GetRectWidthBJ(whichRect), GetRectHeightBJ(whichRect))
 		endmethod
 
-		public static method createByRect takes AGui gui, AStyle style, rect whichRect, boolean useShortcuts, integer shortcut returns thistype
-			return thistype.createByRectSize(gui, style, GetRectMinX(whichRect), GetRectMaxY(whichRect), whichRect, useShortcuts, shortcut)
+		public static method createByRect takes AGui gui, AStyle style, rect whichRect returns thistype
+			return thistype.createByRectSize(gui, style, GetRectMinX(whichRect), GetRectMaxY(whichRect), whichRect)
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
@@ -423,9 +520,8 @@ endif
 			call DestroyFogModifier(this.m_blackMaskModifier)
 			set this.m_blackMaskModifier = null
 
-			if (this.m_shortcut != -1) then
-				call AHashTable.global().destroyTrigger(this.m_shortcutTrigger)
-				set this.m_shortcutTrigger = null
+			if (this.m_shortcutTrigger != null) then
+				call this.destroyShortcutTrigger()
 			endif
 
 			loop
@@ -434,19 +530,6 @@ endif
 				/// \todo don't pop back, is in destructor, check for errors
 			endloop
 			call this.m_widgets.destroy()
-		endmethod
-
-		/**
-		 * \param cameraSetup The camera setup which is used as the players view on the main window.
-		 * \param tooltipSoundPath Path of the sound which is played when player drags the cursor over the related object (which has its own tooltip). If this value is null there won't be played any sound.
-		 */
-		public static method init takes camerasetup cameraSetup, string tooltipSoundPath returns nothing
-			set thistype.m_cameraSetup = cameraSetup
-			set thistype.m_tooltipSoundPath = tooltipSoundPath
-
-			if (tooltipSoundPath != null) then
-				call PreloadSoundFile(tooltipSoundPath) //ALibraryEnvironmentSound
-			endif
 		endmethod
 	endstruct
 

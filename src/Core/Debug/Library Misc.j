@@ -1,5 +1,9 @@
 library ALibraryCoreDebugMisc initializer init requires ALibraryCoreGeneralPlayer, AStructCoreGeneralHashTable, AStructCoreGeneralList
 
+	globals
+		boolean ADisplayPrint = true /// If this value is false nothing will be displayed on the screen when \ref Print() etc. is called.
+	endglobals
+
 	/**
 	 * Displays \p message on the screen visible for all playing users. Only available in debug mode.
 	 * Using JassNewGenPack (war3err) this appends \p message to file "logs//war3erruser.txt", as well.
@@ -10,16 +14,18 @@ static if (DEBUG_MODE) then
 	function Print takes string message returns nothing
 		local integer i
 		local player user
-		set i = 0
-		loop
-			exitwhen(i == bj_MAX_PLAYERS)
-			set user = Player(i)
-			if (IsPlayerPlayingUser(user)) then
-				call DisplayTimedTextToPlayer(user, 0.0, 0.0, 999999.0, message)
-			endif
-			set user = null
-			set i = i + 1
-		endloop
+		if (ADisplayPrint) then
+			set i = 0
+			loop
+				exitwhen(i == bj_MAX_PLAYERS)
+				set user = Player(i)
+				if (IsPlayerPlayingUser(user)) then
+					call DisplayTimedTextToPlayer(user, 0.0, 0.0, 999999.0, message)
+				endif
+				set user = null
+				set i = i + 1
+			endloop
+		endif
 		call Cheat("DebugMsg: " + message) // war3err
 	endfunction
 

@@ -7,21 +7,21 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 	 * \todo Test and fix \ref AMissile first and use vectors for this struct, too afterwards.
 	 */
 	struct AJump
-		//static start members
+		// static construction members
 		private static real m_refreshRate
 		private static string m_jumpAnimation
-		//static members
+		// static members
 		private static timer m_timer
 		private static AIntegerVector m_jumps
-		//dynamic members
+		// dynamic members
 		private real m_speed
-		//start members
+		// construction members
 		private unit m_unit
 		private real m_maxHeight
 		private real m_targetX
 		private real m_targetY
 		private AJumpAlightAction m_alightAction
-		//members
+		// members
 		private integer m_index
 		private real m_startX
 		private real m_startY
@@ -30,7 +30,7 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AJump\"")
 
-		//dynamic members
+		// dynamic members
 
 		public method setSpeed takes real speed returns nothing
 			set this.m_speed = speed * thistype.m_refreshRate
@@ -40,7 +40,7 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			return this.m_speed
 		endmethod
 
-		//start members
+		// construction members
 
 		private method refreshPosition takes nothing returns boolean
 			set this.m_x = this.m_x + this.m_speed

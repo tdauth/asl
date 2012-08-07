@@ -19,6 +19,11 @@ Test
 * TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
 * Fix ARoutine and A_MAP.
 * No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
+* DONE: AMainWindow:
+	Should be dynamic members:
+	m_useShortcuts
+	private boolean m_useSpecialShortcuts
+	private integer m_shortcut
 
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706

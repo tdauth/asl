@@ -35,6 +35,8 @@ globals
 	debug constant string A_TEXT_CLEAR_BENCHMARKS= "Clearing all benchmarks:"
 	debug constant string A_TEXT_ENABLE_IDENTIFIERS = "Enabling all identifiers."
 	debug constant string A_TEXT_ENABLE_IDENTIFIER = "Enabling identifier \"%1%\"."
+	debug constant string A_TEXT_DISPLAY_ENABLE = "Enabled debug display."
+	debug constant string A_TEXT_DISPLAY_DISABLE = "Disabled debug display."
 	debug constant string A_TEXT_ENABLE_IDENTIFIER_ERROR = "Identifier \"%1%\" is not disabled."
 	debug constant string A_TEXT_DISABLE_IDENTIFIER = "Disabling identifier \"%1%\"."
 	debug constant string A_TEXT_DISABLE_IDENTIFIER_ERROR = "Identifier \"%1%\" is not enabled."

@@ -121,41 +121,37 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 			call AMainWindow(this.m_mainWindows[index]).show.evaluate()
 		endmethod
 
-		public method enableShortcuts takes nothing returns nothing
-			local integer i
-			call PauseUnit(this.m_shortcutHandler, false)
-			call ShowUnit(this.m_shortcutHandler, true)
-			call SelectUnitForPlayerSingle(this.m_shortcutHandler, this.m_player)
-			call EnableTrigger(this.m_shortcutHandleTrigger)
-			call this.enableSpecialShortcutTriggers.evaluate()
-			set i = 0
+		public method enableSpecialShortcuts takes nothing returns nothing
+			local integer i = 0
 			loop
-				exitwhen (i == thistype.m_maxShortcuts)
-				if (this.m_onPressShortcutActionId[i] != 0) then
-					call UnitAddAbility(this.m_shortcutHandler, thistype.m_shortcutAbility[i])
-				endif
+				exitwhen (i == thistype.m_maxSpecialShortcuts)
+					if (this.m_specialShortcutHandleTrigger[i] != null) then
+						call EnableTrigger(this.m_specialShortcutHandleTrigger[i])
+					endif
 				set i = i + 1
 			endloop
 		endmethod
 
-		/// Resets all shortcut actions!
-		public method disableShortcuts takes nothing returns nothing
-			local integer i
-			call PauseUnit(this.m_shortcutHandler, true)
-			call ShowUnit(this.m_shortcutHandler, false)
-			call SelectUnitRemoveForPlayer(this.m_shortcutHandler, this.m_player)
-			call DisableTrigger(this.m_shortcutHandleTrigger)
-			call this.disableSpecialShortcutTriggers.evaluate()
-
-			set i = 0
+		public method disableSpecialShortcuts takes nothing returns nothing
+			local integer i = 0
 			loop
-				exitwhen (i == thistype.m_maxShortcuts)
-				if (this.m_onPressShortcutActionId[i] != 0) then
-					call UnitRemoveAbility(this.m_shortcutHandler, thistype.m_shortcutAbility[i])
-				endif
-				set this.m_onPressShortcutActionId[i] = 0
+				exitwhen (i == thistype.m_maxSpecialShortcuts)
+					if (this.m_specialShortcutHandleTrigger[i] != null) then
+						call DisableTrigger(this.m_specialShortcutHandleTrigger[i])
+					endif
 				set i = i + 1
 			endloop
+		endmethod
+
+		public method enableShortcuts takes nothing returns nothing
+			call this.enableShortcutHandler.evaluate()
+			call this.enableSpecialShortcuts()
+		endmethod
+
+		/// Resets all shortcut actions!
+		public method disableShortcuts takes nothing returns nothing
+			call this.disableShortcutHandler.evaluate()
+			call this.disableSpecialShortcuts()
 		endmethod
 
 		/// Convenience method.
@@ -199,24 +195,36 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 			set this.m_shownMainWindow = 0
 		endmethod
 
-		private method enableSpecialShortcutTriggers takes nothing returns nothing
-			local integer i = 0
+		private method enableShortcutHandler takes nothing returns nothing
+			local integer i
+			call PauseUnit(this.m_shortcutHandler, false)
+			call ShowUnit(this.m_shortcutHandler, true)
+			call SelectUnitForPlayerSingle(this.m_shortcutHandler, this.m_player)
+			call EnableTrigger(this.m_shortcutHandleTrigger)
+			set i = 0
 			loop
-				exitwhen (i == thistype.m_maxSpecialShortcuts)
-					if (this.m_specialShortcutHandleTrigger[i] != null) then
-						call EnableTrigger(this.m_specialShortcutHandleTrigger[i])
-					endif
+				exitwhen (i == thistype.m_maxShortcuts)
+				if (this.m_onPressShortcutActionId[i] != 0) then
+					call UnitAddAbility(this.m_shortcutHandler, thistype.m_shortcutAbility[i])
+				endif
 				set i = i + 1
 			endloop
 		endmethod
 
-		private method disableSpecialShortcutTriggers takes nothing returns nothing
-			local integer i = 0
+		/// Resets all shortcut actions!
+		private method disableShortcutHandler takes nothing returns nothing
+			local integer i
+			call PauseUnit(this.m_shortcutHandler, true)
+			call ShowUnit(this.m_shortcutHandler, false)
+			call SelectUnitRemoveForPlayer(this.m_shortcutHandler, this.m_player)
+			call DisableTrigger(this.m_shortcutHandleTrigger)
+			set i = 0
 			loop
-				exitwhen (i == thistype.m_maxSpecialShortcuts)
-					if (this.m_specialShortcutHandleTrigger[i] != null) then
-						call DisableTrigger(this.m_specialShortcutHandleTrigger[i])
-					endif
+				exitwhen (i == thistype.m_maxShortcuts)
+				if (this.m_onPressShortcutActionId[i] != 0) then
+					call UnitRemoveAbility(this.m_shortcutHandler, thistype.m_shortcutAbility[i])
+				endif
+				set this.m_onPressShortcutActionId[i] = 0
 				set i = i + 1
 			endloop
 		endmethod

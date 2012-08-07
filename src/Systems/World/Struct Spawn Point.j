@@ -226,6 +226,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return this.m_group.units().size()
 		endmethod
 
+		public method unit takes integer index returns unit
+			return this.m_group.units()[index]
+		endmethod
+
 		public method countUnitsIf takes AUnitVectorUnaryPredicate unaryPredicate returns integer
 			return this.m_group.units().countIf(unaryPredicate)
 		endmethod

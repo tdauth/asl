@@ -1,9 +1,9 @@
 /**
 * The Bonus Mod (originally created by \author weaaddar) is a famous system
-* for modifing specific unit properties where Jass natives are missed and can not be used.
+* for modifying specific unit properties where JASS natives are missed and can not be used.
 * It uses a special method by adding and removing property-modifying abilities to a unit.
-* For this reason it allows the user to modify damage, armour, hit points, mana, sight range, hit point regeneration and mana regeneration of a unit.
-* Note that you've to call AInitBonusMod before using this library.
+* Therefore it allows the user to modify damage, armour, hit points, mana, sight range, hit point regeneration and mana regeneration of a unit.
+* \note Note that you've to call \ref AInitBonusMod() before using this library.
 * It won't be called by default (using it as initializer) since this would be decrease the performance for users who maybe won't use it at all.
 * Besides many abilities have to be created in object editor.
 * Therefore you should import file "Systems/BonusMod/Creation Bonus Mod.j" one-time into your
@@ -48,7 +48,7 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 	endglobals
 
 	private function Ix takes integer x, integer y returns integer
-		return (x * IxLimit + y)
+		return Index2D(x, y, IxLimit)
 	endfunction
 
 	private function BonusMax takes nothing returns integer

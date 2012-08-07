@@ -187,6 +187,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	private struct AVideoPlayerData
 		private player m_player
 		private APlayerSelection m_selection
+		private leaderboard m_leaderboard
 		private boolean m_hadDialog
 
 		public method store takes nothing returns nothing
@@ -195,6 +196,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 			set this.m_selection = APlayerSelection.create(this.m_player)
 			call this.m_selection.store()
+			set this.m_leaderboard = PlayerGetLeaderboard(this.m_player)
+			if (this.m_leaderboard != null) then
+				call ShowLeaderboardForPlayer(this.m_player, this.m_leaderboard, false)
+			endif
 			if (AGui.playerGui(this.m_player).dialog().isDisplayed()) then
 				set this.m_hadDialog = true
 				call AGui.playerGui(this.m_player).dialog().hide()
@@ -206,6 +211,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public method restore takes nothing returns nothing
 			if (this.m_selection != 0) then
 				call this.m_selection.restore()
+			endif
+			if (this.m_leaderboard != null) then
+				call ShowLeaderboardForPlayer(this.m_player, this.m_leaderboard, true)
 			endif
 			if (this.m_hadDialog) then
 				call AGui.playerGui(this.m_player).dialog().show()

@@ -1,3 +1,14 @@
+2012-08-07 Tamino Dauth <tamino@cdauth.eu>
+* AMainWindow: Added parameter for enabling special shortcuts only.
+* AMainWindow: Dropped static initializer and members. Made much more dynamic.
+
+2012-08-04 Tamino Dauth <tamino@cdauth.eu>
+* Fixed leaderboard assignment when hiding leaderboard for player ShowLeaderboardForPlayer().
+* AVideo: Stores player's leaderboard and hides it now.
+
+2012-08-02 Tamino Dauth <tamino@cdauth.eu>
+* ADisplayPrint can be used to configure display of debug messages on screen now.
+
 2012-07-30 Tamino Dauth <tamino@cdauth.eu>
 * waitForCondition() uses PolledWait() now.
 * AVideo: Character equipment is copied in case rucksack is displayed.
