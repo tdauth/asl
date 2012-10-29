@@ -5,6 +5,7 @@ library AStructCoreGeneralHashTable
 	 * ASL internally uses \ref thistype.global() instance. Do not use this method to prevent conflicts with the ASL!
 	 * There are various methods which allow you to save values of different types or attach them on handles since handle objects do have an unique key (use \ref GetHandleId()).
 	 * \note Note that string hash values are usually used as keys since this structure had used native type \ref gamecache before which uses string mission keys and labels.
+	 * \note For default \ref hashtable like access you can use methods with postfix "ByInteger".
 	 * \author Tamino Dauth
 	 * \sa wrappers
 	 * \sa containers
@@ -15,131 +16,133 @@ library AStructCoreGeneralHashTable
 		// members
 		private hashtable m_hashTable
 
-		//! textmacro AHashTableOperationMacro takes TYPE, TYPENAME, METHODTYPENAME
+		//! textmacro AHashTableOperationMacro takes TYPE, TYPENAME, METHODTYPENAME, SAVELOADSUFFIX, HAVEREMOVESUFFIX
+			public method set$TYPENAME$ByInteger takes integer parentKey, integer childKey, $TYPE$ value returns nothing
+				call Save$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, parentKey, childKey, value)
+			endmethod
+
 			public method set$TYPENAME$ takes string key, string label, $TYPE$ value returns nothing
-				call Save$METHODTYPENAME$(this.m_hashTable, StringHash(key), StringHash(label), value)
+				call this. set$TYPENAME$ByInteger(StringHash(key), StringHash(label), value)
 			endmethod
 
-			public method $TYPE$ takes string key, string label returns $TYPE$
-				return Load$METHODTYPENAME$(this.m_hashTable, StringHash(key), StringHash(label))
-			endmethod
-
-			public method has$TYPENAME$ takes string key, string label returns boolean
-				return HaveSaved$TYPENAME$(this.m_hashTable, StringHash(key), StringHash(label))
-			endmethod
-
-			public method remove$TYPENAME$ takes string key, string label returns nothing
-				call RemoveSaved$TYPENAME$(this.m_hashTable, StringHash(key), StringHash(label))
-			endmethod
-
-			public method setHandle$TYPENAME$ takes handle usedHandle, string label, $TYPE$ value returns nothing
-				call Save$METHODTYPENAME$(this.m_hashTable, GetHandleId(usedHandle), StringHash(label), value)
-			endmethod
-
-			public method handle$TYPENAME$ takes handle usedHandle, string label returns $TYPE$
-				return Load$METHODTYPENAME$(this.m_hashTable, GetHandleId(usedHandle), StringHash(label))
-			endmethod
-
-			public method hasHandle$TYPENAME$ takes handle usedHandle, string label returns boolean
-				return HaveSaved$TYPENAME$(this.m_hashTable, GetHandleId(usedHandle), StringHash(label))
-			endmethod
-
-			public method removeHandle$TYPENAME$ takes handle usedHandle, string label returns nothing
-				call RemoveSaved$TYPENAME$(this.m_hashTable, GetHandleId(usedHandle), StringHash(label))
-			endmethod
-		//! endtextmacro
-
-		//! runtextmacro AHashTableOperationMacro("integer", "Integer", "Integer")
-		//! runtextmacro AHashTableOperationMacro("boolean", "Boolean", "Boolean")
-		//! runtextmacro AHashTableOperationMacro("real", "Real", "Real")
-		//! runtextmacro AHashTableOperationMacro("string", "String", "Str")
-
-		//! textmacro AHashTableHandleOperationMacro takes TYPE, TYPENAME, METHODTYPENAME
-			public method set$TYPENAME$ takes string key, string label, $TYPE$ value returns nothing
-				call Save$TYPENAME$Handle(this.m_hashTable, StringHash(key), StringHash(label), value)
+			public method $METHODTYPENAME$ByInteger takes integer parentKey, integer childKey returns $TYPE$
+				return Load$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod
 
 			public method $METHODTYPENAME$ takes string key, string label returns $TYPE$
-				return Load$TYPENAME$Handle(this.m_hashTable, StringHash(key), StringHash(label))
+				return this.$METHODTYPENAME$ByInteger(StringHash(key), StringHash(label))
+			endmethod
+
+			public method has$TYPENAME$ByInteger takes integer parentKey, integer childKey returns boolean
+				return HaveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod
 
 			public method has$TYPENAME$ takes string key, string label returns boolean
-				return HaveSavedHandle(this.m_hashTable, StringHash(key), StringHash(label))
+				return this.has$TYPENAME$ByInteger(StringHash(key), StringHash(label))
+			endmethod
+
+			public method remove$TYPENAME$ByInteger takes integer parentKey, integer childKey returns nothing
+				call RemoveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod
 
 			public method remove$TYPENAME$ takes string key, string label returns nothing
-				call RemoveSavedHandle(this.m_hashTable, StringHash(key), StringHash(label))
+				call this.remove$TYPENAME$ByInteger(StringHash(key), StringHash(label))
 			endmethod
 
-			public method setHandle$TYPENAME$ takes handle usedHandle, string label, $TYPE$ value returns nothing
-				call Save$TYPENAME$Handle(this.m_hashTable, GetHandleId(usedHandle), StringHash(label), value)
+			public method setHandle$TYPENAME$ByInteger takes handle whichHandle, integer childKey, $TYPE$ value returns nothing
+				call Save$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey, value)
 			endmethod
 
-			public method handle$TYPENAME$ takes handle usedHandle, string label returns $TYPE$
-				return Load$TYPENAME$Handle(this.m_hashTable, GetHandleId(usedHandle), StringHash(label))
+			public method setHandle$TYPENAME$ takes handle whichHandle, string label, $TYPE$ value returns nothing
+				call this.setHandle$TYPENAME$ByInteger(whichHandle, StringHash(label), value)
 			endmethod
 
-			public method hasHandle$TYPENAME$ takes handle usedHandle, string label returns boolean
-				return HaveSavedHandle(this.m_hashTable, GetHandleId(usedHandle), StringHash(label))
+			public method handle$TYPENAME$ByInteger takes handle whichHandle, integer childKey returns $TYPE$
+				return Load$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey)
 			endmethod
 
-			public method removeHandle$TYPENAME$ takes handle usedHandle, string label returns nothing
-				call RemoveSavedHandle(this.m_hashTable, GetHandleId(usedHandle), StringHash(label))
+			public method handle$TYPENAME$ takes handle whichHandle, string label returns $TYPE$
+				return this.handle$TYPENAME$ByInteger(whichHandle, StringHash(label))
+			endmethod
+
+			public method hasHandle$TYPENAME$ByInteger takes handle whichHandle, integer childKey returns boolean
+				return HaveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey)
+			endmethod
+
+			public method hasHandle$TYPENAME$ takes handle whichHandle, string label returns boolean
+				return this. hasHandle$TYPENAME$ByInteger(whichHandle, StringHash(label))
+			endmethod
+
+			public method removeHandle$TYPENAME$ByInteger takes handle whichHandle, integer childKey returns nothing
+				call RemoveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey)
+			endmethod
+
+			public method removeHandle$TYPENAME$ takes handle whichHandle, string label returns nothing
+				call this.removeHandle$TYPENAME$ByInteger(whichHandle, StringHash(label))
 			endmethod
 		//! endtextmacro
 
-		//! runtextmacro AHashTableHandleOperationMacro("player", "Player", "player")
-		//! runtextmacro AHashTableHandleOperationMacro("widget", "Widget", "widget")
-		//! runtextmacro AHashTableHandleOperationMacro("destructable", "Destructable", "destructable")
-		//! runtextmacro AHashTableHandleOperationMacro("item", "Item", "item")
-		//! runtextmacro AHashTableHandleOperationMacro("unit", "Unit", "unit")
-		//! runtextmacro AHashTableHandleOperationMacro("ability", "Ability", "ability")
-		//! runtextmacro AHashTableHandleOperationMacro("timer", "Timer", "timer")
-		//! runtextmacro AHashTableHandleOperationMacro("trigger", "Trigger", "trigger")
-		//! runtextmacro AHashTableHandleOperationMacro("triggercondition", "TriggerCondition", "triggerCondition")
-		//! runtextmacro AHashTableHandleOperationMacro("triggeraction", "TriggerAction", "triggerAction")
-		//! runtextmacro AHashTableHandleOperationMacro("event", "TriggerEvent", "triggerEvent")
-		//! runtextmacro AHashTableHandleOperationMacro("force", "Force", "force")
-		//! runtextmacro AHashTableHandleOperationMacro("group", "Group", "group")
-		//! runtextmacro AHashTableHandleOperationMacro("location", "Location", "location")
-		//! runtextmacro AHashTableHandleOperationMacro("rect", "Rect", "rect")
-		//! runtextmacro AHashTableHandleOperationMacro("boolexpr", "BooleanExpr", "boolexpr")
-		//! runtextmacro AHashTableHandleOperationMacro("sound", "Sound", "sound")
-		//! runtextmacro AHashTableHandleOperationMacro("effect", "Effect", "effect")
-		//! runtextmacro AHashTableHandleOperationMacro("unitpool", "UnitPool", "unitPool")
-		//! runtextmacro AHashTableHandleOperationMacro("itempool", "ItemPool", "itemPool")
-		//! runtextmacro AHashTableHandleOperationMacro("quest", "Quest", "quest")
-		//! runtextmacro AHashTableHandleOperationMacro("questitem", "QuestItem", "questitem")
-		//! runtextmacro AHashTableHandleOperationMacro("defeatcondition", "DefeatCondition", "defeatCondition")
-		//! runtextmacro AHashTableHandleOperationMacro("timerdialog", "TimerDialog", "timerDialog")
-		//! runtextmacro AHashTableHandleOperationMacro("leaderboard", "Leaderboard", "leaderboard")
-		//! runtextmacro AHashTableHandleOperationMacro("multiboard", "Multiboard", "multiboard")
-		//! runtextmacro AHashTableHandleOperationMacro("multiboarditem", "MultiboardItem", "multiboardItem")
-		//! runtextmacro AHashTableHandleOperationMacro("trackable", "Trackable", "trackable")
-		//! runtextmacro AHashTableHandleOperationMacro("dialog", "Dialog", "dialog")
-		//! runtextmacro AHashTableHandleOperationMacro("button", "Button", "button")
-		//! runtextmacro AHashTableHandleOperationMacro("texttag", "TextTag", "textTag")
-		//! runtextmacro AHashTableHandleOperationMacro("lightning", "Lightning", "lightning")
-		//! runtextmacro AHashTableHandleOperationMacro("image", "Image", "image")
-		//! runtextmacro AHashTableHandleOperationMacro("ubersplat", "Ubersplat", "ubersplat")
-		//! runtextmacro AHashTableHandleOperationMacro("region", "Region", "region")
-		//! runtextmacro AHashTableHandleOperationMacro("fogstate", "FogState", "fogState")
-		//! runtextmacro AHashTableHandleOperationMacro("fogmodifier", "FogModifier", "fogModifier")
-		///! runtextmacro AHashTableHandleOperationMacro("agent", "Agent", "agent") /// \todo Missing native
-		//! runtextmacro AHashTableHandleOperationMacro("hashtable", "Hashtable", "hashtable")
+		//! runtextmacro AHashTableOperationMacro("integer", "Integer", "integer", "", "Integer")
+		//! runtextmacro AHashTableOperationMacro("boolean", "Boolean", "boolean", "", "Boolean")
+		//! runtextmacro AHashTableOperationMacro("real", "Real", "real", "", "Real")
+		//! runtextmacro AHashTableOperationMacro("string", "Str", "string", "", "String")
+
+		//! runtextmacro AHashTableOperationMacro("player", "Player", "player", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("widget", "Widget", "widget", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("destructable", "Destructable", "destructable", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("item", "Item", "item", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("unit", "Unit", "unit", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("ability", "Ability", "ability", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("timer", "Timer", "timer", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("trigger", "Trigger", "trigger", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("triggercondition", "TriggerCondition", "triggerCondition", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("triggeraction", "TriggerAction", "triggerAction", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("event", "TriggerEvent", "triggerEvent", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("force", "Force", "force", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("group", "Group", "group", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("location", "Location", "location", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("rect", "Rect", "rect", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("boolexpr", "BooleanExpr", "boolexpr", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("sound", "Sound", "sound", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("effect", "Effect", "effect", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("unitpool", "UnitPool", "unitPool", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("itempool", "ItemPool", "itemPool", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("quest", "Quest", "quest", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("questitem", "QuestItem", "questitem", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("defeatcondition", "DefeatCondition", "defeatCondition", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("timerdialog", "TimerDialog", "timerDialog", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("leaderboard", "Leaderboard", "leaderboard", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("multiboard", "Multiboard", "multiboard", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("multiboarditem", "MultiboardItem", "multiboardItem", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("trackable", "Trackable", "trackable", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("dialog", "Dialog", "dialog", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("button", "Button", "button", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("texttag", "TextTag", "textTag", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("lightning", "Lightning", "lightning", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("image", "Image", "image", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("ubersplat", "Ubersplat", "ubersplat", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("region", "Region", "region", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("fogstate", "FogState", "fogState", "Handle", "Handle")
+		//! runtextmacro AHashTableOperationMacro("fogmodifier", "FogModifier", "fogModifier", "Handle", "Handle")
+		///! runtextmacro AHashTableOperationMacro("agent", "Agent", "agent", "Handle", "Handle") /// \todo Missing native
+		//! runtextmacro AHashTableOperationMacro("hashtable", "Hashtable", "hashtable", "Handle", "Handle")
 
 		/// Flushes all data of the hashtable.
 		public method flush takes nothing returns nothing
 			call FlushParentHashtable(this.m_hashTable)
 		endmethod
 
-		/// Flushes all data of a hashtable key.
-		public method flushKey takes string key returns nothing
-			call FlushChildHashtable(this.m_hashTable, StringHash(key))
+		public method flushKeyByInteger takes integer key returns nothing
+			call FlushChildHashtable(this.m_hashTable, key)
 		endmethod
 
-		public method flushHandle takes handle usedHandle returns nothing
-			call FlushChildHashtable(this.m_hashTable, GetHandleId(usedHandle))
+		/// Flushes all data of a hashtable key.
+		public method flushKey takes string key returns nothing
+			call this.flushKeyByInteger(StringHash(key))
+		endmethod
+
+		public method flushHandle takes handle whichHandle returns nothing
+			call FlushChildHashtable(this.m_hashTable, GetHandleId(whichHandle))
 		endmethod
 
 		//! textmacro AHashTableDestructionMacro takes TYPE, TYPENAME, DESTRUCTIONNAME

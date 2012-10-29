@@ -30,6 +30,7 @@ globals
 	debug constant string A_TEXT_UNIT_PATHING_DISABLE = "Disable unit pathing."
 	debug constant string A_TEXT_ORDER = "%1%'s order: %2%"
 	debug constant string A_TEXT_EMPTY_SELECTION = "No unit is selected."
+	debug constant string A_TEXT_TIME_OF_DAY_SET_TIME = "Set time of day to: %1%"
 	debug constant string A_TEXT_TIME_OF_DAY = "Current time of day: %1%"
 	debug constant string A_TEXT_SHOW_BENCHMARKS= "Showing all benchmarks:"
 	debug constant string A_TEXT_CLEAR_BENCHMARKS= "Clearing all benchmarks:"

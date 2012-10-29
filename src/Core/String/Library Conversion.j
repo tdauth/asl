@@ -205,10 +205,11 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	function GetTimeString takes integer seconds returns string
 		local integer minutes = seconds / 60
 		local integer hours = minutes / 60
-		local string result
-		local string formatString
-		set seconds = ModuloInteger(seconds, 60)
-		set minutes = ModuloInteger(minutes, 60)
+		local string result = ""
+		local string formatString = ""
+		set seconds = seconds - minutes * 60
+		set minutes = minutes - hours * 60
+
 		if (seconds >= 10) then
 			set result = I2S(seconds)
 		else
@@ -220,15 +221,16 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 			else
 				set formatString = Format(tr(A_TEXT_TIME_VALUE)).i(minutes).result()
 			endif
-			call Format(tr(A_TEXT_TIME_PAIR)).s(formatString).s(result).result()
-		endif
-		if (hours > 0) then
-			if (hours >= 10) then
+			set result = Format(tr(A_TEXT_TIME_PAIR)).s(formatString).s(result).result()
+
+			if (hours > 0) then
+				if (hours >= 10) then
 				set formatString = I2S(hours)
-			else
-				set formatString = Format(tr(A_TEXT_TIME_VALUE)).i(hours).result()
+				else
+					set formatString = Format(tr(A_TEXT_TIME_VALUE)).i(hours).result()
+				endif
+				set result = Format(tr(A_TEXT_TIME_PAIR)).s(formatString).s(result).result()
 			endif
-			call Format(tr(A_TEXT_TIME_PAIR)).s(formatString).s(result).result()
 		endif
 		return result
 	endfunction

@@ -1,6 +1,8 @@
 2012-08-07 Tamino Dauth <tamino@cdauth.eu>
 * AMainWindow: Added parameter for enabling special shortcuts only.
 * AMainWindow: Dropped static initializer and members. Made much more dynamic.
+* AHashTable: Added API functions with suffix "ByInteger" which allow default hashtable like access.
+* AHashTable: Cleaned up and unified method generation text macro.
 
 2012-08-04 Tamino Dauth <tamino@cdauth.eu>
 * Fixed leaderboard assignment when hiding leaderboard for player ShowLeaderboardForPlayer().

@@ -129,6 +129,8 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 	 * \sa AUnitRoutine
 	 */
 	struct ARoutinePeriod
+		private static constant string hashTableKeyCurrent = "ARoutinePeriod:current"
+		private static constant string hashTableKeyNext = "ARoutinePeriod:next"
 		// dynamic members
 		private ARoutine m_routine
 		private unit m_unit
@@ -197,36 +199,36 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		// methods
 
 		public static method current takes unit whichUnit returns thistype
-			return AHashTable.global().handleInteger(whichUnit, "ARoutinePeriod:current")
+			return AHashTable.global().handleInteger(whichUnit, thistype.hashTableKeyCurrent)
 		endmethod
 
 		public static method hasCurrent takes unit whichUnit returns boolean
-			return AHashTable.global().hasHandleInteger(whichUnit, "ARoutinePeriod:current")
+			return AHashTable.global().hasHandleInteger(whichUnit, thistype.hashTableKeyCurrent)
 		endmethod
 
 		public static method next takes unit whichUnit returns thistype
-			return AHashTable.global().handleInteger(whichUnit, "ARoutinePeriod:next")
+			return AHashTable.global().handleInteger(whichUnit, thistype.hashTableKeyNext)
 		endmethod
 
 		public static method hasNext takes unit whichUnit returns boolean
-			return AHashTable.global().hasHandleInteger(whichUnit, "ARoutinePeriod:next")
+			return AHashTable.global().hasHandleInteger(whichUnit, thistype.hashTableKeyNext)
 		endmethod
 
 		private static method setCurrent takes unit whichUnit, thistype period returns nothing
-			call AHashTable.global().setHandleInteger(whichUnit, "ARoutinePeriod:current", period)
+			call AHashTable.global().setHandleInteger(whichUnit, thistype.hashTableKeyCurrent, period)
 		endmethod
 
 		private static method clearCurrent takes unit whichUnit returns nothing
-			call AHashTable.global().removeHandleInteger(whichUnit, "ARoutinePeriod:current")
+			call AHashTable.global().removeHandleInteger(whichUnit, thistype.hashTableKeyCurrent)
 		endmethod
 
 		private static method setNext takes unit whichUnit, thistype period returns nothing
 			//don't check if there's already a value, just overwrite!
-			call AHashTable.global().setHandleInteger(whichUnit, "ARoutinePeriod:next", period)
+			call AHashTable.global().setHandleInteger(whichUnit, thistype.hashTableKeyNext, period)
 		endmethod
 
 		private static method clearNext takes unit whichUnit returns nothing
-			call AHashTable.global().removeHandleInteger(whichUnit, "ARoutinePeriod:next")
+			call AHashTable.global().removeHandleInteger(whichUnit, thistype.hashTableKeyNext)
 		endmethod
 
 		public method canContinue takes nothing returns boolean
@@ -561,13 +563,14 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 	 * \sa ARoutinePeriod
 	 */
 	struct AUnitRoutine extends ARoutinePeriod
+		private static constant string hashTableKey = "AUnitRoutine:Routines"
 
 		/**
 		 * \return Returns list of \ref thistype instances. If unit \p whichUnit has no routines it returns 0.
 		 * \note You should store the result instead of calling this method several times except you want to be sure if it has already been destroyed.
 		 */
 		public static method routines takes unit whichUnit returns AIntegerList
-			return AIntegerList(AHashTable.global().handleInteger(whichUnit, "AUnitRoutine:Routines"))
+			return AIntegerList(AHashTable.global().handleInteger(whichUnit, thistype.hashTableKey))
 		endmethod
 
 		public static method enableAll takes unit whichUnit returns nothing
@@ -603,7 +606,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		private static method add takes unit whichUnit, thistype period returns nothing
 			local AIntegerList list = thistype.routines(whichUnit)
 			if (list == 0) then
-				call AHashTable.global().setHandleInteger(whichUnit, "AUnitRoutine:Routines", AIntegerList.createWithSize(1, period))
+				call AHashTable.global().setHandleInteger(whichUnit, thistype.hashTableKey, AIntegerList.createWithSize(1, period))
 			else
 				call list.pushBack(period)
 			endif
@@ -627,7 +630,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call iterator.destroy()
 			if (list.empty()) then
 				call list.destroy()
-				call AHashTable.global().removeHandleInteger(whichUnit, "AUnitRoutine:Routines")
+				call AHashTable.global().removeHandleInteger(whichUnit, thistype.hashTableKey)
 			endif
 		endmethod
 
@@ -666,7 +669,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				call list.popBack()
 			endloop
 			call list.destroy()
-			call AHashTable.global().removeHandleInteger(whichUnit, "AUnitRoutine:Routines")
+			call AHashTable.global().removeHandleInteger(whichUnit, thistype.hashTableKey)
 		endmethod
 	endstruct
 

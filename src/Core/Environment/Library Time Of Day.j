@@ -37,8 +37,8 @@ library ALibraryCoreEnvironmentTimeOfDay requires ALibraryCoreStringConversion
 	endfunction
 
 	globals
-		private constant integer dailyMinutes = 1440 // 24 * 60
-		private constant integer dailySeconds = 86400 // 24 * 60 * 60
+		constant integer ADailyMinutes = 1440 // 24 * 60
+		constant integer ADailySeconds = 86400 // 24 * 60 * 60
 	endglobals
 
 	function GetTimeOfDayElapsedMinutesEx takes real timeOfDay returns integer
@@ -66,7 +66,7 @@ library ALibraryCoreEnvironmentTimeOfDay requires ALibraryCoreStringConversion
 	endfunction
 
 	function GetTimeOfDayRemainingMinutesEx takes real timeOfDay returns integer
-		return dailyMinutes - GetTimeOfDayElapsedMinutesEx(timeOfDay)
+		return ADailyMinutes - GetTimeOfDayElapsedMinutesEx(timeOfDay)
 	endfunction
 
 	function GetTimeOfDayRemainingMinutes takes nothing returns integer
@@ -82,7 +82,7 @@ library ALibraryCoreEnvironmentTimeOfDay requires ALibraryCoreStringConversion
 	endfunction
 
 	function GetTimeOfDayRemainingSecondsEx takes real timeOfDay returns integer
-		return dailySeconds - GetTimeOfDayElapsedSecondsEx(timeOfDay)
+		return ADailySeconds - GetTimeOfDayElapsedSecondsEx(timeOfDay)
 	endfunction
 
 	function GetTimeOfDayRemainingSeconds takes nothing returns integer

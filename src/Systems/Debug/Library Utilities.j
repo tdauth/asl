@@ -17,7 +17,7 @@
 * pathing - Enables unit's pathing.
 * nopathing - Disables unit's pathing.
 * order - Displays unit order information or issues unit order.
-* timeofday - Suspends or continue time of day or shows current.
+* timeofday - Suspends, continues, sets or shows current time of day.
 * benchmarks - Shows all benchmarks.
 * clearbenchmarks - Clears all benchmarks.
 * display - Displays or hides \ref Print() calls.
@@ -26,13 +26,14 @@
 * units - Shows all units.
 * items - Shows all items.
 * destructables - Shows all destructables.
-* string - Runs string debug.
-* interface - Runs interface debug.
-* signal - Runs signal debug.
-* list - Runs list debug.
-* map - Runs map debug.
-* timer - Runs timer debugging hook function.
-* execution - Runs execution speed test.
+* debugstring - Runs string debug.
+* debuginterface - Runs interface debug.
+* debugsignal - Runs signal debug.
+* debuglist - Runs list debug.
+* debugmap - Runs map debug.
+* debugtd - Runs time of day debug.
+* debugtimer - Runs timer debugging hook function.
+* debugexecution - Runs execution speed test.
 */
 library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugString, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat
 
@@ -55,7 +56,7 @@ static if (DEBUG_MODE) then
 		call Print("pathing")
 		call Print("nopathing")
 		call Print("order <order>")
-		call Print("timeofday <stop/continue>")
+		call Print("timeofday <stop/continue/time of day>")
 		call Print("benchmarks")
 		call Print("clearbenchmarks")
 		call Print("display")
@@ -68,17 +69,18 @@ static if (DEBUG_MODE and A_DEBUG_HANDLES) then
 		call Print("destructables")
 endif
 static if (DEBUG_MODE) then
-		call Print("string")
-		call Print("interface")
-		call Print("signal")
-		call Print("list")
-		call Print("map")
+		call Print("debugstring")
+		call Print("debuginterface")
+		call Print("debugsignal")
+		call Print("debuglist")
+		call Print("debugmap")
+		call Print("debugtd")
 endif
 static if (DEBUG_MODE and A_DEBUG_NATIVES) then
-		call Print("timer")
+		call Print("debugtimer")
 endif
 static if (DEBUG_MODE) then
-		call Print("execution")
+		call Print("debugexecution")
 endif
 		set triggerPlayer = null
 	endfunction
@@ -337,10 +339,15 @@ endif
 
 	private function timeofday takes ACheat cheat returns nothing
 		local string argument = cheat.argument()
-		if (argument == "stop") then
-			call SuspendTimeOfDay(true)
-		elseif (argument == "continue") then
-			call SuspendTimeOfDay(false)
+		if (StringLength(argument) > 0) then
+			if (argument == "stop") then
+				call SuspendTimeOfDay(true)
+			elseif (argument == "continue") then
+				call SuspendTimeOfDay(false)
+			else
+				call SetTimeOfDay(S2R(argument))
+				debug call Print(Format(A_TEXT_TIME_OF_DAY_SET_TIME).s(argument).result())
+			endif
 		else
 			debug call Print(Format(A_TEXT_TIME_OF_DAY).s(GetTimeOfDayString()).result())
 		endif
@@ -431,6 +438,10 @@ static if (DEBUG_MODE) then
 	private function mapDebug takes ACheat cheat returns nothing
 		call AMapDebug()
 	endfunction
+
+	private function timeofdayDebug takes ACheat cheat returns nothing
+		call ATimeOfDayDebug()
+	endfunction
 endif
 
 static if (DEBUG_MODE and A_DEBUG_NATIVES) then
@@ -467,7 +478,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("pathing", true, pathing)
 		call ACheat.create("nopathing", true, nopathing)
 		call ACheat.create("order", false, order)
-		call ACheat.create("timeofday", true, timeofday)
+		call ACheat.create("timeofday", false, timeofday)
 		call ACheat.create("benchmarks", true, benchmarks)
 		call ACheat.create("clearbenchmarks", true, clearbenchmarks)
 		call ACheat.create("display", true, display)
@@ -482,19 +493,20 @@ static if (A_DEBUG_HANDLES) then
 endif
 
 static if (DEBUG_MODE) then
-		call ACheat.create("string", true, stringDebug)
-		call ACheat.create("interface", true, interfaceDebug)
-		call ACheat.create("signal", true, signalDebug)
-		call ACheat.create("list", true, listDebug)
-		call ACheat.create("map", true, mapDebug)
+		call ACheat.create("debugstring", true, stringDebug)
+		call ACheat.create("debuginterface", true, interfaceDebug)
+		call ACheat.create("debugsignal", true, signalDebug)
+		call ACheat.create("debuglist", true, listDebug)
+		call ACheat.create("debugmap", true, mapDebug)
+		call ACheat.create("debugtd", true, timeofdayDebug)
 endif
 
 static if (DEBUG_MODE and A_DEBUG_NATIVES) then
-		call ACheat.create("timer", true, timerDebug)
+		call ACheat.create("debugtimer", true, timerDebug)
 endif
 
 static if (DEBUG_MODE) then
-		call ACheat.create("execution", true, executionDebug)
+		call ACheat.create("debugexecution", true, executionDebug)
 endif
 
 	endfunction
