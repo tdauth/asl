@@ -258,7 +258,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		private static method triggerConditionTarget takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggerUnit(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local boolean result = GetTriggerUnit() == this.unit()
 			debug call this.print("Target condition, entering unit: " + GetUnitName(GetTriggerUnit()) + " and name of required unit: " + GetUnitName(this.unit()))
 			return result

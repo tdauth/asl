@@ -10,7 +10,7 @@
 - Keyword "protected" should be added.
 - Size-specified structures should be able to extend interfaces.
 - Size-specified structures should be able to extend structures with the same size.
-- "static if" should be considered by "//! import" statements or something similar like "//! if" should be added.
+- "static if" should be considered by "//! import" and "//! runtextmacro" statements or something similar like "//! if" should be added.
 
 Bugs:
 - Constants from common.j or Blizzard.j can not be used as array sizes.
