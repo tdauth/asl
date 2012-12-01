@@ -119,6 +119,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 	endstruct
 
+	/// \todo Should be contained by \ref ARoutinePeriod, vJass bug.
+	function interface ARoutinePeriodCondition takes ARoutinePeriod period returns boolean
+
 	/**
 	 * \brief Each unit can have multiple times for one single routine provided by this structure.
 	 * Additionally, each time range can have its own target rect which is used for routines which do have a target (\ref ARoutine.hasTarget()).
@@ -137,6 +140,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		private real m_startTimeOfDay
 		private real m_endTimeOfDay
 		private rect m_targetRect
+		private ARoutinePeriodCondition m_condition
 		// members
 		private boolean m_isEnabled
 		private trigger m_startTrigger
@@ -190,6 +194,17 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return this.m_targetRect
 		endmethod
 
+		/**
+		 * \param condition Condition which is evaluated whenever routine period should be started automatically (in \ref onCondition()). It's only started if this condition returns true or is set to 0.
+		 */
+		public method setCondition takes ARoutinePeriodCondition condition returns nothing
+			set this.m_condition = condition
+		endmethod
+
+		public method condition takes nothing returns ARoutinePeriodCondition
+			return this.m_condition
+		endmethod
+
 		// members
 
 		public method isEnabled takes nothing returns boolean
@@ -197,6 +212,17 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		// methods
+
+		/**
+		 * Called by .evaluate().
+		 * Usually calls \ref condition() via .evaluate().
+		 */
+		public stub method onCondition takes nothing returns boolean
+			if (this.condition() != 0) then
+				return this.condition().evaluate(this)
+			endif
+			return true
+		endmethod
 
 		public static method current takes unit whichUnit returns thistype
 			return AHashTable.global().handleInteger(whichUnit, thistype.hashTableKeyCurrent)
@@ -287,27 +313,37 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			debug call this.print("Created target trigger for " + GetUnitName(this.unit()))
 		endmethod
 
-		private static method triggerActionStart takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			debug call this.print("Starting for unit " + GetUnitName(this.unit()))
+		/**
+		 * Internal method which is called when routine period time of day is reached.
+		 * Should only be called manually with checking \ref isInTime().
+		 */
+		public method onStart takes nothing returns nothing
 			// start immediately
 			if (not IsUnitPaused(this.unit())) then
-				if (thistype.hasNext(this.unit())) then
-					call thistype.clearNext(this.unit())
-				endif
-				call thistype.setCurrent(this.unit(), this)
-				call this.routine().onStart.evaluate(this)
-				if (this.routine().hasTarget()) then
-					if (RectContainsUnit(this.m_targetRect, this.unit())) then
-						call this.routine().onTarget.evaluate(this)
-					else
-						call this.createTargetTrigger()
+				if (this.onCondition.evaluate()) then // optional condition
+					if (thistype.hasNext(this.unit())) then
+						call thistype.clearNext(this.unit())
+					endif
+					call thistype.setCurrent(this.unit(), this)
+					call this.routine().onStart.evaluate(this)
+					if (this.routine().hasTarget()) then
+						if (RectContainsUnit(this.m_targetRect, this.unit())) then
+							call this.routine().onTarget.evaluate(this)
+						else
+							call this.createTargetTrigger()
+						endif
 					endif
 				endif
 			// queue for paused unit that it will be started on unpausing the unit
-			else
+			elseif (this.onCondition.evaluate()) then // optional condition
 				call thistype.setNext(this.unit(), this)
 			endif
+		endmethod
+
+		private static method triggerActionStart takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			debug call this.print("Starting for unit " + GetUnitName(this.unit()))
+			call this.onStart()
 		endmethod
 
 		private method createStartTrigger takes nothing returns nothing
@@ -437,6 +473,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			set this.m_startTimeOfDay = startTimeOfDay
 			set this.m_endTimeOfDay = endTimeOfDay
 			set this.m_targetRect = targetRect
+			set this.m_condition = 0
 			// members
 			set this.m_isEnabled = true
 			set this.m_targetRegion = null
@@ -670,6 +707,28 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			endloop
 			call list.destroy()
 			call AHashTable.global().removeHandleInteger(whichUnit, thistype.hashTableKey)
+		endmethod
+
+		/**
+		 * This method can be useful at the beginning of game when time hadn't become \ref EQUAL yet, to start current routines.
+		 * \note It might take quite some performance since it has to check ALL available routine periods (multiple routine periods at the same time are allowed and will be started in order of appearance).
+		 * \note Alternatively, events would have to be called other than on \ref EQUAL like \ref GREATER_THAN_OR_EQUAL with additional time checks which would be more expensive through the whole game.
+		 */
+		public static method manualStart takes unit whichUnit returns nothing
+			local AIntegerList list = thistype.routines(whichUnit)
+			local AIntegerListIterator iterator
+			if (list == 0) then // (thistype.hasCurrent(whichUnit) and thistype.current(whichUnit).isInTime())
+				return
+			endif
+			set iterator = list.begin()
+			loop
+				exitwhen (not iterator.isValid())
+				if (thistype(iterator.data()).isInTime() and thistype.current(whichUnit) != (thistype(iterator.data()))) then // check if it's the current period already, as well to prevent multiple starts
+					call thistype(iterator.data()).onStart()
+				endif
+				call iterator.next()
+			endloop
+			call iterator.destroy()
 		endmethod
 	endstruct
 

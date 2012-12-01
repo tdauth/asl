@@ -300,6 +300,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private AVideoAction m_playAction
 		private AVideoAction m_stopAction
 		private AVideoAction m_skipAction
+		private boolean m_fadeIn
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AVideo\"")
 
@@ -335,6 +336,18 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		public method skipAction takes nothing returns AVideoAction
 			return this.m_skipAction
+		endmethod
+
+		/**
+		 * \param fadeIn If this value is true, black masked will be removed automatically when video is started. Otherwise, it will remain for manual removal.
+		 * \note Default value is true.
+		 */
+		public method setFadeIn takes boolean fadeIn returns nothing
+			set this.m_fadeIn = fadeIn
+		endmethod
+
+		public method fadeIn takes nothing returns boolean
+			return this.m_fadeIn
 		endmethod
 
 		// methods
@@ -440,7 +453,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set playersAll = null
 			set thistype.m_runningVideo = this
 			call this.onInitAction.evaluate()
-			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			if (this.fadeIn()) then
+				call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			endif
 			call TriggerSleepAction(thistype.m_waitTime)
 			call EnableTrigger(thistype.m_skipTrigger)
 			//call EnableUserControl(true) //otherwise we could not catch the press event (just the escape key)
@@ -513,6 +528,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_playAction = 0
 			set this.m_stopAction = 0
 			set this.m_skipAction = 0
+			set this.m_fadeIn = true
 
 			return this
 		endmethod
