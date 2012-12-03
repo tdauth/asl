@@ -322,6 +322,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			if (not IsUnitPaused(this.unit())) then
 				if (this.onCondition.evaluate()) then // optional condition
 					if (thistype.hasNext(this.unit())) then
+						debug if (thistype.next(this.unit()) != this) then
+							debug call this.print("Warning: Overlaps with " + I2S(thistype.next(this.unit())))
+						debug endif
 						call thistype.clearNext(this.unit())
 					endif
 					call thistype.setCurrent(this.unit(), this)
@@ -586,7 +589,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		debug if (not period.routine().isLoop()) then
 			debug call Print("Warning: Routine " + I2S(period.routine()) + " with routine data for unit " + GetUnitName(period.unit()) + " is not marked as loop (isLoop).")
 		debug endif
-		if (period.canContinue()) then
+		if (period.canContinue() and period.isInTime()) then // NOTE isInTime() is not necessary since it should be ended automatically but if user changes time manually end will never be reached!
 			call routineAction.execute(period)
 		endif
 		//otherwise cancel, routine loop action will be called automatically again when unit is unpaused and still in routine time
@@ -610,6 +613,10 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return AIntegerList(AHashTable.global().handleInteger(whichUnit, thistype.hashTableKey))
 		endmethod
 
+		/**
+		 * Enables all routine periods for unit \p whichUnit.
+		 * \ref disableAll()
+		 */
 		public static method enableAll takes unit whichUnit returns nothing
 			local AIntegerList list = thistype.routines(whichUnit)
 			local AIntegerListIterator iterator
@@ -625,6 +632,10 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call iterator.destroy()
 		endmethod
 
+		/**
+		 * Disables all routine periods for unit \p whichUnit.
+		 * \ref enableAll()
+		 */
 		public static method disableAll takes unit whichUnit returns nothing
 			local AIntegerList list = thistype.routines(whichUnit)
 			local AIntegerListIterator iterator

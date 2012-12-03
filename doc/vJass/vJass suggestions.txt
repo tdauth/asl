@@ -12,6 +12,9 @@
 - Size-specified structures should be able to extend structures with the same size.
 - "static if" should be considered by "//! import" and "//! runtextmacro" statements or something similar like "//! if" should be added.
 
+- improve type checks: function interfaces variables can get non-static functions (with wrong parameters) without any error, explicit casting!
+- improve function declaration checks: TriggerAddAction( - function has to be declared before?
+
 Bugs:
 - Constants from common.j or Blizzard.j can not be used as array sizes.
 - Private destructors are not really private.
@@ -33,3 +36,5 @@ http://www.wc3c.net/showpost.php?p=1114130&postcount=3107
 http://www.wc3c.net/showpost.php?p=1114312&postcount=3119
 http://www.wc3c.net/showpost.php?p=1132707&postcount=3630
 http://www.wc3c.net/showpost.php?p=1132728&postcount=3632
+http://www.wc3c.net/showpost.php?p=1136086&postcount=168
+http://www.wc3c.net/showpost.php?p=1136208&postcount=172

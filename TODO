@@ -17,13 +17,14 @@ Test
 * Revise AIndicator.
 * Improve merge() of A_VECTOR.
 * TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
-* Fix and A_MAP.
+* Fix A_MAP.
 * No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
 * DONE: AMainWindow:
 	Should be dynamic members:
 	m_useShortcuts
 	private boolean m_useSpecialShortcuts
 	private integer m_shortcut
+* ARoutine: Maybe hook SetTimeOfDay etc. to get manual time changes and end routine periods?
 
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706
