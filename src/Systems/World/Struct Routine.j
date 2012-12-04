@@ -1,5 +1,8 @@
 library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentTimeOfDay, AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreMathsUnit
 
+	/// \todo Should be contained by \ref ARoutinePeriod, vJass bug.
+	function interface ARoutineCondition takes ARoutinePeriod period returns boolean
+
 	/// \todo Should be a part of \ref ARoutine, vJass bug.
 	function interface ARoutineAction takes ARoutinePeriod period returns nothing
 
@@ -16,6 +19,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		// dynamic members
 		private boolean m_hasTarget
 		private boolean m_isLoop
+		private ARoutineCondition m_condition
 		private ARoutineAction m_startAction
 		private ARoutineAction m_endAction
 		private ARoutineAction m_targetAction
@@ -32,12 +36,23 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return this.m_hasTarget
 		endmethod
 
-		public method setIsLoopTakes takes boolean isLoop returns nothing
+		public method setIsLoop takes boolean isLoop returns nothing
 			set this.m_isLoop = isLoop
 		endmethod
 
 		public method isLoop takes nothing returns boolean
 			return this.m_isLoop
+		endmethod
+
+		/**
+		 * \param condition Condition which is evaluated whenever routine period should be started automatically (in \ref onCondition()). It's only started if this condition returns true or is set to 0.
+		 */
+		public method setCondition takes ARoutineCondition condition returns nothing
+			set this.m_condition = condition
+		endmethod
+
+		public method condition takes nothing returns ARoutineCondition
+			return this.m_condition
 		endmethod
 
 		public method setStartAction takes ARoutineAction startAction returns nothing
@@ -65,6 +80,17 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		// methods
+
+		/**
+		 * Called by .evaluate().
+		 * Usually calls \ref condition() via .evaluate().
+		 */
+		public stub method onCondition takes ARoutinePeriod period returns boolean
+			if (this.condition() != 0) then
+				return this.condition().evaluate(period)
+			endif
+			return true
+		endmethod
 
 		/**
 		 * Called by .evaluate().
@@ -106,11 +132,12 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		 * \param targetAction This action is either be called (if routine has target) when a unit reaches target rect or when the routine starts. It's called in \ref thistype.onTarget().
 		 * \return Returns a newly created routine.
 		 */
-		public static method create takes boolean hasTarget, boolean isLoop, ARoutineAction startAction, ARoutineAction endAction, ARoutineAction targetAction returns thistype
+		public static method create takes boolean hasTarget, boolean isLoop, ARoutineCondition condition, ARoutineAction startAction, ARoutineAction endAction, ARoutineAction targetAction returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
 			set this.m_hasTarget = hasTarget
 			set this.m_isLoop = isLoop
+			set this.m_condition = condition
 			set this.m_startAction = startAction
 			set this.m_endAction = endAction
 			set this.m_targetAction = targetAction
@@ -118,9 +145,6 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return this
 		endmethod
 	endstruct
-
-	/// \todo Should be contained by \ref ARoutinePeriod, vJass bug.
-	function interface ARoutinePeriodCondition takes ARoutinePeriod period returns boolean
 
 	/**
 	 * \brief Each unit can have multiple times for one single routine provided by this structure.
@@ -134,13 +158,14 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 	struct ARoutinePeriod
 		private static constant string hashTableKeyCurrent = "ARoutinePeriod:current"
 		private static constant string hashTableKeyNext = "ARoutinePeriod:next"
+		// static members
+		private static AIntegerList m_routinePeriods // required for manual time changes using SetFloatGameState(GAME_STATE_TIME_OF_DAY, <>) or SetTimeOfDay()
 		// dynamic members
 		private ARoutine m_routine
 		private unit m_unit
 		private real m_startTimeOfDay
 		private real m_endTimeOfDay
 		private rect m_targetRect
-		private ARoutinePeriodCondition m_condition
 		// members
 		private boolean m_isEnabled
 		private trigger m_startTrigger
@@ -194,17 +219,6 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return this.m_targetRect
 		endmethod
 
-		/**
-		 * \param condition Condition which is evaluated whenever routine period should be started automatically (in \ref onCondition()). It's only started if this condition returns true or is set to 0.
-		 */
-		public method setCondition takes ARoutinePeriodCondition condition returns nothing
-			set this.m_condition = condition
-		endmethod
-
-		public method condition takes nothing returns ARoutinePeriodCondition
-			return this.m_condition
-		endmethod
-
 		// members
 
 		public method isEnabled takes nothing returns boolean
@@ -212,17 +226,6 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		// methods
-
-		/**
-		 * Called by .evaluate().
-		 * Usually calls \ref condition() via .evaluate().
-		 */
-		public stub method onCondition takes nothing returns boolean
-			if (this.condition() != 0) then
-				return this.condition().evaluate(this)
-			endif
-			return true
-		endmethod
 
 		public static method current takes unit whichUnit returns thistype
 			return AHashTable.global().handleInteger(whichUnit, thistype.hashTableKeyCurrent)
@@ -261,15 +264,18 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return (not IsUnitPaused(this.unit()) and this.isEnabled())
 		endmethod
 
-		/**
-		 * \return Returns true if the current time of day is in the routine period.
-		 */
-		public method isInTime takes nothing returns boolean
-			local real timeOfDay = GetFloatGameState(GAME_STATE_TIME_OF_DAY)
+		public method isInSpecifiedTime takes real timeOfDay returns boolean
 			if (this.startTimeOfDay() > this.endTimeOfDay()) then // next day
 				return timeOfDay >= this.startTimeOfDay() or timeOfDay <= this.endTimeOfDay()
 			endif
 			return timeOfDay >= this.startTimeOfDay() and timeOfDay <= this.endTimeOfDay()
+		endmethod
+
+		/**
+		 * \return Returns true if the current time of day is in the routine period.
+		 */
+		public method isInTime takes nothing returns boolean
+			return this.isInSpecifiedTime(GetFloatGameState(GAME_STATE_TIME_OF_DAY))
 		endmethod
 
 		private method destroyTargetTrigger takes nothing returns nothing
@@ -320,7 +326,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		public method onStart takes nothing returns nothing
 			// start immediately
 			if (not IsUnitPaused(this.unit())) then
-				if (this.onCondition.evaluate()) then // optional condition
+				if (this.routine().onCondition.evaluate(this)) then // optional condition
 					if (thistype.hasNext(this.unit())) then
 						debug if (thistype.next(this.unit()) != this) then
 							debug call this.print("Warning: Overlaps with " + I2S(thistype.next(this.unit())))
@@ -330,7 +336,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					call thistype.setCurrent(this.unit(), this)
 					call this.routine().onStart.evaluate(this)
 					if (this.routine().hasTarget()) then
-						if (RectContainsUnit(this.m_targetRect, this.unit())) then
+						if (RectContainsUnit(this.m_targetRect, this.unit())) then // already at target
 							call this.routine().onTarget.evaluate(this)
 						else
 							call this.createTargetTrigger()
@@ -338,7 +344,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					endif
 				endif
 			// queue for paused unit that it will be started on unpausing the unit
-			elseif (this.onCondition.evaluate()) then // optional condition
+			elseif (this.routine().onCondition.evaluate(this)) then // optional condition
 				call thistype.setNext(this.unit(), this)
 			endif
 		endmethod
@@ -356,8 +362,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call AHashTable.global().setHandleInteger(this.m_startTrigger, "this", this)
 		endmethod
 
-		private static method triggerActionEnd takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+		private method end takes nothing returns nothing
 			if (thistype.current(this.unit()) == this) then
 				call thistype.clearCurrent(this.unit())
 			endif
@@ -372,6 +377,11 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			endif
 		endmethod
 
+		private static method triggerActionEnd takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			call this.end()
+		endmethod
+
 		private method createEndTrigger takes nothing returns nothing
 			set this.m_endTrigger = CreateTrigger()
 			call TriggerRegisterGameStateEvent(this.m_endTrigger, GAME_STATE_TIME_OF_DAY, EQUAL, this.m_endTimeOfDay)
@@ -382,13 +392,17 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		/// \note Expects to be in time (use \ref isInTime() to verify)!
 		private method resume takes nothing returns nothing
 			if (this.routine().hasTarget()) then
-				if (this.m_endTrigger != null) then
-					call EnableTrigger(this.m_endTrigger)
-					if (this.m_targetTrigger != null) then
+				call EnableTrigger(this.m_endTrigger)
+				if (this.m_targetTrigger != null) then
+					if (RectContainsUnit(this.m_targetRect, this.unit())) then // reached target
+						call this.routine().onTarget.evaluate(this)
+						call this.destroyTargetTrigger()
+					else // has to reach target
 						call EnableTrigger(this.m_targetTrigger)
+						call IssueRectOrder(this.unit(), "move", this.targetRect())
 					endif
-					call IssueRectOrder(this.unit(), "move", this.targetRect())
-				elseif (this.routine().isLoop()) then
+				// is still in target and loop action
+				elseif (RectContainsUnit(this.m_targetRect, this.unit()) and this.routine().isLoop()) then
 					call this.routine().onTarget.evaluate(this)
 				endif
 			endif
@@ -476,13 +490,15 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			set this.m_startTimeOfDay = startTimeOfDay
 			set this.m_endTimeOfDay = endTimeOfDay
 			set this.m_targetRect = targetRect
-			set this.m_condition = 0
 			// members
 			set this.m_isEnabled = true
 			set this.m_targetRegion = null
 
 			call this.createStartTrigger()
 			call this.createEndTrigger()
+
+			// static members
+			call thistype.m_routinePeriods.pushBack(this)
 
 			return this
 		endmethod
@@ -503,6 +519,12 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call AHashTable.global().destroyTrigger(this.m_endTrigger)
 			set this.m_endTrigger = null
 			call this.destroyTargetTrigger()
+			// static members
+			call thistype.m_routinePeriods.remove(this)
+		endmethod
+
+		private static method onInit takes nothing returns nothing
+			set thistype.m_routinePeriods = AIntegerList.create()
 		endmethod
 
 		public static method enableCurrent takes unit whichUnit returns boolean
@@ -550,6 +572,8 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				call this.resume()
 			// not in time, run next!
 			else
+				call this.end() // run onEnd() and clear current
+
 				if (not thistype.hasNext(this.unit())) then
 					return
 				endif
@@ -572,6 +596,41 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				call thistype.clearNext(whichUnit)
 			endif
 		endmethod
+
+		/**
+		 * \note hooks are run before the native funciton, so we can compare to old time of day
+		 * \note This functions takes quite some performance by iterating through all existing periods which are stored in a global list therefore.
+		 * \todo Maybe this behaviour should be optional.
+		 */
+		public static method hookSetFloatGameState takes fgamestate whichFloatGameState, real value returns nothing
+			local AIntegerListIterator iterator
+			local real currentTime
+			if (whichFloatGameState == GAME_STATE_TIME_OF_DAY) then
+				set currentTime = GetTimeOfDay()
+				if (value != currentTime) then // TODO not being printed, hook runs after changing time?
+					debug call Print("Hook for time of day with " + I2S(thistype.m_routinePeriods.size()) + " periods, new time " + R2S(value) + " and old time " + R2S(currentTime))
+					set iterator = thistype.m_routinePeriods.begin()
+					loop
+						exitwhen (not iterator.isValid())
+						if (thistype(iterator.data()).isEnabled()) then
+							if (thistype(iterator.data()).startTimeOfDay() != value and thistype(iterator.data()).endTimeOfDay() != value) then
+								if (thistype(iterator.data()).isInSpecifiedTime(value) and not thistype(iterator.data()).isInSpecifiedTime(currentTime)) then // is now in time but wasn't before
+									call thistype(iterator.data()).onStart()
+								elseif (not thistype(iterator.data()).isInSpecifiedTime(value) and thistype(iterator.data()).isInSpecifiedTime(currentTime)) then // was in time but isn't now
+									call thistype(iterator.data()).end()
+								endif
+							endif
+						endif
+						call iterator.next()
+					endloop
+					call iterator.destroy()
+				endif
+			endif
+		endmethod
+
+		public static method hookSetTimeOfDay takes real timeOfDay returns nothing
+			call thistype.hookSetFloatGameState(GAME_STATE_TIME_OF_DAY, timeOfDay)
+		endmethod
 	endstruct
 
 	/**
@@ -580,6 +639,10 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 	 */
 	hook PauseUnit ARoutinePeriod.hookPauseUnit
 	hook RemoveUnit ARoutinePeriod.hookRemoveUnit
+	/// \todo Maybe this behaviour should be optional.
+	hook SetFloatGameState ARoutinePeriod.hookSetFloatGameState
+	/// \todo Has to be set separately, vJass limitation (see manual).
+	hook SetTimeOfDay ARoutinePeriod.hookSetTimeOfDay
 
 	/**
 	 * Call this function in loop routine actions of type \ref ARoutineAction to
