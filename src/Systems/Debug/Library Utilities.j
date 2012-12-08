@@ -34,6 +34,7 @@
 * debugtd - Runs time of day debug.
 * debugtimer - Runs timer debugging hook function.
 * debugexecution - Runs execution speed test.
+* debugdesync - Runs desync test.
 */
 library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugString, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat
 
@@ -81,6 +82,7 @@ static if (DEBUG_MODE and A_DEBUG_NATIVES) then
 endif
 static if (DEBUG_MODE) then
 		call Print("debugexecution")
+		call Print("debugdesync")
 endif
 		set triggerPlayer = null
 	endfunction
@@ -457,6 +459,10 @@ static if (DEBUG_MODE) then
 	private function executionDebug takes ACheat cheat returns nothing
 		call AExecution()
 	endfunction
+
+	private function desyncDebug takes ACheat cheat returns nothing
+		call ADesyncDebug()
+	endfunction
 endif
 
 	function AInitUtilityCheats takes nothing returns nothing
@@ -507,6 +513,7 @@ endif
 
 static if (DEBUG_MODE) then
 		call ACheat.create("debugexecution", true, executionDebug)
+		call ACheat.create("debugdesync", true, desyncDebug)
 endif
 
 	endfunction

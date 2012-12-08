@@ -5,9 +5,9 @@ library ALibraryCoreEnvironmentTerrainFog
 	 * <a href="http://www.wc3jass.com/">source</a>
 	 * \todo Did not test desync yet.
 	 */
-	function ResetTerrainFogForPlayer takes player usedPlayer returns nothing
+	function ResetTerrainFogForPlayer takes player whichPlayer returns nothing
 		local player localPlayer = GetLocalPlayer()
-		if (localPlayer == usedPlayer) then
+		if (localPlayer == whichPlayer) then
 			call ResetTerrainFog()
 		endif
 		set localPlayer = null

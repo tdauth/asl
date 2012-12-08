@@ -115,7 +115,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		set localPlayer = null
 	endfunction
 
-
 	/**
 	 * Generic camera functions for data types with location property.
 	 * \sa SetCameraPosition()
@@ -235,82 +234,12 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 		call SetCameraBoundsForPlayer(whichPlayer, x, y, x, y, x, y, x, y)
 	endfunction
 
-	function ResetCameraBoundsToMapRectForPlayer takes player user returns nothing
+	function ResetCameraBoundsToMapRectForPlayer takes player whichPlayer returns nothing
 		local real minX = GetRectMinX(bj_mapInitialCameraBounds)
 		local real minY = GetRectMinY(bj_mapInitialCameraBounds)
 		local real maxX = GetRectMaxX(bj_mapInitialCameraBounds)
 		local real maxY = GetRectMaxY(bj_mapInitialCameraBounds)
-		call SetCameraBoundsForPlayer(user, minX, minY, minX, maxY, maxX, maxY, maxX, minY)
-	endfunction
-
-	/// \todo Desynchronization!
-	function GetCameraTargetPositionOfPlayer takes player user returns location
-		local player localPlayer = GetLocalPlayer()
-		local location cameraTargetPosition = null
-		/*
-		if (user == localPlayer) then
-			set cameraTargetPosition = GetCameraTargetPositionLoc()
-		endif
-		*/
-		set localPlayer = null
-		debug call PrintFunctionError("GetCameraTargetPositionOfPlayer", "Broken function!")
-		return cameraTargetPosition
-	endfunction
-
-	/// \todo Desynchronization!
-	function GetCameraTargetPositionXOfPlayer takes player user returns real
-		local player localPlayer = GetLocalPlayer()
-		local real value = 0.0
-		/*
-		if (user == localPlayer) then
-			set value = GetCameraTargetPositionX()
-		endif
-		*/
-		set localPlayer = null
-		debug call PrintFunctionError("GetCameraTargetPositionXOfPlayer", "Broken function!")
-		return value
-	endfunction
-
-	/// \todo Desynchronization!
-	function GetCameraTargetPositionYOfPlayer takes player user returns real
-		local player localPlayer = GetLocalPlayer()
-		local real value = 0.0
-		/*
-		if (user == localPlayer) then
-			set value = GetCameraTargetPositionY()
-		endif
-		*/
-		set localPlayer = null
-		debug call PrintFunctionError("GetCameraTargetPositionYOfPlayer", "Broken function!")
-		return value
-	endfunction
-
-	/// \todo Desynchronization!
-	function GetCameraTargetPositionZOfPlayer takes player user returns real
-		local player localPlayer = GetLocalPlayer()
-		local real value = 0.0
-		/*
-		if (user == localPlayer) then
-			set value = GetCameraTargetPositionZ()
-		endif
-		set localPlayer = null
-		*/
-		debug call PrintFunctionError("GetCameraTargetPositionZOfPlayer", "Broken function!")
-		return value
-	endfunction
-
-	/// \todo Desynchronization!
-	function GetCameraFieldOfPlayer takes player user, camerafield cameraField returns real
-		local player localPlayer = GetLocalPlayer()
-		local real cameraFieldValue = 0.0
-		/*
-		if (user == localPlayer) then
-			set cameraFieldValue = GetCameraField(cameraField)
-		endif
-		set localPlayer = null
-		*/
-		debug call PrintFunctionError("GetCameraFieldOfPlayer", "Broken function!")
-		return cameraFieldValue
+		call SetCameraBoundsForPlayer(whichPlayer, minX, minY, minX, maxY, maxX, maxY, maxX, minY)
 	endfunction
 
 endlibrary

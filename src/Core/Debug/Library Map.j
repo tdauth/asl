@@ -1,65 +1,78 @@
 library ALibraryCoreDebugMap requires AStructCoreDebugBenchmark, ALibraryCoreDebugMisc, ACoreString, AStructCoreGeneralMap
 
-	function AMapDebug takes nothing returns nothing
-static if (DEBUG_MODE) then
-		local AIntegerMap intMap = AIntegerMap.create()
-		local AIntegerMapIterator intIterator
-		local integer value
-		local AUnitMap unitMap = AUnitMap.create()
-		local AUnitMapIterator iterator
-		call Print("Integer map debug:")
-		// integer map
-		loop
-			exitwhen (intMap.size() == 100)
-			set value = GetRandomInt(0, 10000)
-			// make sure we do not use keys in use!
+	//! runtextmacro A_UNIT_TEST("AMapTest")
+		private integer i
+		private AIntegerMap map
+		private AIntegerMapIterator iterator
+
+		//! runtextmacro A_TEST_CASE_INIT()
+			set this.i = 0
+			set this.map = AIntegerMap.create()
+			set this.i = 0
 			loop
-				exitwhen (not intMap.contains(value))
-				set value = GetRandomInt(0, 10000)
+				exitwhen (this.map.size() == 100)
+				set this.map[this.i] = GetRandomInt(0, 10000)
 			endloop
-			set intMap[value] = GetRandomInt(0, 10000)
-		endloop
-		call Print("The following output should contain 100 elements in ascending order ordered by their keys!")
-		set intIterator = intMap.begin()
-		loop
-			exitwhen (intIterator == intMap.end())
-			call Print("Key: " + I2S(intIterator.key()) + ", Value: " + I2S(intIterator.data()))
-			call intIterator.next()
-		endloop
-		call intIterator.destroy()
+			set this.iterator = 0
+		//! runtextmacro A_TEST_CASE_INIT_END()
 
-		// unit map
-		call Print("Unit map debug:")
-		set unitMap["Test"] = null
-		call Print("Pushed back one element, map size " + I2S(unitMap.size()) + ".")
-		call Print("Unit name " + GetUnitName(unitMap["Test"]) + ".")
-		set iterator = unitMap.end()
-		call unitMap.erase(iterator)
-		call iterator.destroy()
-		call Print("Popped back one element, map size " + I2S(unitMap.size()) + ".")
+		//! runtextmacro A_TEST_CASE_CLEAN()
+			call this.map.destroy()
+			if (this.iterator != 0) then
+				call this.iterator.destroy()
+			endif
+		//! runtextmacro A_TEST_CASE_CLEAN_END()
 
-		// set new elements
-		loop
-			exitwhen(unitMap.size() == 10)
-			set unitMap["I" + I2S(unitMap.size() - 1)] = null
-		endloop
+		//! runtextmacro A_TEST()
+			//! runtextmacro A_TEST_CASE("Check Map")
 
-		call Print("Unit map size " + I2S(unitMap.size()) + " after setting new elements.")
+				//! runtextmacro A_CHECK("this.map.size() == 100")
 
-		// clean up
-		loop
-			exitwhen (unitMap.empty())
-			set iterator = unitMap.end()
-			call unitMap.erase(iterator)
-			call iterator.destroy()
-		endloop
+				set this.i = 0
+				loop
+					exitwhen (this.map.size() == 100)
+					//! runtextmacro A_REQUIRE_2("this.map[this.i] >= 0 and this.map[this.i] <= 10000", "Map values should be within 0 and 10000.")
+					set this.i = this.i + 1
+				//! runtextmacro A_TEST_CASE_END_LOOP()
 
-		call Print("Unit map size " + I2S(unitMap.size()) + " after cleaning up.")
+			//! runtextmacro A_TEST_CASE_END()
 
-		call unitMap.destroy()
+			//! runtextmacro A_TEST_CASE("Check Map Iterator")
 
-endif
+				set this.iterator = this.map.begin()
+
+				//! runtextmacro A_REQUIRE("this.iterator != 0")
+				//! runtextmacro A_REQUIRE("this.map.end() != 0")
+
+				set this.i = 0
+				loop
+					exitwhen (this.iterator == this.map.end())
+					//! runtextmacro A_CHECK("this.iterator.key() == this.i")
+					//! runtextmacro A_CHECK("this.iterator.data() >= 0 and this.iterator.data() <= 10000")
+					set this.i = this.i + 1
+					call this.iterator.next()
+				//! runtextmacro A_TEST_CASE_END_LOOP()
+
+			//! runtextmacro A_TEST_CASE_END()
+
+			//! runtextmacro A_TEST_CASE("Erase")
+
+				set this.iterator = this.map.begin()
+
+				//! runtextmacro A_REQUIRE("this.iterator != 0")
+
+				call this.map.erase(this.iterator)
+
+				//! runtextmacro A_REQUIRE("this.map.size() == 99")
+
+			//! runtextmacro A_TEST_CASE_END()
+		//! runtextmacro A_TEST_END()
+
+	//! runtextmacro A_UNIT_TEST_END()
+
+	function AMapDebug takes nothing returns nothing
+		//! runtextmacro A_TEST_RUN("AMapTest")
+		//! runtextmacro A_TEST_PRINT("AMapTest")
 	endfunction
-
 
 endlibrary

@@ -333,13 +333,13 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 
 					// got result
 					if (middle.key() == key) then
-						debug call Print("Got result!")
+						//debug call Print("Got result!")
 						return middle
 					// less than, changes to new bounds
 					elseif ($COMPARATOR$(key, middle.key())) then
 						// front > back
 						if (middle == front) then
-							debug call Print("No result!")
+							//debug call Print("No result!")
 							return 0
 						endif
 						set back = middle.previous()
@@ -347,12 +347,12 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 					else
 						// front > back
 						if (middle == back) then
-							debug call Print("No result!")
+							//debug call Print("No result!")
 							return 0
 						endif
 						set front = middle.next()
 					endif
-					debug call Print("Go on!")
+					//debug call Print("Go on!")
 				endloop
 
 				return 0
@@ -373,13 +373,13 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 
 					// got result
 					if (not $COMPARATOR$(middle.key(), key)) then
-						debug call Print("Got result!")
+						//debug call Print("Got result!")
 						return middle
 					// greater than, changes to new bounds
 					else
 						// front > back
 						if (middle == back) then
-							debug call Print("No result!")
+							//debug call Print("No result!")
 							return 0
 						endif
 						set front = middle.next()
@@ -394,7 +394,7 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			 */
 			private method upperBoundNodeInRange takes $NAME$Node front, $NAME$Node back, $KEYTYPE$ key returns $NAME$Node
 				local $NAME$Node middle
-				debug call Print("Find!")
+				//debug call Print("Find!")
 				if (this.empty()) then
 					return 0
 				endif
@@ -403,13 +403,13 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 					set middle = this.getMiddle(front, back)
 
 					if ($COMPARATOR$(key, middle.key())) then
-						debug call Print("Got result!")
+						//debug call Print("Got result!")
 						return middle
 					// greater than, changes to new bounds
 					else
 						// front > back
 						if (middle == back) then
-							debug call Print("No result!")
+							//debug call Print("No result!")
 							return 0
 						endif
 						set front = middle.next()
