@@ -1,5 +1,5 @@
 /// \author Tamino Dauth
-library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreGeneralPlayer
+library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreGeneralPlayer, ALibraryCoreStringMisc, ALibraryCoreStringPool
 
 	/// \todo Should be a part of \ref ACheat, vJass bug.
 	function interface ACheatOnCheatAction takes ACheat cheat returns nothing
@@ -7,12 +7,14 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 	/**
 	 * ACheat provides simple cheat functionality. Cheats are strings which has to be entered by one player into the chat and which are connected to a user-defined function called "action" using interface \ref ACheatOnCheatAction which is called via .execute() immediately after the cheat was sent to the screen.
 	 *
-	 * Some cheats might have arguments. For example, you could create a cheat  called "setlevel" which
+	 * Cheats may have arguments. For example, you could create a cheat  called "setlevel" which
 	 * expects a level value after the cheat expression.
 	 * Since you can create cheats without requiring exact match on entered chat string, arguments can be passed, as well.
 	 * Use \ref thistype#arguments() to get them in your custom function.
 	 *
 	 * \note Note that you can use \ref GetEventPlayerChatString() in the corresponding function to read the whole entered chat string.
+	 *
+	 * \note Unlike exact match in \ref TriggerRegisterPlayerChatEvent() this just works if there are only white space characters prior the cheat expression if \ref exactMatch() returns false. For example "    setlevel 3".
 	 */
 	struct ACheat
 		// construction members
@@ -30,48 +32,63 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 			return this.m_cheat
 		endmethod
 
+		/**
+		 * \note Unlike exact match in \ref TriggerRegisterPlayerChatEvent() this just works if there are only white space characters prior the cheat expression if \ref exactMatch() returns false. For example "    setlevel 3".
+		 */
 		public method exactMatch takes nothing returns boolean
 			return this.m_exactMatch
 		endmethod
 
 		// methods
 
+		private method findCheat takes string chatString returns integer
+			local integer index = FindString(chatString, this.cheat())
+			if (index == -1) then
+				return -1
+			endif
+			if ((index > 0) and (not IsStringWhiteSpace(SubString(chatString, 0, index)))) then
+				return -1
+			endif
+			return index
+		endmethod
+
 		/**
 		 * \return Returns the whole entered cheat without the cheat expression itself refered as cheat arguments.
 		 * For example, if player has entered "setlevel 3 all" and "setlevel" is the actual cheat this would return "3 all".
 		 * \note This doesn only works if \ref exactMatch() is false.
-		 * \todo Use more flexible tokenizer. What about cheats which do have some tokens before???
+		 * \note Unlike exact match in \ref TriggerRegisterPlayerChatEvent() this just works if there are only white space characters prior the cheat expression if \ref exactMatch() returns false. For example "    setlevel 3".
 		 */
 		public method argument takes nothing returns string
-			return SubString(GetEventPlayerChatString(), StringLength(this.m_cheat) + 1, StringLength(GetEventPlayerChatString()))
+			local integer index = this.findCheat(GetEventPlayerChatString())
+			if (index == -1) then
+				return ""
+			endif
+			return SubString(GetEventPlayerChatString(), index + StringLength(this.cheat()), StringLength(GetEventPlayerChatString()))
+		endmethod
+
+		private static method triggerConditionCheat takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return (this.findCheat(GetEventPlayerChatString()) != -1)
 		endmethod
 
 		private static method triggerActionCheat takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call this.m_action.execute(this)
-			set triggeringTrigger = null
 		endmethod
 
 		private method createCheatTrigger takes nothing returns nothing
 			local integer i
-			local player user
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_cheatTrigger = CreateTrigger()
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
-				set user = Player(i)
-				if (IsPlayerPlayingUser(user)) then
-					set triggerEvent = TriggerRegisterPlayerChatEvent(this.m_cheatTrigger, user, this.m_cheat, this.m_exactMatch)
-					set triggerEvent = null
+				if (IsPlayerPlayingUser(Player(i))) then
+					call TriggerRegisterPlayerChatEvent(this.m_cheatTrigger, Player(i), this.m_cheat, this.m_exactMatch)
 				endif
-				set user = null
 				set i = i + 1
 			endloop
-			set triggerAction = TriggerAddAction(this.m_cheatTrigger, function thistype.triggerActionCheat)
-			set triggerAction = null
+			call TriggerAddCondition(this.m_cheatTrigger, Condition(function thistype.triggerConditionCheat))
+			call TriggerAddAction(this.m_cheatTrigger, function thistype.triggerActionCheat)
 			call AHashTable.global().setHandleInteger(this.m_cheatTrigger, "this", this)
 		endmethod
 

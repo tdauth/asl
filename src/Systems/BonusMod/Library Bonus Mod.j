@@ -37,12 +37,13 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 		* this shall be 10, and the maximum bonus would be 511 while the minimum -512.
 		*/
 		private constant integer IxLimit = 10
+		private constant integer LastIndex = IxLimit - 1
 		/**
 		* If it is 10, the  hp, mana abilities will be: 10, 20,40,80,160,...
 		* If it is 1, they would be : 1,2,4,8,16,...
 		* If it is 5, they would be: 5,10,20,40,80,..
 		*/
-		private constant integer BonusBigValuesFactor = 10
+		constant integer A_BONUS_BIG_VALUES_FACTOR = 10
 		private integer array abilityId
 		private AHashTable hashTable
 	endglobals
@@ -51,20 +52,76 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 		return Index2D(x, y, IxLimit)
 	endfunction
 
-	private function BonusMax takes nothing returns integer
-		return (R2I(Pow(2, Ix(1, 0) - 1)) - 1)
+	/// \todo Should be private, vJass bug.
+	debug function CheckType takes integer bonusType returns boolean
+		debug if (bonusType < 0 or bonusType >= A_BONUS_MAX_TYPES) then
+			debug call Print("ABonusMod error: Wrong type, value " + I2S(bonusType) + ".")
+			debug return true
+		debug endif
+		debug return false
+	debug endfunction
+
+	/**
+	 * \return Returns true if bonus type \p bonusType uses big values/steps (10, 20,40,80,160,...).
+	 * Usually, this is true for \ref A_BONUS_TYPE_LIFE, \ref A_BONUS_TYPE_MANA and \ref A_BONUS_TYPE_SIGHT_RANGE.
+	 */
+	function ABonusIsBigValue takes integer bonusType returns boolean
+		debug if CheckType(bonusType) then
+			debug return false
+		debug endif
+		return (bonusType == A_BONUS_TYPE_LIFE or bonusType == A_BONUS_TYPE_MANA or bonusType == A_BONUS_TYPE_SIGHT_RANGE)
 	endfunction
 
-	private function BonusMin takes nothing returns integer
-	   return -R2I(Pow(2, Ix(1, 0) - 1))
+	/**
+	 * \return Returns the maximum, positive value which can be assigned using bonus type \p bonusType.
+	 * This should be 511 for usual types and 5110 for big value types.
+	 */
+	function ABonusMax takes integer bonusType returns integer
+		local integer max = 0
+		debug if CheckType(bonusType) then
+			debug return 0
+		debug endif
+		set max = (R2I(Pow(2, LastIndex)) - 1)
+		if (ABonusIsBigValue(bonusType)) then
+			return max * A_BONUS_BIG_VALUES_FACTOR
+		endif
+		return max
+	endfunction
+
+	/**
+	 * \return Returns the minimum, negative value which can be assigned using bonus type \p bonusType.
+	 * This should be -512 for usual types and -5120 for big value types.
+	 */
+	function ABonusMin takes integer bonusType returns integer
+		local integer min = 0
+		debug if CheckType(bonusType) then
+			debug return 0
+		debug endif
+		set min = -(R2I(Pow(2, LastIndex)) - 1)
+		if (ABonusIsBigValue(bonusType)) then
+			return min * A_BONUS_BIG_VALUES_FACTOR
+		endif
+		return min
 	endfunction
 
 	/// \todo Should be private, vJass bug.
-	debug function CheckType takes integer bonusType returns nothing
-		debug if (bonusType < 0 or bonusType >= A_BONUS_MAX_TYPES) then
-			debug call Print("ABonusMod error: Wrong type, value " + I2S(bonusType) + ".")
+	debug function CheckAmount takes integer bonusType, integer amount returns boolean
+		debug if (amount < ABonusMin(bonusType) or amount > ABonusMax(bonusType)) then
+			debug call Print("ABonusMod error: Wrong amount, value " + I2S(amount) + ".")
+			debug return true
 		debug endif
+		debug return false
 	debug endfunction
+
+	function ABonusModLabel takes integer bonusType returns string
+		return "ABonusMod" + I2S(bonusType)
+	endfunction
+
+	/*
+	function ABonusModLeftLabel takes integer bonusType returns string
+		return "ABonusModLeft" + I2S(bonusType)
+	endfunction
+	*/
 
 	/**
 	 * \param whichUnit Unit which is checked for bonus.
@@ -81,7 +138,7 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 	 */
 	function AUnitGetBonus takes unit whichUnit, integer bonusType returns integer
 		debug call CheckType(bonusType)
-		return hashTable.handleInteger(whichUnit, I2S(bonusType))
+		return hashTable.handleInteger(whichUnit, ABonusModLabel(bonusType))
 	endfunction
 
 	/**
@@ -104,27 +161,30 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 		local integer i
 		local integer bit = 0 /// \todo test for JassParser
 		local boolean negative
-		local boolean mana
-		debug if (whichUnit == null or bonusType < 0 or bonusType >= A_BONUS_MAX_TYPES) then
-			debug call CheckType(bonusType)
+		local boolean hadNoManaBefore
+		debug if (whichUnit == null or CheckType(bonusType) or CheckAmount(bonusType, amount)) then
 			debug return false
 		debug endif
+		// clear all stored data
 		if (amount == 0) then
-			call hashTable.removeHandleInteger(whichUnit, I2S(bonusType))
+			call hashTable.removeHandleInteger(whichUnit, ABonusModLabel(bonusType))
 
-			if (bonusType == A_BONUS_TYPE_LIFE and hashTable.hasHandleInteger(whichUnit, "ABonusModLeftLife")) then
-				call hashTable.removeHandleInteger(whichUnit, "ABonusModLeftLife")
-			elseif (bonusType == A_BONUS_TYPE_MANA and hashTable.hasHandleInteger(whichUnit, "ABonusModLeftMana")) then
-				call hashTable.removeHandleInteger(whichUnit, "ABonusModLeftMana")
+			/*
+			if (ABonusIsBigValue(bonusType) and hashTable.hasHandleInteger(whichUnit, ABonusModLeftLabel(bonusType))) then
+				call hashTable.removeHandleInteger(whichUnit, ABonusModLeftLabel(bonusType))
 			endif
-		elseif (bonusType == A_BONUS_TYPE_LIFE or bonusType == A_BONUS_TYPE_MANA or bonusType == A_BONUS_TYPE_SIGHT_RANGE) then
-			set amount = amount / BonusBigValuesFactor
-			call hashTable.setHandleInteger(whichUnit, I2S(bonusType), amount * BonusBigValuesFactor)
+			*/
+		// get smaller amount, store amount
+		elseif (ABonusIsBigValue(bonusType)) then
+			set amount = amount / A_BONUS_BIG_VALUES_FACTOR
+			call hashTable.setHandleInteger(whichUnit, ABonusModLabel(bonusType), amount * A_BONUS_BIG_VALUES_FACTOR)
+		// store amount
 		else
-			call hashTable.setHandleInteger(whichUnit, I2S(bonusType), amount)
+			call hashTable.setHandleInteger(whichUnit, ABonusModLabel(bonusType), amount)
 		endif
-		set mana = (bonusType == A_BONUS_TYPE_MANA) and (GetUnitState(whichUnit, UNIT_STATE_MAX_MANA) <= 0)
-		call UnitRemoveAbility(whichUnit, abilityId[Ix(bonusType, Ix(1, -1))])
+		// assign before adding abilities!
+		set hadNoManaBefore = (bonusType == A_BONUS_TYPE_MANA) and (GetUnitState(whichUnit, UNIT_STATE_MAX_MANA) <= 0)
+		call UnitRemoveAbility(whichUnit, abilityId[Ix(bonusType, LastIndex)])
 		if (amount < 0) then
 			set negative = true
 			set amount = bit + amount
@@ -132,11 +192,10 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 			set negative = false
 		endif
 
-		set i = Ix(1, -1)
+		// skip negative ability and add all positive
+		set i = LastIndex - 1
 		set bit = R2I(Pow(2, i))
 		loop
-			set bit = bit / 2
-			set i = i - 1
 			exitwhen (i < 0)
 			if (amount >= bit) then
 				set x = abilityId[Ix(bonusType, i)]
@@ -146,13 +205,19 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 			else
 				call UnitRemoveAbility(whichUnit, abilityId[Ix(bonusType, i)])
 			endif
+			set bit = bit / 2
+			set i = i - 1
 		endloop
+		// last ability contains negative amount
 		if (negative) then
-			set x = abilityId[Ix(bonusType, Ix(1, -1))]
+			set x = abilityId[Ix(bonusType, LastIndex)]
 			call UnitAddAbility(whichUnit, x)
 			call UnitMakeAbilityPermanent(whichUnit, true, x)
+		else
+			call UnitRemoveAbility(whichUnit, abilityId[Ix(bonusType, LastIndex)])
 		endif
-		if (mana and (GetUnitState(whichUnit, UNIT_STATE_MAX_MANA) > 0)) then
+		// has mana now
+		if (hadNoManaBefore and (GetUnitState(whichUnit, UNIT_STATE_MAX_MANA) > 0)) then
 			call SetUnitState(whichUnit, UNIT_STATE_MANA, 0)
 		endif
 		return amount == 0
@@ -173,7 +238,6 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 	 * \return Returns if bonus was cleared successfully.
 	 */
 	function AUnitClearBonus takes unit whichUnit, integer bonusType returns boolean
-		debug call CheckType(bonusType)
 		return AUnitSetBonus(whichUnit, bonusType, 0)
 	endfunction
 
@@ -193,33 +257,34 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 	 * \return Returns if bonus was added successfully.
 	 */
 	function AUnitAddBonus takes unit whichUnit, integer bonusType, integer amount returns boolean
+		/*
 		local integer x
 		local boolean b
 		local real l
-		local string s
+		local string s = null
 		local real min
 		local real mod
 		debug call CheckType(bonusType)
 		if (amount == 0) then
 			return true
 		endif
-		if (bonusType == A_BONUS_TYPE_LIFE or bonusType == A_BONUS_TYPE_MANA or bonusType == A_BONUS_TYPE_SIGHT_RANGE) then
+		if (ABonusIsBigValue(bonusType)) then
 			if (bonusType == A_BONUS_TYPE_LIFE) then
 				set l = GetWidgetLife(whichUnit)
-				set mod = ModuloReal(l, BonusBigValuesFactor)
+				set mod = ModuloReal(l, A_BONUS_BIG_VALUES_FACTOR)
 				set s = "ABonusModLeftLife"
 				if mod >= 1 then
 					set min = 0
 				else
-					set min = BonusBigValuesFactor
+					set min = A_BONUS_BIG_VALUES_FACTOR
 				endif
 			elseif (bonusType == A_BONUS_TYPE_MANA) then
 				set l = GetUnitState(whichUnit, UNIT_STATE_MAX_MANA)
-				set mod = ModuloReal(l, BonusBigValuesFactor)
+				set mod = ModuloReal(l, A_BONUS_BIG_VALUES_FACTOR)
 				set s = "ABonusModLeftMana"
 				set min = 0
 			endif
-			//set amount = (amount / BonusBigValuesFactor) * BonusBigValuesManaFactor /// \todo Baradé, ?!!
+			//set amount = (amount / A_BONUS_BIG_VALUES_FACTOR) * BonusBigValuesManaFactor /// \todo Baradé, ?!!
 			set amount = amount + hashTable.handleInteger(whichUnit, s)
 			if (amount < 0) and (l + amount < 1) then
 				set x = R2I(min + mod - l)
@@ -231,6 +296,7 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 			endif
 			return b
 		endif
+		*/
 		return AUnitSetBonus(whichUnit, bonusType, AUnitGetBonus(whichUnit, bonusType) + amount)
 	endfunction
 

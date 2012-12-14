@@ -24,7 +24,7 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 		local integer randomInteger = GetRandomInt(1, StringLength(charPool))
 		return SubString(charPool, randomInteger - 1, randomInteger)
 	endfunction
-	
+
 	/**
 	 * Generates a random alphabetical character.
 	 * \return Returns a random alphabetical character.
@@ -32,7 +32,7 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	function GetRandomAlphabeticalCharacter takes nothing returns string
 		return GetRandomCharacter(AAlphabeticalCharacters)
 	endfunction
-	
+
 	/**
 	 * Generates a random numeral character.
 	 * \return Returns a random numeral character.
@@ -40,7 +40,7 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	function GetRandomNumeralCharacter takes nothing returns string
 		return GetRandomCharacter(ANumeralCharacters)
 	endfunction
-	
+
 	/**
 	 * Generates a random special character.
 	 * \return Returns a random special character.
@@ -220,6 +220,64 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 			return true
 		endif
 		return false
+	endfunction
+
+	/**
+	 * Removes all characters which occur in \p charPool from \p whichString and returns the result.
+	 */
+	function StringRemoveCharPool takes string whichString, string charPool returns string
+		local integer i = 0
+		local string subString
+		local string result = ""
+		loop
+			exitwhen (i == StringLength(whichString))
+			set subString = SubString(whichString, i, i + 1)
+			if (not IsStringFromCharacterPool(subString, charPool)) then
+				set result = result + subString
+			endif
+			set i = i + 1
+		endloop
+		return result
+	endfunction
+
+	/**
+	 * Removes all white spaces to the first non-whitespace character, starting from left and returns the result.
+	 * \sa StringTrim(), StringTrimRight()
+	 */
+	function StringTrimLeft takes string whichString returns string
+		local integer i = 0
+		loop
+			exitwhen (i == StringLength(whichString))
+			if (not IsStringWhiteSpace(SubString(whichString, i, i + 1))) then
+				return SubString(whichString, i, StringLength(whichString))
+			endif
+			set i = i + 1
+		endloop
+		return null
+	endfunction
+
+	/**
+	 * Removes all white spaces to the first non-whitespace character, starting from right and returns the result.
+	 * \sa StringTrim(), StringTrimLeft()
+	 */
+	function StringTrimRight takes string whichString returns string
+		local integer i = StringLength(whichString)
+		loop
+			exitwhen (i <= 0)
+			if (not IsStringWhiteSpace(SubString(whichString, i - 1, i))) then
+				return SubString(whichString, 0, i)
+			endif
+			set i = i - 1
+		endloop
+		return null
+	endfunction
+
+	/**
+	 * Removes all whitespaces at string start and end and returns the result.
+	 * \sa StringTrimLeft(), StringTrimRight()
+	 */
+	function StringTrim takes string whichString returns string
+		return StringTrimRight(StringTrimLeft(whichString))
 	endfunction
 
 endlibrary

@@ -23,6 +23,7 @@
 * display - Displays or hides \ref Print() calls.
 * enable - Enables debug identifier(s).
 * disable - Disables debug identifier(s) or shows all disabled.
+* setdamage - Assigns damage to selected unit.
 * units - Shows all units.
 * items - Shows all items.
 * destructables - Shows all destructables.
@@ -35,8 +36,9 @@
 * debugtimer - Runs timer debugging hook function.
 * debugexecution - Runs execution speed test.
 * debugdesync - Runs desync test.
+* debugbonusmod - Runs Bonus Mod test.
 */
-library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugString, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat
+library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugString, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod
 
 	private function help takes ACheat cheat returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
@@ -63,6 +65,7 @@ static if (DEBUG_MODE) then
 		call Print("display")
 		call Print("enable <identifier>")
 		call Print("disable <identifier>")
+		call Print("setdamage <damage>")
 endif
 static if (DEBUG_MODE and A_DEBUG_HANDLES) then
 		call Print("units")
@@ -83,6 +86,7 @@ endif
 static if (DEBUG_MODE) then
 		call Print("debugexecution")
 		call Print("debugdesync")
+		call Print("debugbonusmod")
 endif
 		set triggerPlayer = null
 	endfunction
@@ -256,12 +260,14 @@ endif
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(triggerPlayer)
 		local real damageAmount
 		if (selectedUnit != null) then
-			set damageAmount = S2R(cheat.argument())
+			set damageAmount = S2R(StringTrim(cheat.argument()))
 			debug call Print("Damage amount is " + R2S(damageAmount) + ".")
 			if (damageAmount > 0.0) then
 				call UnitDamageTargetBJ(selectedUnit, selectedUnit, damageAmount, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_NORMAL)
 			endif
 			set selectedUnit = null
+		else
+			debug call Print(A_TEXT_EMPTY_SELECTION)
 		endif
 		set triggerPlayer = null
 	endfunction
@@ -406,6 +412,24 @@ static if (DEBUG_MODE) then
 endif
 	endfunction
 
+	private function setdamage takes ACheat cheat returns nothing
+		local string argument = cheat.argument()
+		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(GetTriggerPlayer())
+		local integer dmg
+		if (selectedUnit != null) then
+			if (StringLength(argument) == 0) then
+				call AUnitSetBonus(selectedUnit, A_BONUS_TYPE_DAMAGE, 0)
+				debug call Print(Format(A_TEXT_SET_DAMAGE).i(0).result())
+			else
+				set dmg = S2I(argument)
+				call AUnitSetBonus(selectedUnit, A_BONUS_TYPE_DAMAGE, dmg)
+				debug call Print(Format(A_TEXT_SET_DAMAGE).i(dmg).result())
+			endif
+		else
+			debug call Print(A_TEXT_EMPTY_SELECTION)
+		endif
+	endfunction
+
 static if (A_DEBUG_HANDLES) then
 	private function units takes ACheat cheat returns nothing
 		call ABenchmark.showUnits()
@@ -463,6 +487,10 @@ static if (DEBUG_MODE) then
 	private function desyncDebug takes ACheat cheat returns nothing
 		call ADesyncDebug()
 	endfunction
+
+	private function bonusModDebug takes ACheat cheat returns nothing
+		call ABonusModDebug()
+	endfunction
 endif
 
 	function AInitUtilityCheats takes nothing returns nothing
@@ -490,6 +518,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("display", true, display)
 		call ACheat.create("enable", false, enable)
 		call ACheat.create("disable", false, disable)
+		call ACheat.create("setdamage", false, setdamage)
 endif
 
 static if (A_DEBUG_HANDLES) then
@@ -514,6 +543,7 @@ endif
 static if (DEBUG_MODE) then
 		call ACheat.create("debugexecution", true, executionDebug)
 		call ACheat.create("debugdesync", true, desyncDebug)
+		call ACheat.create("debugbonusmod", true, bonusModDebug)
 endif
 
 	endfunction

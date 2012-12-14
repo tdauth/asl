@@ -68,6 +68,7 @@ native GetLocalizedHotkey takes string source returns integer
  * Examples:  R2SW(1.234, 7, 2) = "   1.23".  R2SW(1.234, 2, 5) = "1.23400".
  *
  * \fn SubString
+ * \param source Source string from which the sub string is taken.
  * \param start start char position, starts with 0: 0 = first char, \ref StringLength - 1 = last char
  * \param end last char position, starts with 1: 1 = first char, \ref StringLength = last char
  * \sa StringLength

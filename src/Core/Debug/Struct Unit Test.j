@@ -47,6 +47,7 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 	function myTestFunction takes nothing returns nothing
 		//! runtextmacro A_TEST_RUN("MyUnitTest")
 		//! runtextmacro A_TEST_PRINT("MyUnitTest")
+		//! runtextmacro A_TEST_CASE_PRINT("MyUnitTest", "TestCase0")
 	endfunction
 	 * \endcode
 	 * \ref A_UNIT_TEST creates a new unit test with the given name. As it declares a new struct internally
@@ -78,6 +79,10 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 		private string m_name
 		private boolean m_canceled
 
+		public method name takes nothing returns string
+			return this.m_name
+		endmethod
+
 		public method cancel takes nothing returns nothing
 			set this.m_canceled = true
 		endmethod
@@ -88,14 +93,19 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 
 		public method print takes nothing returns nothing
 			local integer i = 0
-			debug call Print(this.m_name + " with " + I2S(this.m_errors.size()) + ":")
-			loop
-				exitwhen (i == this.m_errors.size())
-				if (this.m_errors[i] != null) then
-					debug call Print("- " + this.m_errors[i])
-				endif
-				set i = i + 1
-			endloop
+			if (not this.m_errors.isEmpty()) then
+				debug call Print(this.m_name + " with " + I2S(this.m_errors.size()) + " errors:")
+				set i = 0
+				loop
+					exitwhen (i == this.m_errors.size())
+					if (this.m_errors[i] != null) then
+						debug call Print("- " + this.m_errors[i])
+					endif
+					set i = i + 1
+				endloop
+			else
+				debug call Print(this.m_name + " succeded.")
+			endif
 		endmethod
 
 		public method reset takes nothing returns nothing
@@ -152,6 +162,18 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 		/// \todo Should be protected, vJass bug.
 		public method current takes nothing returns ATestCase
 			return this.m_current
+		endmethod
+
+		public method findTestCase takes string name returns ATestCase
+			local integer i = 0
+			loop
+				exitwhen (i == this.testCases().size())
+				if (ATestCase(this.testCases()[i]).name() == name) then
+					return ATestCase(this.testCases()[i])
+				endif
+				set i = i + 1
+			endloop
+			return 0
 		endmethod
 
 		public method print takes nothing returns nothing
@@ -301,8 +323,13 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 	//! endtextmacro
 
 	//! textmacro A_TEST_CASE takes NAME
-		call this.setCurrent(ATestCase.create("$NAME$"))
-		call this.testCases().pushBack(this.current())
+		set testCase = ATestCase(this.findTestCase("$NAME$"))
+		if (testCase == 0) then
+			call this.setCurrent(ATestCase.create("$NAME$"))
+			call this.testCases().pushBack(this.current())
+		else
+			call this.setCurrent(testCase)
+		endif
 		call this.onInitializeTestCase()
 		loop
 	//! endtextmacro
@@ -353,6 +380,7 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 
 	//! textmacro A_TEST
 		public stub method run takes nothing returns nothing
+			local ATestCase testCase = 0
 			call super.run()
 			call this.onInitialize()
 	//! endtextmacro
@@ -373,6 +401,20 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 	//! textmacro A_TEST_PRINT takes NAME
 		if (AUnitTest.contains("$NAME$")) then
 			call AUnitTest.find("$NAME$").print()
+		debug else
+			debug call Print("Contains not $NAME$")
+		endif
+	//! endtextmacro
+
+	//! textmacro A_TEST_CASE_PRINT takes UNITTESTNAME, TESTCASENAME
+		if (AUnitTest.contains("$UNITTESTNAME$")) then
+			if (AUnitTest.find("$UNITTESTNAME$").findTestCase("$TESTCASENAME$") != 0) then
+				call AUnitTest.find("$UNITTESTNAME$").findTestCase("$TESTCASENAME$").print()
+			debug else
+				debug call Print("Contains not $TESTCASENAME$")
+			endif
+		debug else
+			debug call Print("Contains not $UNITTESTNAME$")
 		endif
 	//! endtextmacro
 

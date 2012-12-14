@@ -288,4 +288,69 @@ endif
 		return false
 	endfunction
 
+	/**
+	 * \return Returns \p number characters from \p whichString starting from left.
+	 */
+	function StringLeft takes string whichString, integer number returns string
+		set number = IMinBJ(number, StringLength(whichString))
+		return SubString(whichString, 0, number)
+	endfunction
+
+	/**
+	 * \return Returns \p number characters from \p whichString starting from right.
+	 */
+	function StringRight takes string whichString, integer number returns string
+		set number = IMinBJ(number, StringLength(whichString))
+		return SubString(whichString, StringLength(whichString) - number, StringLength(whichString))
+	endfunction
+
+	/**
+	 * Appends \p other to \p whichString and returns the result.
+	 * Could be useful for function variables.
+	 * \sa StringPrepend()
+	 */
+	function StringAppend takes string whichString, string other returns string
+		return whichString + other
+	endfunction
+
+	/**
+	 * Appends \p whichString to \p other and returns the result.
+	 * Could be useful for function variables.
+	 * \sa StringAppend()
+	 */
+	function StringPrepend takes string whichString, string other returns string
+		return other + whichString
+	endfunction
+
+	/**
+	 * Concatenates string \p whichString \p number times and returns the result.
+	 */
+	function StringRepeated takes string whichString, integer number returns string
+		local string result = ""
+		local integer i = 0
+		loop
+			exitwhen (i == number)
+			set result = result + whichString
+			set i = i + 1
+		endloop
+		return result
+	endfunction
+
+	/// Appends ' ' characters if size is larger than original size.
+	function StringResize takes string whichString, integer size returns string
+		set size = IMaxBJ(0, size)
+		if (size < StringLength(whichString)) then
+			return SubString(whichString, 0, size)
+		elseif (size > StringLength(whichString)) then
+			return whichString + StringRepeated(" ", size - StringLength(whichString))
+		endif
+		return whichString
+	endfunction
+
+	/// Truncates string at the given position.
+	function StringTruncate takes string whichString, integer position returns string
+		set position = IMaxBJ(0, position)
+		return SubString(whichString, 0, position + 1)
+	endfunction
+
 endlibrary

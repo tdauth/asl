@@ -41,4 +41,5 @@ globals
 	debug constant string A_TEXT_ENABLE_IDENTIFIER_ERROR = "Identifier \"%1%\" is not disabled."
 	debug constant string A_TEXT_DISABLE_IDENTIFIER = "Disabling identifier \"%1%\"."
 	debug constant string A_TEXT_DISABLE_IDENTIFIER_ERROR = "Identifier \"%1%\" is not enabled."
+	debug constant string A_TEXT_SET_DAMAGE = "Assigned damage of %1%."
 endglobals

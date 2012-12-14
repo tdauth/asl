@@ -1,4 +1,4 @@
-library ALibraryCoreDebugMap requires AStructCoreDebugBenchmark, ALibraryCoreDebugMisc, ACoreString, AStructCoreGeneralMap
+library ALibraryCoreDebugMap requires AStructCoreDebugBenchmark, AStructCoreDebugUnitTest, ALibraryCoreDebugMisc, ACoreString, AStructCoreGeneralMap
 
 	//! runtextmacro A_UNIT_TEST("AMapTest")
 		private integer i

@@ -30,6 +30,20 @@ Test
 * Test new Unit Test framework.
 * Change tests for containers, strings and time of day functions to unit tests.
 * Move all tests into new directory "Test"
+*	//! runtextmacro A_TEST_RUN("ABonusModTest")
+	//! runtextmacro A_TEST_PRINT("ABonusModTest") doesn't print when run the first time
+* Test new string functions/change string test to unit test:
+	function StringLeft takes string whichString, integer number returns string
+	function StringRight takes string whichString, integer number returns string
+	function StringAppend takes string whichString, string other returns string
+	function StringPrepend takes string whichString, string other returns string
+	function StringRepeated takes string whichString, integer number returns string
+	function StringResize takes string whichString, integer size returns string
+	function StringTruncate takes string whichString, integer position returns string
+	function StringRemoveCharPool takes string whichString, string charPool returns string
+	function StringTrim takes string whichString returns string
+	function StringTrimLeft takes string whichString returns string
+	function StringTrimRight takes string whichString returns string
 
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706
