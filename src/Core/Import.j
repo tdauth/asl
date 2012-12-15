@@ -6,9 +6,6 @@ endif
 //! import "Core/General/Import.j"
 //! import "Core/Interface/Import.j"
 //! import "Core/Maths/Import.j"
-static if (A_NET) then
-///! import "Core/Net/Import.j"
-endif
 //! import "Core/String/Import.j"
 
 /**
@@ -18,5 +15,5 @@ endif
  * \sa ASystems
  * \endif
  */
-library ACore requires ACoreAi, optional ACoreDebug, ACoreEnvironment, ACoreGeneral, ACoreInterface, ACoreMaths, optional ACoreNet, ACoreString
+library ACore requires ACoreAi, optional ACoreDebug, ACoreEnvironment, ACoreGeneral, ACoreInterface, ACoreMaths, ACoreString
 endlibrary

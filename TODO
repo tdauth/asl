@@ -6,14 +6,14 @@ static if (DEBUG_MODE) then
 endif
 Test
 * test A_DEBUG_NATIVES
-* test ResetTerrainFogForPlayer() for desync
+* DONE: test ResetTerrainFogForPlayer() for desync
 * fix IsUnitInvulnerable()
 * test ALibraryCoreInterfaceCamera functions for desync
 * test AKillQuestItem.
 * ShowBashTextTagForPlayer() needs proper colors?
 * Fix CreateImageForPlayer()
-* Test SetUnitVertexColourForPlayer()
-* Fix ShowUnitForPlayer()'s desync
+* DONE: Test SetUnitVertexColourForPlayer()
+* DONE: Fix ShowUnitForPlayer()'s desync
 * Revise AIndicator.
 * Improve merge() of A_VECTOR.
 * TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.

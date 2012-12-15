@@ -3,7 +3,6 @@ library ALibraryCoreEnvironmentTerrainFog
 	/**
 	 * \author dataangel
 	 * <a href="http://www.wc3jass.com/">source</a>
-	 * \todo Did not test desync yet.
 	 */
 	function ResetTerrainFogForPlayer takes player whichPlayer returns nothing
 		local player localPlayer = GetLocalPlayer()

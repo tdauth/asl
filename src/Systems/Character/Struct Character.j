@@ -427,7 +427,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			set i = 0
 			loop
 				exitwhen (i == this.m_spells.size())
-				call ASpell(this.m_spells[i]).store(cache, missionKey, "Spell" + I2S(i))
+				call ASpell(this.m_spells[i]).store.evaluate(cache, missionKey, "Spell" + I2S(i))
 				set i = i + 1
 			endloop
 		endmethod

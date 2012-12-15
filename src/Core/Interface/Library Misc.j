@@ -258,13 +258,14 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 	endfunction
 
 	/**
+	 * Shows or hides \p whichUnit for player \p whichPlayer.
+	 * \param show If this value is true, unit is shown, otherwise it's hidden.
 	 * \author Tamino Dauth
-	 * \todo Desync.
 	 */
 	function ShowUnitForPlayer takes player whichPlayer, unit whichUnit, boolean show returns nothing
-		//if (whichPlayer == GetLocalPlayer()) then
+		if (whichPlayer == GetLocalPlayer()) then
 			call ShowUnit(whichUnit, show)
-		//endif
+		endif
 	endfunction
 
 	globals

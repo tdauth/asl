@@ -412,7 +412,7 @@ endif
 			call ResetToGameCameraForPlayer(this.gui().player(), 0.0)
 			call FogModifierStop(this.m_visibilityModifier)
 			call FogModifierStart(this.m_blackMaskModifier)
-			call this.m_gui.loadPlayerData() /// \todo DESYNC
+			call this.m_gui.loadPlayerData()
 			call this.hideTooltip()
 			//widgets
 			set i = 0

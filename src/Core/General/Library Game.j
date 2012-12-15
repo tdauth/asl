@@ -84,7 +84,7 @@ library ALibraryCoreGeneralGame requires optional ALibraryCoreDebugMisc
 	endfunction
 
 	/**
-	 * With the new change to the function, it no longer needs to be synchronized however you should 
+	 * With the new change to the function, it no longer needs to be synchronized however you should
 	 * still initialize it like this because it has been reported that selecting units +
 	 * triggersleepaction can cause desyncs
 	 * \author PandaMine, Captain Griffen
@@ -97,25 +97,25 @@ library ALibraryCoreGeneralGame requires optional ALibraryCoreDebugMisc
 		call EnableUserControl(true)
 		return result
 	endfunction
-    
+
 	globals
 		private trigger preventSaveTrigger
 		private timer preventSaveTimer
 		private dialog preventSaveDialog
 	endglobals
-    
+
 	private function Exit takes nothing returns nothing
 		call DialogDisplay(GetLocalPlayer(), preventSaveDialog, false)
 	endfunction
-	
+
 	private function StopSave takes nothing returns nothing
 		call DialogDisplay(GetLocalPlayer(), preventSaveDialog, true)
 		call TimerStart(preventSaveTimer, 0.00, false, function Exit)
 	endfunction
-    
+
 	/**
 	 * Note that this shows and hides a dialog to all players.
-	 * <a href="http://www.wc3c.net/showthread.php?p=1111606#post1111606">Wc3C.net thread</a> 
+	 * <a href="http://www.wc3c.net/showthread.php?p=1111606#post1111606">Wc3C.net thread</a>
 	 * \author
 	 * TriggerHappy187
 	 * Tamino Dauth

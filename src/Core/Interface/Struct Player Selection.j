@@ -34,7 +34,7 @@ library AStructCoreInterfacePlayerSelection requires optional ALibraryCoreDebugM
 		endmethod
 
 		public method restore takes nothing returns nothing
-			call this.m_group.selectOnlyForPlayer(this.m_player) /// \todo Desync for player?
+			call this.m_group.selectOnlyForPlayer(this.m_player)
 		endmethod
 
 		public static method create takes player user returns thistype

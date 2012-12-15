@@ -39,7 +39,6 @@ globals
 	constant boolean A_SYSTEMS = true
 	constant boolean A_DEBUG_HANDLES = false // not usable yet!
 	constant boolean A_DEBUG_NATIVES = false
-	constant boolean A_NET = false // not usable yet!
 	constant boolean A_FPS_MOVEMENT = false // not usable yet!
 	constant real A_MAX_COLLISION_SIZE = 500.0 // used by function GetUnitCollisionSize
 	constant integer A_MAX_COLLISION_SIZE_ITERATIONS = 10 // used by function GetUnitCollisionSize
@@ -100,4 +99,4 @@ You have to import file "Systems/BonusMod/Creation Bonus Mod.j" once to create a
 -- Optimization:
 Please use Wc3mapoptimizer (http://www.wc3c.net/showthread.php?t=79326) to decrease your map script size and increase the script's performance.
 
-Tamino Dauth <tamino@cdauth.eu>, 2011-11-22
+Tamino Dauth <tamino@cdauth.eu>, 2012-12-15
