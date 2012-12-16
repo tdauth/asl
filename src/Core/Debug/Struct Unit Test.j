@@ -280,6 +280,11 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 		endmethod
 	endstruct
 
+	/*
+	 TODO printing code won't work with string parameters:
+	 http://www.wc3c.net/showpost.php?p=1136328&postcount=178
+	*/
+
 	//! textmacro A_CHECK takes CONDITION
 		if (not ($CONDITION$)) then
 			call this.current().addError(null)

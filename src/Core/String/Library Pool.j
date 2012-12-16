@@ -9,10 +9,10 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 		constant string ANumeralCharacters = "0123456789"
 		constant string ASpecialCharacters = "!§$%&/()=?+-/*,.-;:_~#'|<>äöüß"
 		constant string AWhiteSpaceCharacters = " \t"
-		constant string ASignatureCharacters = "+-"
+		constant string ASignCharacters = "+-"
 		constant string ABinaryCharacters = "01"
 		constant string AOctalCharacters = "01234567"
-		constant string AHexadecimalCharacters = "0123456789ABCDEF"
+		constant string AHexadecimalCharacters = "0123456789ABCDEFabcdef"
 	endglobals
 
 	/**
@@ -55,6 +55,14 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	 */
 	function GetRandomWhiteSpaceCharacter takes nothing returns string
 		return GetRandomCharacter(AWhiteSpaceCharacters)
+	endfunction
+
+	/**
+	 * Generates a random sign character.
+	 * \return Returns a random sign character.
+	 */
+	function GetRandomSignCharacter takes nothing returns string
+		return GetRandomCharacter(ASignCharacters)
 	endfunction
 
 	/**
@@ -149,8 +157,8 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	 * \param whichString Checked string.
 	 * \return Returns true if string \p whichString is a signature.
 	 */
-	function IsStringSignature takes string whichString returns boolean
-		return IsStringFromCharacterPool(whichString, ASignatureCharacters)
+	function IsStringSign takes string whichString returns boolean
+		return IsStringFromCharacterPool(whichString, ASignCharacters)
 	endfunction
 
 	/**
@@ -159,67 +167,138 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	 * \return Returns true if string \p which is an integer.
 	 */
 	function IsStringInteger takes string whichString returns boolean
-		if (IsStringSignature(SubString(whichString, 0, 1))) then
-			if (StringLength(whichString) > 1) then
-				return IsStringNumeral(SubString(whichString, 1, StringLength(whichString)))
-			endif
+		local integer prefixLength = IMinBJ(StringLength(whichString), 1)
+		local string prefix = SubString(whichString, 0, prefixLength)
+		if ((not IsStringNumeral(prefix)) and ((not IsStringSign(prefix)) or StringLength(whichString) == 1)) then
 			return false
 		endif
-		return IsStringNumeral(SubString(whichString, 0, StringLength(whichString)))
+		return IsStringNumeral(SubString(whichString, prefixLength, StringLength(whichString)))
 	endfunction
 
 	/**
-	* Bei den folgenden Zahlentypen muss die Zahl immer mit einer bestimmten Ziffernfolge beginnen.
-	* Ansonsten wird sie NICHT als eine solche Zahl erkannt.
-	* Dies ist eine Anlehnung an C++ und wahrscheinlich auch an vielen andere Sprachen:
-	* - 0% binär
-	* - 0 oktal
-	* - 0x hexadezimal
-	*/
-
-	/**
 	 * Checks if string \p whichString is binary.
+	 * Binary number do not have any kind of prefix but can have signs:
+	 * +101
+	 * 101
+	 * -111
 	 * \param whichString Checked string.
 	 * \return Returns true if string \p whichString is binary.
+	 * \note All but octal numbers mustn't start with 0 if they have no prefix, except the value itself is 0 (0101 is invalid, 101 is not - binary numbers have no prefixes)!
 	 */
 	function IsStringBinary takes string whichString returns boolean
-		if (StringLength(whichString) >= 2 and SubString(whichString, 0, 2) == "0%") then
-			if (StringLength(whichString) > 2) then
-				return IsStringFromCharacterPool(SubString(whichString, 2, StringLength(whichString)), ABinaryCharacters)
-			endif
+		local integer prefixLength
+		local string prefix
+		local string pool
+		if (StringLength(whichString) == 0) then
 			return false
 		endif
-		return false
+		set prefixLength = IMinBJ(StringLength(whichString), 1)
+		set prefix = SubString(whichString, 0, prefixLength)
+		set pool = ABinaryCharacters
+		if (not IsStringFromCharacterPool(prefix, pool)) then
+			if (IsStringSign(prefix)) then
+				if (StringLength(whichString) == 1) then // is only sign
+					return false
+				endif
+			else
+				return false
+			endif
+		endif
+
+		if (StringLength(whichString) >= prefixLength + 1 and SubString(whichString, prefixLength, prefixLength + 1) == "0") then // starts with 0 but is not 0, would be octal
+			return false
+		endif
+
+		return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
 	endfunction
 
 	/**
 	 * Checks if string \p whichString is octal.
+	 * Octal numbers can have prefixes of 0 and signs:
+	 * 123
+	 * 02324
+	 * -234
+	 * -01323
+	 * +243
+	 * +0341
 	 * \param whichString Checked string.
 	 * \return Returns true if string \p whichString is octal.
+	 * \note All but octal numbers mustn't start with 0 if they have no prefix, except the value itself is 0 (0A32 is invalid, 0x0A32 is not)!
 	 */
 	function IsStringOctal takes string whichString returns boolean
-		if (StringLength(whichString) >= 1 and SubString(whichString, 0, 1) == "0") then
-			if (StringLength(whichString) > 1) then
-				return IsStringFromCharacterPool(SubString(whichString, 1, StringLength(whichString)), AOctalCharacters)
-			endif
+		local integer prefixLength
+		local string prefix
+		local boolean checkPrefix
+		local string pool
+		if (StringLength(whichString) == 0) then
 			return false
 		endif
-		return false
+		set prefixLength = IMinBJ(StringLength(whichString), 1)
+		set prefix = SubString(whichString, 0, prefixLength)
+		set checkPrefix = false
+		set pool = AOctalCharacters
+		if (not IsStringFromCharacterPool(prefix, pool)) then
+			if (IsStringSign(prefix)) then
+				if (StringLength(whichString) == 1) then // is only sign
+					return false
+				endif
+			else
+				return false
+			endif
+		endif
+
+		return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
 	endfunction
 
 	/**
 	 * Checks if string \p whichString is hexadecimal.
+	 * Hexadecimal numbers can have prefixes of 0x and signs:
+	 * 0xAF31
+	 * -0xA320
+	 * +0xFC31
+	 * FC21
+	 * -FC34521
+	 * +234
 	 * \param whichString Checked string.
 	 * \return Returns true if string \p whichString is hexadecimal.
+	 * \note All but octal numbers mustn't start with 0 if they have no prefix, except the value itself is 0 (0A32 is invalid, 0x0A32 is not)!
 	 */
 	function IsStringHexadecimal takes string whichString returns boolean
-		if (StringLength(whichString) >= 2 and SubString(whichString, 0, 2) == "0x") then
-			if (StringLength(whichString) > 2) then
-				return IsStringFromCharacterPool(SubString(whichString, 2, StringLength(whichString)), AHexadecimalCharacters)
-			endif
-			return true
+		local integer prefixLength
+		local string prefix
+		local boolean checkPrefix
+		local string pool
+		if (StringLength(whichString) == 0) then
+			return false
 		endif
-		return false
+		set prefixLength = IMinBJ(StringLength(whichString), 1)
+		set prefix = SubString(whichString, 0, prefixLength)
+		set checkPrefix = false
+		set pool = AHexadecimalCharacters
+		if (not IsStringFromCharacterPool(prefix, pool)) then
+			if (IsStringSign(prefix)) then
+				if (StringLength(whichString) == 1) then // is only sign
+					return false
+				endif
+				set prefixLength = IMinBJ(StringLength(whichString), 3)
+				set prefix = SubString(whichString, 1, prefixLength)
+				set checkPrefix = not IsStringFromCharacterPool(prefix, pool)
+			else
+				set prefixLength = IMinBJ(StringLength(whichString), 2)
+				set prefix = SubString(whichString, 0, prefixLength)
+				set checkPrefix = not IsStringFromCharacterPool(prefix, pool)
+			endif
+		endif
+
+		if (checkPrefix and (prefix != "0x" or StringLength(whichString) == prefixLength)) then // is not prefix or stops after prefix
+			return false
+		endif
+
+		if (not checkPrefix and StringLength(whichString) >= prefixLength + 1 and SubString(whichString, prefixLength, prefixLength + 1) == "0") then // starts with 0 but is not 0 and without prefix, would be octal
+			return false
+		endif
+
+		return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
 	endfunction
 
 	/**

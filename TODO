@@ -8,7 +8,7 @@ Test
 * test A_DEBUG_NATIVES
 * DONE: test ResetTerrainFogForPlayer() for desync
 * fix IsUnitInvulnerable()
-* test ALibraryCoreInterfaceCamera functions for desync
+* DONE: test ALibraryCoreInterfaceCamera functions for desync
 * test AKillQuestItem.
 * ShowBashTextTagForPlayer() needs proper colors?
 * Fix CreateImageForPlayer()
@@ -16,7 +16,7 @@ Test
 * DONE: Fix ShowUnitForPlayer()'s desync
 * Revise AIndicator.
 * Improve merge() of A_VECTOR.
-* TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
+* DONE (works, dropped life and mana extra storage): TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
 * Fix A_MAP.
 * DONE: Fix ARoutine revision.
 * DONE: Test ARoutine revision.

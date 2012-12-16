@@ -23,8 +23,9 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 
 	/**
 	 * Converts hexadecimal RGB string \p colorString to its matching player color.
+	 * It doesn't match case, so you can pass strings like "fF0000" and still get valid \ref PLAYER_COLOR_RED.
 	 * If \p colorString is invalid it returns null.
-	 * \sa PlayerColorToString, GetPlayerColorValue, GetPlayerColorRed, GetPlayerColorGreen, GetPlayerColorBlue
+	 * \sa PlayerColorToString(), GetPlayerColorValue(), GetPlayerColorRed(), GetPlayerColorGreen(), GetPlayerColorBlue()
 	 */
 	function StringToPlayerColor takes string colorString returns playercolor
 		set colorString = StringCase(colorString, false)
@@ -32,7 +33,7 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 			return PLAYER_COLOR_RED
 		elseif (colorString == "0000ff") then
 			return PLAYER_COLOR_BLUE
-		elseif (colorString == "1CB619") then
+		elseif (colorString == "1cb619") then
 			return PLAYER_COLOR_CYAN
 		elseif (colorString == "800080") then
 			return PLAYER_COLOR_PURPLE
@@ -42,9 +43,9 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 			return PLAYER_COLOR_ORANGE
 		elseif (colorString == "00ff00") then
 			return PLAYER_COLOR_GREEN
-		elseif (colorString == "ff80C0") then
+		elseif (colorString == "ff80c0") then
 			return PLAYER_COLOR_PINK
-		elseif (colorString == "C0C0C0") then
+		elseif (colorString == "c0c0c0") then
 			return PLAYER_COLOR_LIGHT_GRAY
 		elseif (colorString == "0080ff") then
 			return PLAYER_COLOR_LIGHT_BLUE
@@ -57,9 +58,9 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
-	* Converts player color \p playerColor to its matching string in hexadecimal RGB form.
+	* Converts player color \p playerColor to its matching string in hexadecimal RGB form with lower case letters.
 	* If \p playerColor is invalid it returns "ffffff".
-	* \sa StringToPlayerColor, GetPlayerColorValue, GetPlayerColorRed, GetPlayerColorGreen, GetPlayerColorBlue
+	* \sa StringToPlayerColor(), GetPlayerColorValue(), GetPlayerColorRed(), GetPlayerColorGreen(), GetPlayerColorBlue()
 	*/
 	function PlayerColorToString takes playercolor playerColor returns string
 		if (playerColor == PLAYER_COLOR_RED) then
@@ -67,7 +68,7 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 		elseif (playerColor == PLAYER_COLOR_BLUE) then
 			return "0000ff"
 		elseif (playerColor == PLAYER_COLOR_CYAN) then
-			return "1CB619"
+			return "1cb619"
 		elseif (playerColor == PLAYER_COLOR_PURPLE) then
 			return "800080"
 		elseif (playerColor == PLAYER_COLOR_YELLOW) then
@@ -130,9 +131,9 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	 * Usually World Editor's trigger editor replaces all function usages automatically by string source identifiers and adds strings to "war3map.wts" file.
 	 * \note Shortcuts and tooltips can be customized in file "CustomKeys.txt" in Warcraft 3 installation directory.
 	 * If you use source code you'll have to use tools like vjasstrans to generate that file.
-	 * \sa GetLocalizedString
+	 * \sa GetLocalizedString()
 	 * \sa trp()
-	 * \sa sc
+	 * \sa sc()
 	 * \sa AFormat
 	 */
 	function tr takes string source returns string
@@ -147,7 +148,7 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	 * local integer eggs = GetRandomInt(0, 100)
 	 * call Print(Format(trp("Find %1% egg", "Find %1% eggs", eggs)).i(eggs).result())
 	 * \endcode
-	 * \sa GetLocalizedString, tr, sc, AFormat
+	 * \sa GetLocalizedString(), tr(), sc(), AFormat
 	 */
 	function trp takes string singularSource, string pluralSource, integer count returns string
 		if (count == 1) then
@@ -160,7 +161,7 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	 * Same function as \ref GetLocalizedHotkey with shorted identifier.
 	 * \return Returns localized shortcut.
 	 * \note Shortcuts and tooltips can be customized in file "CustomKeys.txt" in Warcraft 3 installation directory.
-	 * \sa GetLocalizedString, trp, sc, AFormat
+	 * \sa GetLocalizedString(), trp(), sc(), AFormat
 	 */
 	function sc takes string source returns integer
 		return GetLocalizedHotkey(source)
@@ -241,13 +242,13 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	 * Allows you to create string-formatting function for any type.
 	 * Usage example:
 	 * \code
-	 * StringArg(StringArg(IntegerArg("You're %i years old and you're called %s. Besides you're %s.", 0), "Peter"), "gay")
+	 * StringArg(StringArg(IntegerArg("You're %i years old and you're called %s. Besides you're %s.", 0), "Peter"), "nice")
 	 * \endcode
 	 * Compared to AFormat usage:
 	 * \code
-	 * Format("You're %1% years old and you're called %2%. Besides you're %3%.").i(0).s("Peter").("gay").result()
+	 * Format("You're %1% years old and you're called %2%. Besides you're %3%.").i(0).s("Peter").("nice").result()
 	 * \endcode
-	 * \sa AFormat, Format, String
+	 * \sa AFormat, Format(), String()
 	 */
 	//! textmacro AStringArgumentMacro takes NAME, TYPE, TYPECHARS, CONVERSION, PARAMETERS
 		function $NAME$ takes string whichString, $TYPE$ value $PARAMETERS$ returns string
