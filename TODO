@@ -8,26 +8,26 @@ Test
 * test A_DEBUG_NATIVES
 * DONE: test ResetTerrainFogForPlayer() for desync
 * fix IsUnitInvulnerable()
-* DONE: test ALibraryCoreInterfaceCamera functions for desync
 * test AKillQuestItem.
 * ShowBashTextTagForPlayer() needs proper colors?
 * Fix CreateImageForPlayer()
-* DONE: Test SetUnitVertexColourForPlayer()
-* DONE: Fix ShowUnitForPlayer()'s desync
 * Revise AIndicator.
 * Improve merge() of A_VECTOR.
-* DONE (works, dropped life and mana extra storage): TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
 * Fix A_MAP.
+* No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
+* DONE: test ALibraryCoreInterfaceCamera functions for desync
+* DONE: Test SetUnitVertexColourForPlayer()
+* DONE: Fix ShowUnitForPlayer()'s desync
+* DONE (works, dropped life and mana extra storage): TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
 * DONE: Fix ARoutine revision.
 * DONE: Test ARoutine revision.
-* No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
 * DONE: AMainWindow:
 	Should be dynamic members:
 	m_useShortcuts
 	private boolean m_useSpecialShortcuts
 	private integer m_shortcut
 * DONE: ARoutine: Maybe hook SetTimeOfDay etc. to get manual time changes and end routine periods?
-* Test new Unit Test framework.
+* DONE: Test new Unit Test framework.
 * Change tests for containers, strings and time of day functions to unit tests.
 * Move all tests into new directory "Test"
 *	//! runtextmacro A_TEST_RUN("ABonusModTest")
@@ -44,6 +44,7 @@ Test
 	function StringTrim takes string whichString returns string
 	function StringTrimLeft takes string whichString returns string
 	function StringTrimRight takes string whichString returns string
+* Revise MoveSubString() and MoveString() AND add unit tests.
 
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706

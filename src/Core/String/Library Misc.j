@@ -7,12 +7,12 @@ library ALibraryCoreStringMisc requires optional ALibraryCoreDebugMisc
 	debug endfunction
 
 	/**
-	* Searches for position of string \p searchedString in string \p whichString.
-	* If \p searchedString is not contained by \p whichString function will return -1 otherwise it will return its position.
-	* \param whichString String which should contain searched string.
-	* \param searchedString String which is searched.
-	* \return If the string was found it returns its position otherwise it will return -1.
-	*/
+	 * Searches for position of string \p searchedString in string \p whichString.
+	 * If \p searchedString is not contained by \p whichString function will return -1 otherwise it will return its position.
+	 * \param whichString String which should contain searched string.
+	 * \param searchedString String which is searched.
+	 * \return If the string was found it returns its position otherwise it will return -1.
+	 */
 	function FindString takes string whichString, string searchedString returns integer
 static if (A_RTC) then
 		return StringPos(whichString, searchedString)
@@ -34,17 +34,20 @@ endif
 	endfunction
 
 	/**
-	* Replaces a part of a string and returns the resulting string.
-	* \note The newly created string can be longer than the old of old string until position + replacing string is longer!
-	* \param whichString String which is used for replacement operation.
-	* \param position Position where replacement should start.
-	* \param replacingString String which should replace a sub string of string \p whichString.
-	* \return Returns the new string with the replaced sub string.
-	*/
+	 * Replaces a part of a string and returns the resulting string.
+	 * \note The newly created string can be longer than the old of old string until position + replacing string is longer!
+	 * \param whichString String which is used for replacement operation.
+	 * \param position Position where replacement should start. If this value is equal to or greater than the length of \p whichString, \p replacingString is just appended. Negative values will be converted to 0.
+	 * \param replacingString String which should replace a sub string of string \p whichString.
+	 * \return Returns the new string with the replaced sub string.
+	 */
 	function ReplaceSubString takes string whichString, integer position, string replacingString returns string
 		local string result = ""
 		debug call StringPositionDebug("ReplaceSubString", whichString, position)
-		set result = SubString(whichString, 0, position) + replacingString
+		if (position < 0) then
+			set position = 0
+		endif
+		set result = SubString(whichString, 0, IMinBJ(position, StringLength(whichString))) + replacingString
 		if (position + StringLength(replacingString) < StringLength(whichString)) then
 			set result = result + SubString(whichString, position + StringLength(replacingString), StringLength(whichString))
 		endif
@@ -52,45 +55,59 @@ endif
 	endfunction
 
 	/**
-	* Replaces string \p replacedString in string \p whichString by string \p replacingString and returns the resulting string.
-	* Note that \p replacedString and \p replacingString do not have to have the same size. The function removes \p replacedString and inserts \p replacingString afterwards at \p replacedString's old position.
-	* \param whichString String which contains the sub string \p replacedString.
-	* \param replacedString Sub string of string \p whichString which should be replaced.
-	* \param replacingString String which should replace \p replacedString.
-	* \return Returns the new string with the replaced sub string.
-	*/
+	 * Replaces string \p replacedString in string \p whichString by string \p replacingString and returns the resulting string.
+	 * Note that \p replacedString and \p replacingString do not have to have the same size. The function removes \p replacedString and inserts \p replacingString afterwards at \p replacedString's old position as expected and other than \ref ReplaceSubString() which simply overrides chars.
+	 * \param whichString String which contains the sub string \p replacedString.
+	 * \param replacedString Sub string of string \p whichString which should be replaced.
+	 * \param replacingString String which should replace \p replacedString.
+	 * \return Returns the new string with the replaced sub string.
+	 */
 	function ReplaceString takes string whichString, string replacedString, string replacingString returns string
 static if (A_RTC) then
 		return StringReplace(whichString, replacedString, replacingString)
 else
 		local integer position = FindString(whichString, replacedString)
 		if (position == -1) then
+			debug call PrintFunctionError("ReplaceString", "Replaced string not found: \"" + replacedString + "\".")
+
 			return whichString
 		endif
+
 		return SubString(whichString, 0, position) + replacingString + SubString(whichString, position + StringLength(replacedString), StringLength(whichString))
 endif
 	endfunction
 
 	/**
-	* Removes the sub string at position \p position with length \p length of string \p whichString and returns the resulting string.
-	* \param whichString String which is used for removing the sub string.
-	* \param position Position of the sub string which should be removed.
-	* \param length Length of the sub string which should be removed.
-	* \return Returns the new string without the sub string string.
-	*/
+	 * Removes the sub string at position \p position with length \p length of string \p whichString and returns the resulting string.
+	 * \param whichString String which is used for removing the sub string.
+	 * \param position Position of the sub string which should be removed. If this value is smaller than 0, it will be set to 0. If it is equal to or greater than length of \p whichString nothing will be removed.
+	 * \param length Length of the sub string which should be removed.
+	 * \return Returns the new string without the sub string string.
+	 */
 	function RemoveSubString takes string whichString, integer position, integer length returns string
+		local integer endIndex = position + length
+		local string result = ""
 		debug call StringPositionDebug("RemoveSubString", whichString, position)
-		debug call StringPositionDebug("RemoveSubString", whichString, position + length - 1)
-		return SubString(whichString, 0, position) + SubString(whichString, position + length, StringLength(whichString))
+		debug call StringPositionDebug("RemoveSubString", whichString, endIndex - 1)
+		if (position < 0) then // usually, doesn't happen
+			set position = 0
+			set endIndex = position + length
+		else
+			set result = SubString(whichString, 0, position)
+		endif
+		if (endIndex < StringLength(whichString)) then
+			set result = result + SubString(whichString, endIndex, StringLength(whichString))
+		endif
+		return result
 	endfunction
 
 	/**
-	* Removes string \p removedString from string \p whichString and returns the resulting string.
-	* If \p removedString is not contained by \p whichString it is returned unmodified.
-	* \param whichString String from which \p subString should be removed.
-	* \param removedString String which should be removed.
-	* \return Returns the new string without the removed string.
-	*/
+	 * Removes string \p removedString from string \p whichString and returns the resulting string.
+	 * If \p removedString is not contained by \p whichString it is returned unmodified.
+	 * \param whichString String from which \p subString should be removed.
+	 * \param removedString String which should be removed.
+	 * \return Returns the new string without the removed string.
+	 */
 	function RemoveString takes string whichString, string removedString returns string
 		local integer position = FindString(whichString, removedString)
 		if (position == -1) then
@@ -101,32 +118,35 @@ endif
 	endfunction
 
 	/**
-	* Inserts string \p insertedString into string \p whichString at position \p position and returns the resulting string.
-	* \param whichString String into which string \p insertedString should be inserted.
-	* \param position Position where string \p insertedString should be inserted. If this value is bigger or equal to length of string \p whichString string \p insertedString will be added to string \p whichString.
-	* \param insertedString String which should be inserted into string \p whichString at position \p position.
-	* \return Returns the new string with the inserted string.
-	*/
+	 * Inserts string \p insertedString into string \p whichString at position \p position and returns the resulting string.
+	 * \param whichString String into which string \p insertedString should be inserted.
+	 * \param position Position where string \p insertedString should be inserted. If this value is bigger or equal to length of string \p whichString string \p insertedString will be appended to string \p whichString. If this value is less then 0, it will be set to 0.
+	 * \param insertedString String which should be inserted into string \p whichString at position \p position.
+	 * \return Returns the new string with the inserted string.
+	 */
 	function InsertString takes string whichString, integer position, string insertedString returns string
+		debug call StringPositionDebug("InsertString", whichString, position)
+
 		if (position >= StringLength(whichString)) then
 			return whichString + insertedString
-		debug elseif (position < 0) then
-			debug call PrintFunctionError("InsertString", "Wrong position value: " + I2S(position) + ".")
-			debug return whichString
+		elseif (position < 0) then
+			set position = 0
 		endif
+
 		return SubString(whichString, 0, position) + insertedString + SubString(whichString, position, StringLength(whichString))
 	endfunction
 
 	/**
-	* Moves the sub string of string \p whichString at position \p position and with length \p length to position \p newPosition and returns the resulting string.
-	* \param whichString String in which the sub string should be moved.
-	* \param position Start position of the sub string.
-	* \param length Length of the sub string.
-	* \param newPosition Position in \p whichString with sub string contained to which the sub string should be moved.
-	* \return Returns the new string with the moved string.
-	*/
+	 * Moves the sub string of string \p whichString at position \p position and with length \p length to position \p newPosition and returns the resulting string.
+	 * \param whichString String in which the sub string should be moved.
+	 * \param position Start position of the sub string.
+	 * \param length Length of the sub string.
+	 * \param newPosition Position in \p whichString with sub string contained to which the sub string should be moved.
+	 * \return Returns the new string with the moved string.
+	 */
 	function MoveSubString takes string whichString, integer position, integer length, integer newPosition returns string
 		local string result
+		local integer endIndex = position + length
 		debug call StringPositionDebug("MoveSubString", whichString, position)
 		debug call StringPositionDebug("MoveSubString", whichString, position + length - 1)
 		set result = RemoveSubString(whichString, position, length)
@@ -347,7 +367,10 @@ endif
 		return whichString
 	endfunction
 
-	/// Truncates string at the given position.
+	/**
+	 * Truncates string at the given position.
+	 * \return Returns sub string of \p whichString starting at \p position + 1.
+	 */
 	function StringTruncate takes string whichString, integer position returns string
 		set position = IMaxBJ(0, position)
 		return SubString(whichString, 0, position + 1)
