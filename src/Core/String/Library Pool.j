@@ -105,6 +105,9 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	 */
 	function IsStringFromCharacterPool takes string whichString, string characterPool returns boolean
 		local integer i
+		if (StringLength(whichString) == 0 and StringLength(whichString) > 0) then
+			return false
+		endif
 		set i = 1
 		loop
 			exitwhen (i > StringLength(whichString))
@@ -163,16 +166,32 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 
 	/**
 	 * Checks if string \p which is an integer.
+	 * Integers can have signs:
+	 * 0
+	 * 3234
+	 * -234
+	 * +53
 	 * \param which Checked string.
 	 * \return Returns true if string \p which is an integer.
 	 */
 	function IsStringInteger takes string whichString returns boolean
-		local integer prefixLength = IMinBJ(StringLength(whichString), 1)
-		local string prefix = SubString(whichString, 0, prefixLength)
+		local string prefix
+
+		if (StringLength(whichString) == 0) then
+			return false
+		endif
+
+		set prefix = SubString(whichString, 0, 1)
+
 		if ((not IsStringNumeral(prefix)) and ((not IsStringSign(prefix)) or StringLength(whichString) == 1)) then
 			return false
 		endif
-		return IsStringNumeral(SubString(whichString, prefixLength, StringLength(whichString)))
+
+		if (StringLength(whichString) > 1) then
+			return IsStringNumeral(SubString(whichString, 1, StringLength(whichString)))
+		endif
+
+		return true
 	endfunction
 
 	/**
@@ -192,24 +211,27 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 		if (StringLength(whichString) == 0) then
 			return false
 		endif
-		set prefixLength = IMinBJ(StringLength(whichString), 1)
-		set prefix = SubString(whichString, 0, prefixLength)
+		set prefix = SubString(whichString, 0, 1) // string length is at least 1
 		set pool = ABinaryCharacters
 		if (not IsStringFromCharacterPool(prefix, pool)) then
-			if (IsStringSign(prefix)) then
-				if (StringLength(whichString) == 1) then // is only sign
-					return false
-				endif
-			else
+			if (not IsStringSign(prefix) or StringLength(whichString) == 1) then
 				return false
 			endif
-		endif
 
-		if (StringLength(whichString) >= prefixLength + 1 and SubString(whichString, prefixLength, prefixLength + 1) == "0") then // starts with 0 but is not 0, would be octal
+			if (StringLength(whichString) > 1) then
+				if (SubString(whichString, 1, 2) == "0" and StringLength(whichString) > 2) then // starts with 0 but is not 0, would be octal
+					return false
+				endif
+			endif
+		elseif (prefix == "0" and StringLength(whichString) > 1) then // starts with 0 but is not 0, would be octal
 			return false
 		endif
 
-		return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
+		if (StringLength(whichString) > 1) then
+			return IsStringFromCharacterPool(SubString(whichString, 1, StringLength(whichString)), pool)
+		endif
+
+		return true
 	endfunction
 
 	/**
@@ -226,28 +248,26 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	 * \note All but octal numbers mustn't start with 0 if they have no prefix, except the value itself is 0 (0A32 is invalid, 0x0A32 is not)!
 	 */
 	function IsStringOctal takes string whichString returns boolean
-		local integer prefixLength
 		local string prefix
 		local boolean checkPrefix
 		local string pool
 		if (StringLength(whichString) == 0) then
 			return false
 		endif
-		set prefixLength = IMinBJ(StringLength(whichString), 1)
-		set prefix = SubString(whichString, 0, prefixLength)
+		set prefix = SubString(whichString, 0, 1) // string length is at least 1
 		set checkPrefix = false
 		set pool = AOctalCharacters
 		if (not IsStringFromCharacterPool(prefix, pool)) then
-			if (IsStringSign(prefix)) then
-				if (StringLength(whichString) == 1) then // is only sign
-					return false
-				endif
-			else
+			if (not IsStringSign(prefix) or StringLength(whichString) == 1) then
 				return false
 			endif
 		endif
 
-		return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
+		if (StringLength(whichString) > 1) then
+			return IsStringFromCharacterPool(SubString(whichString, 1, StringLength(whichString)), pool)
+		endif
+
+		return true
 	endfunction
 
 	/**
@@ -259,46 +279,62 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 	 * FC21
 	 * -FC34521
 	 * +234
+	 * 0x0A2 - starts with 0 but with prefix
 	 * \param whichString Checked string.
 	 * \return Returns true if string \p whichString is hexadecimal.
 	 * \note All but octal numbers mustn't start with 0 if they have no prefix, except the value itself is 0 (0A32 is invalid, 0x0A32 is not)!
 	 */
 	function IsStringHexadecimal takes string whichString returns boolean
 		local integer prefixLength
+		local integer literalStart // used for single 0 check
 		local string prefix
 		local boolean checkPrefix
 		local string pool
 		if (StringLength(whichString) == 0) then
 			return false
 		endif
-		set prefixLength = IMinBJ(StringLength(whichString), 1)
+		set prefixLength = 1 // string length is at least 1
 		set prefix = SubString(whichString, 0, prefixLength)
 		set checkPrefix = false
 		set pool = AHexadecimalCharacters
 		if (not IsStringFromCharacterPool(prefix, pool)) then
+			set literalStart = 1
 			if (IsStringSign(prefix)) then
 				if (StringLength(whichString) == 1) then // is only sign
 					return false
 				endif
-				set prefixLength = IMinBJ(StringLength(whichString), 3)
-				set prefix = SubString(whichString, 1, prefixLength)
-				set checkPrefix = not IsStringFromCharacterPool(prefix, pool)
-			else
-				set prefixLength = IMinBJ(StringLength(whichString), 2)
+				if (StringLength(whichString) > 3) then // could be prefix (WITH some more digits!!!)
+					set prefixLength = 3
+					set prefix = SubString(whichString, 1, prefixLength)
+					set checkPrefix = not IsStringFromCharacterPool(prefix, pool)
+				endif
+			elseif (StringLength(whichString) > 2) then // could be prefix (WITH some more digits!!!)
+				set prefixLength = 2
 				set prefix = SubString(whichString, 0, prefixLength)
 				set checkPrefix = not IsStringFromCharacterPool(prefix, pool)
+			else // no digit and can't be 0x...
+				return false
 			endif
+		else
+			set literalStart = 0
 		endif
 
-		if (checkPrefix and (prefix != "0x" or StringLength(whichString) == prefixLength)) then // is not prefix or stops after prefix
+		if (checkPrefix) then
+			if (prefix != "0x" or StringLength(whichString) == prefixLength) then // is not prefix or stops after prefix
+				return false
+			endif
+			set literalStart = prefixLength
+		endif
+
+		if (not checkPrefix and StringLength(whichString) > literalStart + 1 and SubString(whichString, literalStart, literalStart + 1) == "0") then // starts with 0 but is not 0 and without prefix, would be octal
 			return false
 		endif
 
-		if (not checkPrefix and StringLength(whichString) >= prefixLength + 1 and SubString(whichString, prefixLength, prefixLength + 1) == "0") then // starts with 0 but is not 0 and without prefix, would be octal
-			return false
+		if (StringLength(whichString) > prefixLength) then // use prefixLength here again, otherwise with literalStart it would check prefix chars twice
+			return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
 		endif
 
-		return IsStringFromCharacterPool(SubString(whichString, prefixLength, StringLength(whichString)), pool)
+		return true
 	endfunction
 
 	/**
