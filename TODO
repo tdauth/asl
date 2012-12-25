@@ -7,8 +7,8 @@ endif
 Test
 * test A_DEBUG_NATIVES
 * DONE: test ResetTerrainFogForPlayer() for desync
-* fix IsUnitInvulnerable()
-* test AKillQuestItem.
+* DONE: fix IsUnitInvulnerable()
+* DEPRECATED: test AKillQuestItem.
 * ShowBashTextTagForPlayer() needs proper colors?
 * Fix CreateImageForPlayer()
 * Revise AIndicator.

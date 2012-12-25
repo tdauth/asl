@@ -32,11 +32,33 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		endif
 	endfunction
 
-	/// \todo Doesn't work.
-	/// \author Tamino Dauth
-	/// \return Returns true if unit \p whichUnit is invulnerable.
+	/**
+	 * \author DioD
+	 * \return Returns true if unit \p whichUnit is invulnerable.
+	 * <a href="http://www.wc3c.net/showthread.php?p=1056611">source</a>
+	 * <a href="http://www.wc3c.net/showthread.php?t=103889">alternative version</a>
+	 */
 	function IsUnitInvulnerable takes unit whichUnit returns boolean
-		return (GetUnitAbilityLevel(whichUnit, 'Bvul') > 0)
+		//return (GetUnitAbilityLevel(whichUnit, 'Avul') > 0) OLD, works not for custom invulnerability spells (buffs)
+		local real currentHealth = GetWidgetLife(whichUnit)
+		local real currentMana   = GetUnitState(whichUnit,UNIT_STATE_MANA)
+		local boolean checkHealth
+
+		call SetWidgetLife(whichUnit, currentHealth + 0.001)
+		if currentHealth != GetWidgetLife(whichUnit) then
+			call UnitDamageTarget(whichUnit, whichUnit, 0.001, false, true, null, null, null)
+			set checkHealth = (GetWidgetLife(whichUnit) == currentHealth + 0.001)
+		else
+			call UnitDamageTarget(whichUnit, whichUnit, 0.001, false, true, null, null, null)
+			set checkHealth = (GetWidgetLife(whichUnit) == currentHealth)
+			call SetWidgetLife(whichUnit,currentHealth)
+		endif
+
+		if (checkHealth) then // check mana absorbation
+			return (not (GetUnitState(whichUnit,UNIT_STATE_MANA) != currentMana))
+		endif
+
+		return checkHealth
 	endfunction
 
 	/**
