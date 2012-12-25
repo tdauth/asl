@@ -9,8 +9,7 @@
 //! import "Core/Debug/Library Map.j"
 //! import "Core/Debug/Library Misc.j"
 //! import "Core/Debug/Library Signal.j"
-//! import "Core/Debug/Library String.j"
 //! import "Core/Debug/Library Time Of Day.j"
 
-library ACoreDebug requires AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreDebugUnitTest, ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugString, ALibraryCoreDebugTimeOfDay
+library ACoreDebug requires AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreDebugUnitTest, ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugTimeOfDay
 endlibrary

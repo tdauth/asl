@@ -37,8 +37,9 @@
 * debugexecution - Runs execution speed test.
 * debugdesync - Runs desync test.
 * debugbonusmod - Runs Bonus Mod test.
+* debugbash - Tests ShowBashTextTagForPlayer().
 */
-library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreDebugString, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod
+library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod, ALibraryCoreInterfaceTextTag, ATest
 
 	private function help takes ACheat cheat returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
@@ -87,6 +88,7 @@ static if (DEBUG_MODE) then
 		call Print("debugexecution")
 		call Print("debugdesync")
 		call Print("debugbonusmod")
+		call Print("debugbash")
 endif
 		set triggerPlayer = null
 	endfunction
@@ -446,7 +448,10 @@ endif
 
 static if (DEBUG_MODE) then
 	private function stringDebug takes ACheat cheat returns nothing
-		call AStringDebug()
+		debug call Print("string debug cheat")
+		call AStringConversionDebug()
+		call AStringMiscDebug()
+		call AStringPoolDebug()
 	endfunction
 
 	private function interfaceDebug takes ACheat cheat returns nothing
@@ -490,6 +495,10 @@ static if (DEBUG_MODE) then
 
 	private function bonusModDebug takes ACheat cheat returns nothing
 		call ABonusModDebug()
+	endfunction
+
+	private function bashDebug takes ACheat cheat returns nothing
+		call ShowBashTextTagForPlayer(GetTriggerPlayer(), GetCameraTargetPositionX(), GetCameraTargetPositionY(), 10)
 	endfunction
 endif
 
@@ -544,6 +553,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("debugexecution", true, executionDebug)
 		call ACheat.create("debugdesync", true, desyncDebug)
 		call ACheat.create("debugbonusmod", true, bonusModDebug)
+		call ACheat.create("debugbash", true, bashDebug)
 endif
 
 	endfunction

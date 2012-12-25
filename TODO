@@ -9,7 +9,7 @@ Test
 * DONE: test ResetTerrainFogForPlayer() for desync
 * DONE: fix IsUnitInvulnerable()
 * DEPRECATED: test AKillQuestItem.
-* ShowBashTextTagForPlayer() needs proper colors?
+* FIXED: ShowBashTextTagForPlayer() needs proper colors?
 * Fix CreateImageForPlayer()
 * Revise AIndicator.
 * Improve merge() of A_VECTOR.

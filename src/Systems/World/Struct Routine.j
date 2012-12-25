@@ -117,9 +117,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		 * Usually calls \ref targetAction() via .execute().
 		 */
 		public stub method onTarget takes ARoutinePeriod period returns nothing
-			debug call this.print("OnTarget")
+			//debug call this.print("OnTarget")
 			if (this.targetAction() != 0) then
-				debug call this.print("OnTarget has target action, calling with execute")
+				//debug call this.print("OnTarget has target action, calling with execute")
 				call this.targetAction().execute(period)
 			endif
 		endmethod
@@ -292,18 +292,18 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		private static method triggerConditionTarget takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local boolean result = GetTriggerUnit() == this.unit()
-			debug call this.print("Target condition, entering unit: " + GetUnitName(GetTriggerUnit()) + " and name of required unit: " + GetUnitName(this.unit()))
+			//debug call this.print("Target condition, entering unit: " + GetUnitName(GetTriggerUnit()) + " and name of required unit: " + GetUnitName(this.unit()))
 			return result
 		endmethod
 
 		private static method triggerActionTarget takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call DisableTrigger(GetTriggeringTrigger())
-			debug call this.print("Routine is " + I2S(this.routine()))
+			//debug call this.print("Routine is " + I2S(this.routine()))
 			call this.routine().onTarget.evaluate(this)
-			debug call this.print("Before destroying target trigger")
+			//debug call this.print("Before destroying target trigger")
 			call this.destroyTargetTrigger() // destroys this trigger
-			debug call this.print("After target trigger destruction")
+			//debug call this.print("After target trigger destruction")
 		endmethod
 
 		private method createTargetTrigger takes nothing returns nothing
@@ -316,7 +316,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call TriggerAddAction(this.m_targetTrigger, function thistype.triggerActionTarget)
 			call AHashTable.global().setHandleInteger(this.m_targetTrigger, "this", this)
 			call IssueRectOrder(this.unit(), "move", this.targetRect())
-			debug call this.print("Created target trigger for " + GetUnitName(this.unit()))
+			//debug call this.print("Created target trigger for " + GetUnitName(this.unit()))
 		endmethod
 
 		/**
@@ -351,7 +351,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 
 		private static method triggerActionStart takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			debug call this.print("Starting for unit " + GetUnitName(this.unit()))
+			//debug call this.print("Starting for unit " + GetUnitName(this.unit()))
 			call this.onStart()
 		endmethod
 
@@ -607,8 +607,8 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			local real currentTime
 			if (whichFloatGameState == GAME_STATE_TIME_OF_DAY) then
 				set currentTime = GetTimeOfDay()
-				if (value != currentTime) then // TODO not being printed, hook runs after changing time?
-					debug call Print("Hook for time of day with " + I2S(thistype.m_routinePeriods.size()) + " periods, new time " + R2S(value) + " and old time " + R2S(currentTime))
+				if (value != currentTime) then
+					//debug call Print("Hook for time of day with " + I2S(thistype.m_routinePeriods.size()) + " periods, new time " + R2S(value) + " and old time " + R2S(currentTime))
 					set iterator = thistype.m_routinePeriods.begin()
 					loop
 						exitwhen (not iterator.isValid())

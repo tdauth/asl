@@ -35,7 +35,7 @@ library ALibraryCoreInterfaceTextTag
 		call ShowFadingTextTagForPlayer(whichPlayer, text, 0.025, x, y, red, green, blue, alpha, 0.03, 1.0, 2.0)
 	endfunction
 
-	// The following parameters have been token from the UI/Misc.txt file of the War3X.mpq archive.
+	// The following parameters have been token from the UI/MiscData.txt file of the War3X.mpq archive. In the file they are ARGB colors but here we use RGBA!
 
 	/// \author Tamino Dauth
 	function ShowGoldTextTagForPlayer takes player whichPlayer, real x, real y, integer gold returns nothing
@@ -69,13 +69,15 @@ library ALibraryCoreInterfaceTextTag
 
 	/// \author Tamino Dauth
 	function ShowManaBurnTextTagForPlayer takes player whichPlayer, real x, real y, integer damage returns nothing
-		call ShowFadingTextTagForPlayer(whichPlayer, "-" + I2S(damage), 0.025, x, y, 82, 82 ,255 ,255, 0.04, 2.0, 5.0)
+		call ShowFadingTextTagForPlayer(whichPlayer, "-" + I2S(damage), 0.025, x, y, 82, 82, 255, 255, 0.04, 2.0, 5.0)
 	endfunction
 
-	/// \author Tamino Dauth
-	/// \todo Look for bash.
+	/**
+	 * \author Tamino Dauth
+	 * Bash has "// CriticalStrike text tag data" comment in UI/MiscData.txt but different values. Use \ref ShowCriticalStrikeTextTagForPlayer() instead.
+	 */
 	function ShowBashTextTagForPlayer takes player whichPlayer, real x, real y, integer damage returns nothing
-		call ShowFadingTextTagForPlayer(whichPlayer, I2S(damage) + "!", 0.025, x, y, 255, 0, 0, 255, 0.04, 2.0, 5.0)
+		call ShowFadingTextTagForPlayer(whichPlayer, I2S(damage) + "!", 0.025, x, y, 0, 0, 255, 255, 0.04, 2.0, 5.0)
 	endfunction
 
 	/**

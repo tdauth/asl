@@ -8,6 +8,9 @@ endif
 static if (A_SYSTEMS) then
 //! import "Systems/Import.j"
 endif
+static if (DEBUG_MODE) then
+//! import "Test/Import.j"
+endif
 
 /**
  * \mainpage Advanced Script Libray library
@@ -54,5 +57,5 @@ endif
  * Debugging is realized by using function hooks.
  * \note You can check out all known native bugs on <a href="http://www.wc3c.net/showthread.php?t=80693">Wc3C.net<a> or <a href="http://mappedia.de/Liste_bekannter_Fehler">Mappedia (German)</a>.
  */
-library Asl requires ACore, optional ASystems
+library Asl requires ACore, optional ASystems, optional ATest
 endlibrary

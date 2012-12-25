@@ -48,16 +48,22 @@ library ALibraryCoreDebugString requires AStructCoreDebugUnitTest, ALibraryCoreD
 				//! runtextmacro A_CHECK_2("IsStringBinary(\"+101\") and IsStringBinary(\"101\") and IsStringBinary(\"-0\") and (not IsStringBinary(\"1201\")) and (not IsStringBinary(\"010\"))", "Error in IsStringBinary().")
 				//! runtextmacro A_CHECK_2("IsStringOctal(\"00023\") and IsStringOctal(\"-123\") and IsStringOctal(\"+077\") and (not IsStringOctal(\"2148\"))", "Error in IsStringOctal().")
 				//! runtextmacro A_CHECK_2("IsStringHexadecimal(\"+AF23\") and IsStringHexadecimal(\"-acf1034a\") and IsStringHexadecimal(\"-0x1439\") and IsStringHexadecimal(\"0x1AF9\") and (not IsStringHexadecimal(\"0AF21\"))", "Error in IsStringHexadecimal().")
+				debug call Print("pool 1")
 				//! runtextmacro A_CHECK_2("(not IsStringInteger(\"\")) and (not IsStringBinary(\"\")) and (not IsStringOctal(\"\")) and (not IsStringHexadecimal(\"\"))", "Error in empty string string pool test.")
 
+				debug call Print("pool 2")
 				//! runtextmacro A_CHECK_2("StringTrimLeft(\"  Peter lief heim!  \") == \"Peter lief heim!  \"", "Error in StringTrimLeft().")
 				//! runtextmacro A_CHECK_2("StringTrimRight(\"  Peter lief heim!  \") == \"  Peter lief heim!\"", "Error in StringTrimRight().")
+				debug call Print("pool 3")
 				//! runtextmacro A_CHECK_2("StringTrim(\"  Peter lief heim!  \") == \"Peter lief heim!\"", "Error in StringTrim().")
 
+				debug call Print("End of pool test")
 			//! runtextmacro A_TEST_CASE_END()
 
+			debug call Print("after pool test")
+
 			//! runtextmacro A_TEST_CASE("Misc")
-			/*
+				debug call Print("In Misc!")
 				//! runtextmacro A_CHECK("FindString(\"Peter went home!\", \"went\") == 6")
 				//! runtextmacro A_CHECK("FindString(\"Peter went home!\", \"leaves\") == -1")
 
@@ -65,6 +71,7 @@ library ALibraryCoreDebugString requires AStructCoreDebugUnitTest, ALibraryCoreD
 				//! runtextmacro A_CHECK("ReplaceSubString(\"Peter went home!\", -10, \"Hansi\") == \"Hansi went home!\"") // negative values, replacement should start at 0
 				//! runtextmacro A_CHECK("ReplaceSubString(\"Peter went home!\", 2341, \" Besides he lost his keys!\") == \"Peter went home! Besides he lost his keys!\"") // big values, replacement means appending string
 
+				debug call Print("222")
 				//! runtextmacro A_CHECK("ReplaceString(\"Peter went home!\", \"back\", \"to his mother\") == \"Peter went home!\"") // no changes
 				//! runtextmacro A_CHECK("ReplaceString(\"Peter went home!\", \"home\", \"to his mother\") == \"Peter went to his mother!\"") // no override, usual replacement
 
@@ -73,6 +80,7 @@ library ALibraryCoreDebugString requires AStructCoreDebugUnitTest, ALibraryCoreD
 				//! runtextmacro A_CHECK("RemoveSubString(\"Peter went home!\", 0, StringLength(\"Peter went home!\")) == \"\"")
 				//! runtextmacro A_CHECK("RemoveSubString(\"Peter went home!\", StringLength(\"Peter went home!\") - 6, 6) == \"Peter went\"")
 
+				debug call Print("3")
 				//! runtextmacro A_CHECK("RemoveSubString(\"Peter went home!\", -2332, 6) == \"went home!\"")
 				//! runtextmacro A_CHECK("RemoveSubString(\"Peter went home!\", -2332, 343435) == \"\"")
 				//! runtextmacro A_CHECK("RemoveSubString(\"Peter went home!\", 434, 343435) == \"Peter went home!\"")
@@ -81,6 +89,7 @@ library ALibraryCoreDebugString requires AStructCoreDebugUnitTest, ALibraryCoreD
 				//! runtextmacro A_CHECK("RemoveString(\"Peter went home!\", \"back\") == \"Peter went home!\"")
 
 
+				debug call Print("4")
 				//! runtextmacro A_CHECK("InsertString(\"Peter went home!\", 0, \"Our wonderful \") == \"Our wonderful Peter went home!\"")
 				//! runtextmacro A_CHECK("InsertString(\"Peter went home!\", -2323, \"Our wonderful \") == \"Our wonderful Peter went home!\"")
 				//! runtextmacro A_CHECK("InsertString(\"Peter went home!\", StringLength(\"Peter went home!\"), \" And this is the end!\") == \"Peter went home! And this is the end!\"")
@@ -97,6 +106,7 @@ library ALibraryCoreDebugString requires AStructCoreDebugUnitTest, ALibraryCoreD
 				//! runtextmacro A_CHECK("ReverseString(\"\") == \"\"")
 
 
+				debug call Print("5")
 				//! runtextmacro A_CHECK("StringMatch(\"Peter went home!\", \"peter went home!\", false)")
 				//! runtextmacro A_CHECK("StringMatch(\"Peter went home!\", \"WENT\", false)")
 				//! runtextmacro A_CHECK("StringMatch(\"Peter went home!\", \"*WENT*\", false)")
@@ -129,7 +139,6 @@ library ALibraryCoreDebugString requires AStructCoreDebugUnitTest, ALibraryCoreD
 				//! runtextmacro A_CHECK("StringTruncate(\"Peter went home!\", -332) == \"\"")
 				//! runtextmacro A_CHECK("StringTruncate(\"Peter went home!\", 6) == \"went home!\"")
 				//! runtextmacro A_CHECK("StringTruncate(\"Peter went home!\", 2342) == \"\"")
-				*/
 			//! runtextmacro A_TEST_CASE_END()
 
 			//! runtextmacro A_TEST_CASE("Format")
