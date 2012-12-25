@@ -315,6 +315,10 @@ library ALibraryCoreStringPool requires ALibraryCoreStringMisc
 			else // no digit and can't be 0x...
 				return false
 			endif
+		elseif (StringLength(whichString) >= 2) then
+			set prefixLength = 2
+			set prefix = SubString(whichString, 0, prefixLength)
+			set checkPrefix = not IsStringFromCharacterPool(prefix, pool)
 		else
 			set literalStart = 0
 		endif
