@@ -115,7 +115,7 @@ endif
 	endfunction
 
 	private function gold takes ACheat cheat returns nothing
-		local string amountString = cheat.argument()
+		local string amountString = StringTrim(cheat.argument())
 		local integer amount
 		if (StringLength(amountString) == 0) then
 			set amount = -1
@@ -126,7 +126,7 @@ endif
 	endfunction
 
 	private function lumber takes ACheat cheat returns nothing
-		local string amountString = cheat.argument()
+		local string amountString = StringTrim(cheat.argument())
 		local integer amount
 		if (StringLength(amountString) == 0) then
 			set amount = -1
@@ -137,7 +137,7 @@ endif
 	endfunction
 
 	private function foodcap takes ACheat cheat returns nothing
-		local string amountString = cheat.argument()
+		local string amountString = StringTrim(cheat.argument())
 		local integer amount
 		if (StringLength(amountString) == 0) then
 			set amount = -1
@@ -183,7 +183,7 @@ endif
 		local boolean suspend
 		if (hero != null) then
 			if (IsUnitType(hero, UNIT_TYPE_HERO)) then
-				set level = S2I(cheat.argument())
+				set level = S2I(StringTrim(cheat.argument()))
 				set suspend = IsSuspendedXP(hero)
 				if (suspend) then
 					call SuspendHeroXP(hero, false)
@@ -280,7 +280,7 @@ endif
 		local integer experience
 		local boolean suspend
 		if (selectedUnit != null) then
-			set experience = S2I(cheat.argument())
+			set experience = S2I(StringTrim(cheat.argument()))
 			if (experience != 0) then
 				if (IsUnitType(selectedUnit, UNIT_TYPE_HERO)) then
 					set suspend = IsSuspendedXP(selectedUnit)
@@ -332,7 +332,7 @@ endif
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(GetTriggerPlayer())
 		local string orderString
 		if (selectedUnit != null) then
-			set orderString = cheat.argument()
+			set orderString = StringTrim(cheat.argument())
 			if (orderString == null) then
 				debug call Print(Format(A_TEXT_ORDER).s(GetUnitName(selectedUnit)).s(OrderId2String(GetUnitCurrentOrder(selectedUnit))).result())
 			elseif (IsStringAlphabetical(orderString)) then
@@ -348,13 +348,14 @@ endif
 	endfunction
 
 	private function timeofday takes ACheat cheat returns nothing
-		local string argument = cheat.argument()
+		local string argument = StringTrim(cheat.argument())
 		if (StringLength(argument) > 0) then
 			if (argument == "stop") then
 				call SuspendTimeOfDay(true)
 			elseif (argument == "continue") then
 				call SuspendTimeOfDay(false)
 			else
+				debug call Print("This is the real value: " + R2S(S2R(argument)))
 				call SetTimeOfDay(S2R(argument))
 				debug call Print(Format(A_TEXT_TIME_OF_DAY_SET_TIME).s(argument).result())
 			endif
@@ -387,7 +388,7 @@ endif
 
 	private function enable takes ACheat cheat returns nothing
 static if (DEBUG_MODE) then
-		local string identifier = cheat.argument()
+		local string identifier = StringTrim(cheat.argument())
 		if (StringLength(identifier) == 0) then
 			call Print(A_TEXT_ENABLE_IDENTIFIERS)
 			call EnableAllPrintIdentifiers()
@@ -402,7 +403,7 @@ endif
 
 	private function disable takes ACheat cheat returns nothing
 static if (DEBUG_MODE) then
-		local string identifier = cheat.argument()
+		local string identifier = StringTrim(cheat.argument())
 		if (StringLength(identifier) == 0) then
 			call PrintDisabledIdentifiers()
 		elseif (IsPrintIdentifierEnabled(identifier)) then
@@ -415,7 +416,7 @@ endif
 	endfunction
 
 	private function setdamage takes ACheat cheat returns nothing
-		local string argument = cheat.argument()
+		local string argument = StringTrim(cheat.argument())
 		local unit selectedUnit = GetFirstSelectedUnitOfPlayer(GetTriggerPlayer())
 		local integer dmg
 		if (selectedUnit != null) then

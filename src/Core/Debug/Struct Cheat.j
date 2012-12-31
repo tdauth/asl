@@ -57,6 +57,7 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 		 * For example, if player has entered "setlevel 3 all" and "setlevel" is the actual cheat this would return "3 all".
 		 * \note This doesn only works if \ref exactMatch() is false.
 		 * \note Unlike exact match in \ref TriggerRegisterPlayerChatEvent() this just works if there are only white space characters prior the cheat expression if \ref exactMatch() returns false. For example "    setlevel 3".
+		 * \note Argument is returned with spaces which come after the cheat expression, so \ref StringTrim() might be useful.
 		 */
 		public method argument takes nothing returns string
 			local integer index = this.findCheat(GetEventPlayerChatString())
