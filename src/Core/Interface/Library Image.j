@@ -1,4 +1,5 @@
 /**
+ * \defgroup images Images
  * Required image file properties (listed by PitzerMike):
  * <ul>
  * <li>Image files must have an invisible border of 1 pixel</li>
@@ -39,6 +40,7 @@ library ALibraryCoreInterfaceImage requires optional ALibraryCoreDebugMisc
 	 * \param whichPlayer Player who the image is shown or hidden to.
 	 * \param whichImage Image handle which should be shown or hidden.
 	 * \param show If this value is true image \p whichImage will be shown otherwise it will be hidden.
+	 * \ingroup images
 	 */
 	function ShowImageForPlayer takes player whichPlayer, image whichImage, boolean show returns nothing
 		if (whichPlayer == GetLocalPlayer()) then

@@ -1,17 +1,18 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
-Test
+WORKS:
 static if (DEBUG_MODE) then
 	//! runtextmacro A_STRUCT_DEBUG("\"MyStruct\"")
 endif
+but deprecated since check is done in macro itself, optional is enough AND macro is declared even if the file isn't imported!
 Test
 * test A_DEBUG_NATIVES
 * DONE: test ResetTerrainFogForPlayer() for desync
 * DONE: fix IsUnitInvulnerable()
 * DEPRECATED: test AKillQuestItem.
 * FIXED: ShowBashTextTagForPlayer() needs proper colors?
-* Fix CreateImageForPlayer()
-* Revise AIndicator.
+* DEPRECATED: Fix CreateImageForPlayer()
+* DEPRECATED: Revise AIndicator.
 * Improve merge() of A_VECTOR.
 * Fix A_MAP.
 * No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.

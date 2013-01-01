@@ -23,7 +23,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		private static boolean m_useInventorySystem
 		private static boolean m_useTalkLogSystem
 		// static members
-		private static thistype array m_playerCharacter[12] //[bj_MAX_PLAYERS] vjass bug
+		private static thistype array m_playerCharacter[12] /// \todo [bj_MAX_PLAYERS] vjass bug
 		// dynamic members
 		private boolean m_isMovable
 		private AClass m_class //No system
