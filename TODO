@@ -11,7 +11,8 @@ Test
 * DONE: fix IsUnitInvulnerable()
 * DEPRECATED: test AKillQuestItem.
 * FIXED: ShowBashTextTagForPlayer() needs proper colors?
-* DEPRECATED: Fix CreateImageForPlayer()
+* Fix CreateImageForPlayer()
+* Test CreateTrackableForPlayer() (sync?, crash?)!
 * DEPRECATED: Revise AIndicator.
 * Improve merge() of A_VECTOR.
 * Fix A_MAP.
@@ -33,7 +34,7 @@ Test
 * Move all tests into new directory "Test"
 *	//! runtextmacro A_TEST_RUN("ABonusModTest")
 	//! runtextmacro A_TEST_PRINT("ABonusModTest") doesn't print when run the first time
-* Test new string functions/change string test to unit test:
+* DONE: Test new string functions/change string test to unit test:
 	function StringLeft takes string whichString, integer number returns string
 	function StringRight takes string whichString, integer number returns string
 	function StringAppend takes string whichString, string other returns string
@@ -46,6 +47,11 @@ Test
 	function StringTrimLeft takes string whichString returns string
 	function StringTrimRight takes string whichString returns string
 * Revise MoveSubString() and MoveString() AND add unit tests.
+* 2.0 stuff:
+	* CreepSpotCreep
+	* effect functions
+	* environment functions
+	* group functions
 
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706

@@ -14,25 +14,15 @@
 library ALibraryCoreInterfaceImage requires optional ALibraryCoreDebugMisc
 
 	/**
-	 * Creates an image being visible for only one player.
-	 * \author PitzerMike
-	 * Local variable is being needed because of rendering.
-	 * \todo Crashes game when showing image!
+	 * Creates an image using default parameters which should work well.
+	 * Besides you can define size dimensions.
+	 * \ingroup images
 	 */
-	function CreateImageForPlayer takes player whichPlayer, string file, real x, real y, real z, real sizeX, real sizeY returns image
-		debug call PrintFunctionError("CreateImageForPlayer", "Is bugged!")
-		return null
-		/*
-		local image whichImage
-		local string localFile = ""
-		if (whichPlayer == GetLocalPlayer()) then
-			set localFile = file
-		endif
-		set whichImage = CreateImage(localFile, sizeX, sizeY, 0.0, (x - (sizeX / 2.0)), (y - (sizeY / 2.0)), z, 0.0, 0.0, 0.0, 2) // image is placed in centre
-		call SetImageRenderAlways(whichImage, true)
+	function CreateImageEx takes string file, real x, real y, real z, real sizeX, real sizeY returns image
+		local image result = CreateImage(file, sizeX, sizeY, 0.0, (x - (sizeX / 2.0)), (y - (sizeY / 2.0)), z, 0.0, 0.0, 0.0, 2) // image is placed in centre
+		call SetImageRenderAlways(result, true)
 
-		return whichImage
-		*/
+		return result
 	endfunction
 
 	/**
@@ -46,6 +36,22 @@ library ALibraryCoreInterfaceImage requires optional ALibraryCoreDebugMisc
 		if (whichPlayer == GetLocalPlayer()) then
 			call ShowImage(whichImage, show)
 		endif
+	endfunction
+
+	/**
+	 * Combines \ref CreateImageEx() and \ref ShowImageForPlayer().
+	 * \param show If true, image is shown to player \p whichPlayer after creation. Otherwise it stays hidden.
+	 * \ingroup images
+	 */
+	function CreateImageForPlayer takes player whichPlayer, string file, real x, real y, real z, real sizeX, real sizeY, boolean show returns image
+		return null
+		/*local image result = CreateImageEx(file, x, y, z, sizeX, sizeY)
+		call ShowImage(result, false)
+		if (show) then
+			call ShowImageForPlayer(whichPlayer, result, true)
+		endif
+		return result
+		*/
 	endfunction
 
 endlibrary

@@ -1,6 +1,16 @@
 library AStructSystemsWorldWeather requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralVector
 
+	/**
+	 * AWeather changes the map weather two one of the predefined weather effects Warcraft III provides.
+	 * It can use random time values using \ref setMinimumChangeTime() and \ref setMaximumChangeTime() which allow you to change weather randomly during the game.
+	 * Besides it allows you to change the sky using \ref setChangeSky(). Sky models are predefined for each weather effect as well.
+	 * You have to add all rects which are "outside" and should get the current weather effect using \ref addRect().
+	 * Additionally, you have to enable all weather effects you want to be available in your map using \ref setAllWeatherTypesAllowed() or \ref setWeatherTypeAllowed().
+	 * \note Weather effects and sky changes are visible for all players!
+	 */
 	struct AWeather
+		public static constant real defaultMinimumChangeTime = 60.0
+		public static constant real defaultMaximumChangeTime = 240.0
 		public static constant integer weatherTypeAshenvaleRainHeavy = 0
 		public static constant integer weatherTypeAshenvaleRainLight = 1
 		public static constant integer weatherTypeDalaranShield = 2
@@ -178,8 +188,8 @@ library AStructSystemsWorldWeather requires optional ALibraryCoreDebugMisc, AStr
 		public static method create takes nothing returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
-			set this.m_minimumChangeTime = 0.0
-			set this.m_maximumChangeTime = 24.0
+			set this.m_minimumChangeTime = thistype.defaultMinimumChangeTime
+			set this.m_maximumChangeTime = thistype.defaultMaximumChangeTime
 			set this.m_changeSky = false
 			call this.setAllWeatherTypesAllowed(false)
 			// members

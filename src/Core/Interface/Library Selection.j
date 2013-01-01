@@ -1,9 +1,12 @@
 library ALibraryCoreInterfaceSelection
 
-	function IsPlayerSelectionEmpty takes player user returns boolean
+	/**
+	 * \return Returns true if \p whichPlayer has no unit selection.
+	 */
+	function IsPlayerSelectionEmpty takes player whichPlayer returns boolean
 		local group selectedUnits = CreateGroup()
 		local boolean result = true
-		call GroupEnumUnitsSelected(selectedUnits, user, null)
+		call GroupEnumUnitsSelected(selectedUnits, whichPlayer, null)
 		if (selectedUnits != null) then
 			set result = false
 		endif
@@ -12,10 +15,13 @@ library ALibraryCoreInterfaceSelection
 		return result
 	endfunction
 
-	function GetFirstSelectedUnitOfPlayer takes player user returns unit
+	/**
+	 * \return Returns the first unit in selection of \p whichPlayer. Returns null if player has no selection.
+	 */
+	function GetFirstSelectedUnitOfPlayer takes player whichPlayer returns unit
 		local group selectedUnits = null
-		local unit selectedUnit = null //Startwert, falls die Gruppe leer ist
-		set selectedUnits = GetUnitsSelectedAll(user)
+		local unit selectedUnit = null // initial value if group is empty
+		set selectedUnits = GetUnitsSelectedAll(whichPlayer)
 		set selectedUnit = FirstOfGroup(selectedUnits)
 		call DestroyGroup(selectedUnits)
 		set selectedUnits = null
@@ -23,11 +29,11 @@ library ALibraryCoreInterfaceSelection
 	endfunction
 
 	/// Makes a unit select- or unselectable by removing or adding the gasshopper ability.
-	function MakeUnitSelectable takes unit usedUnit, boolean selectable returns nothing
+	function MakeUnitSelectable takes unit whichUnit, boolean selectable returns nothing
 		if (selectable) then
-			call UnitRemoveAbility(usedUnit, 'Aloc')
+			call UnitRemoveAbility(whichUnit, 'Aloc')
 		else
-			call UnitAddAbility(usedUnit, 'Aloc')
+			call UnitAddAbility(whichUnit, 'Aloc')
 		endif
 	endfunction
 

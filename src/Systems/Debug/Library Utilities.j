@@ -38,8 +38,9 @@
 * debugdesync - Runs desync test.
 * debugbonusmod - Runs Bonus Mod test.
 * debugbash - Tests ShowBashTextTagForPlayer().
+* debugimage - Tests CreateImageForPlayer().
 */
-library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod, ALibraryCoreInterfaceTextTag, ATest
+library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod, ALibraryCoreInterfaceTextTag, ALibraryCoreInterfaceImage, ATest
 
 	private function help takes ACheat cheat returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
@@ -89,6 +90,7 @@ static if (DEBUG_MODE) then
 		call Print("debugdesync")
 		call Print("debugbonusmod")
 		call Print("debugbash")
+		call Print("debugimage")
 endif
 		set triggerPlayer = null
 	endfunction
@@ -501,6 +503,10 @@ static if (DEBUG_MODE) then
 	private function bashDebug takes ACheat cheat returns nothing
 		call ShowBashTextTagForPlayer(GetTriggerPlayer(), GetCameraTargetPositionX(), GetCameraTargetPositionY(), 10)
 	endfunction
+
+	private function imageDebug takes ACheat cheat returns nothing
+		call CreateImageForPlayer(Player(0), "Textures\\BackGround.blp", GetCameraTargetPositionX(), GetCameraTargetPositionY(), 0.0, 40.0, 40.0, true)
+	endfunction
 endif
 
 	function AInitUtilityCheats takes nothing returns nothing
@@ -555,6 +561,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("debugdesync", true, desyncDebug)
 		call ACheat.create("debugbonusmod", true, bonusModDebug)
 		call ACheat.create("debugbash", true, bashDebug)
+		call ACheat.create("debugimage", true, imageDebug)
 endif
 
 	endfunction

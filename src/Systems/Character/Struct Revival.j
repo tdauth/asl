@@ -1,5 +1,12 @@
 library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreInterfaceMisc, AStructSystemsCharacterAbstractCharacterSystem
 
+	/**
+	 * ARevival allows you to specify where and when a character is being revived.
+	 * Bear in mind that revival works only for heroes not normal units.
+	 * \ref setShowDialog() allows you to enable a timer dialog for all players.
+	 * \ref setShowEffect() allows you to specify if the "eye candy" is shown on revival (\ref ReviveHero()).
+	 * Use \ref setTime() and \ref setX(), \ref setY() and \ref setFacing() to specify the time and the place of the revival.
+	 */
 	struct ARevival extends AAbstractCharacterSystem
 		// dynamic members
 		private real m_time
