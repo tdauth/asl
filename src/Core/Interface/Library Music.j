@@ -1,5 +1,8 @@
 library ALibraryCoreInterfaceMusic
 
+	/**
+	 * \param musicList File paths should be separated by ; character.
+	 */
 	function SetMapMusicForPlayer takes player whichPlayer, string musicList, boolean random, integer index returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call SetMapMusic(musicList, random, index)

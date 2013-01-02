@@ -217,9 +217,9 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 		 */
 		public static method create takes AMainWindow mainWindow, real x, real y, real sizeX, real sizeY, string modelFilePath, AWidgetOnHitAction onHitAction, AWidgetOnTrackAction onTrackAction returns thistype
 			local thistype this = thistype.allocate()
-			//dynamic members
+			// dynamic members
 			set this.m_shown = false
-			//start members
+			// construction members
 			set this.m_mainWindow = mainWindow
 			set this.m_x = x
 			set this.m_y = y
@@ -228,7 +228,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 			set this.m_modelFilePath = modelFilePath
 			set this.m_onHitAction = onHitAction
 			set this.m_onTrackAction = onTrackAction
-			//members
+			// members
 			set this.m_index = mainWindow.dockWidget(this)
 
 			call this.createTrackable()

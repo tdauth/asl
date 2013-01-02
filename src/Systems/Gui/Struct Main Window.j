@@ -321,7 +321,7 @@ endif
 					call DestroyImage(this.m_tooltipBackground)
 					set this.m_tooltipBackground = null
 				endif
-				set this.m_tooltipBackground = CreateImageForPlayer(this.gui().player(), this.m_tooltipBackgroundImageFilePath, x, y, 5.0, 50.0, 50.0, true) /// \todo Setup correct size to tooltip text, should be higher than normal images
+				set this.m_tooltipBackground = CreateImageForPlayer(this.gui().player(), this.m_tooltipBackgroundImageFilePath, x, y, 0.0, 50.0, 50.0, true) /// \todo Setup correct size to tooltip text, should be higher than normal images
 
 			endif
 			if (this.tooltipSoundPath() != null) then

@@ -20,7 +20,9 @@ library AStructSystemsGuiImage requires ALibraryCoreInterfaceImage, AStructSyste
 				call DestroyImage(this.m_image)
 				set this.m_image = null
 			endif
-			set this.m_image = CreateImageForPlayer(this.mainWindow().gui().player(), file, this.mainWindow().getX(this.x()), this.mainWindow().getY(this.y()), 0.0, this.sizeX(), this.sizeY(), this.isShown())
+			if (this.isShown()) then // don't create images too early, crashes game!
+				set this.m_image = CreateImageForPlayer(this.mainWindow().gui().player(), file, this.mainWindow().getX(this.x()), this.mainWindow().getY(this.y()), 0.0, this.sizeX(), this.sizeY(), this.isShown())
+			endif
 		endmethod
 
 		public method file takes nothing returns string
@@ -55,8 +57,12 @@ library AStructSystemsGuiImage requires ALibraryCoreInterfaceImage, AStructSyste
 
 		public stub method show takes nothing returns nothing
 			call super.show()
-			if (this.m_image != null) then
-				call ShowImageForPlayer(this.mainWindow().gui().player(), this.m_image, true)
+			if (this.file() != null) then // always refresh image to show proper file path, this must be done since we can't create images too early on setFile()!
+				if (this.m_image != null) then // file is not dynamic :-(
+					call DestroyImage(this.m_image)
+					set this.m_image = null
+				endif
+				set this.m_image = CreateImageForPlayer(this.mainWindow().gui().player(), this.file(), this.mainWindow().getX(this.x()), this.mainWindow().getY(this.y()), 0.0, this.sizeX(), this.sizeY(), this.isShown())
 			endif
 		endmethod
 

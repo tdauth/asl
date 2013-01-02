@@ -44,14 +44,12 @@ library ALibraryCoreInterfaceImage requires optional ALibraryCoreDebugMisc
 	 * \ingroup images
 	 */
 	function CreateImageForPlayer takes player whichPlayer, string file, real x, real y, real z, real sizeX, real sizeY, boolean show returns image
-		return null
-		/*local image result = CreateImageEx(file, x, y, z, sizeX, sizeY)
+		local image result = CreateImageEx(file, x, y, z, sizeX, sizeY)
 		call ShowImage(result, false)
 		if (show) then
 			call ShowImageForPlayer(whichPlayer, result, true)
 		endif
 		return result
-		*/
 	endfunction
 
 endlibrary

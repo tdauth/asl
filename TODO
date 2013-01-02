@@ -11,7 +11,7 @@ Test
 * DONE: fix IsUnitInvulnerable()
 * DEPRECATED: test AKillQuestItem.
 * FIXED: ShowBashTextTagForPlayer() needs proper colors?
-* Fix CreateImageForPlayer()
+* DONE: Fix CreateImageForPlayer()
 * Test CreateTrackableForPlayer() (sync?, crash?)!
 * DEPRECATED: Revise AIndicator.
 * Improve merge() of A_VECTOR.
