@@ -1,4 +1,4 @@
-library ALibraryCoreDebugInterface requires ALibraryCoreDebugMisc, AStructCoreInterfaceMultiboardBar
+library ALibraryTestInterfaceMultiboardBar requires ALibraryCoreDebugMisc, AStructCoreInterfaceMultiboardBar
 
 	globals
 		private multiboard array usedMultiboard
@@ -27,7 +27,7 @@ library ALibraryCoreDebugInterface requires ALibraryCoreDebugMisc, AStructCoreIn
 		endif
 	endfunction
 
-	function AInterfaceDebug takes nothing returns nothing
+	function AMultiboardBarDebug takes nothing returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
 		call GetMultiboardBarDebug(triggerPlayer)
 		set triggerPlayer = null

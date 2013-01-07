@@ -1,5 +1,4 @@
-/// \author Tamino Dauth
-library ALibraryCoreDebugSignal requires ALibraryCoreDebugMisc, AStructCoreGeneralSignal
+library ALibraryTestSignalSignal requires ALibraryCoreDebugMisc, AStructCoreGeneralSignal
 
 	//! runtextmacro A_SIGNAL("private", "MouseMovementSignal", "real x, real y", "x, y")
 
@@ -37,16 +36,13 @@ library ALibraryCoreDebugSignal requires ALibraryCoreDebugMisc, AStructCoreGener
 		debug call Print("Public slot with x " + R2S(x) + " and y " + R2S(y) + ".")
 	endfunction
 
-	globals
-		private Window window
-	endglobals
-
 	function ASignalDebug takes nothing returns nothing
-		set window = Window.create()
+		local Window window = Window.create()
 		call window.signal().connect(publicSlot)
 		debug call Print("Created window. Moving mouse to (10.0 | 15.0).")
 		call window.moveMouse(10.0, 15.0)
 		debug call Print("Finished movement.")
+		call window.destroy()
 	endfunction
 
 endlibrary

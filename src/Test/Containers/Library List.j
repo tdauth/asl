@@ -1,4 +1,4 @@
-library ALibraryCoreDebugList requires ALibraryCoreDebugMisc, AStructCoreDebugBenchmark, AStructCoreGeneralList, AStructCoreGeneralMap, AStructCoreGeneralVector
+library ALibraryTestContainersList requires ALibraryCoreDebugMisc, AStructCoreDebugBenchmark, AStructCoreGeneralList, AStructCoreGeneralMap, AStructCoreGeneralVector
 
 	globals
 		private constant integer insertions = 1000

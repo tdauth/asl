@@ -24,23 +24,23 @@
 * enable - Enables debug identifier(s).
 * disable - Disables debug identifier(s) or shows all disabled.
 * setdamage - Assigns damage to selected unit.
+* rotate - Rotates camera for player.
 * units - Shows all units.
 * items - Shows all items.
 * destructables - Shows all destructables.
 * debugstring - Runs string debug.
-* debuginterface - Runs interface debug.
+* debugmultiboardbar - Runs multiboard bar debug.
 * debugsignal - Runs signal debug.
 * debuglist - Runs list debug.
 * debugmap - Runs map debug.
 * debugtd - Runs time of day debug.
 * debugtimer - Runs timer debugging hook function.
-* debugexecution - Runs execution speed test.
 * debugdesync - Runs desync test.
 * debugbonusmod - Runs Bonus Mod test.
 * debugbash - Tests ShowBashTextTagForPlayer().
 * debugimage - Tests CreateImageForPlayer().
 */
-library ALibrarySystemsDebugUtilities requires ALibraryCoreDebugBonusMod, ALibraryCoreDebugDesync, ALibraryCoreDebugExecution, ALibraryCoreDebugInterface, ALibraryCoreDebugList, ALibraryCoreDebugMap, ALibraryCoreDebugMisc, ALibraryCoreDebugSignal, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod, ALibraryCoreInterfaceTextTag, ALibraryCoreInterfaceImage, ATest
+library ALibrarySystemsDebugUtilities requires ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod, ALibraryCoreInterfaceTextTag, ALibraryCoreInterfaceImage, ATest
 
 	private function help takes ACheat cheat returns nothing
 		local player triggerPlayer = GetTriggerPlayer()
@@ -68,6 +68,7 @@ static if (DEBUG_MODE) then
 		call Print("enable <identifier>")
 		call Print("disable <identifier>")
 		call Print("setdamage <damage>")
+		call Print("rotate <degrees>")
 endif
 static if (DEBUG_MODE and A_DEBUG_HANDLES) then
 		call Print("units")
@@ -76,7 +77,7 @@ static if (DEBUG_MODE and A_DEBUG_HANDLES) then
 endif
 static if (DEBUG_MODE) then
 		call Print("debugstring")
-		call Print("debuginterface")
+		call Print("debugmultiboardbar")
 		call Print("debugsignal")
 		call Print("debuglist")
 		call Print("debugmap")
@@ -86,7 +87,6 @@ static if (DEBUG_MODE and A_DEBUG_NATIVES) then
 		call Print("debugtimer")
 endif
 static if (DEBUG_MODE) then
-		call Print("debugexecution")
 		call Print("debugdesync")
 		call Print("debugbonusmod")
 		call Print("debugbash")
@@ -435,6 +435,25 @@ endif
 		endif
 	endfunction
 
+	private function rotate takes ACheat cheat returns nothing
+		local string argument = StringTrim(cheat.argument())
+		local real degrees = S2R(argument)
+		if (StringLength(argument) == 0) then
+			set degrees = GetCameraField(CAMERA_FIELD_ROTATION) * bj_RADTODEG + 90.0
+			debug call Print("Current degrees: " + R2S(GetCameraField(CAMERA_FIELD_ROTATION) * bj_RADTODEG))
+			debug call Print("New degrees: " + R2S(degrees))
+			if (degrees > 360.0) then
+				set degrees = 90.0
+			endif
+			debug call Print("Real new degrees: " + R2S(degrees))
+		else
+			set degrees = S2R(argument)
+			debug call Print("New degrees: " + R2S(degrees))
+		endif
+		debug call Print("New degrees in rad: " + R2S(bj_DEGTORAD * degrees))
+		call SetCameraFieldForPlayer(GetTriggerPlayer(), CAMERA_FIELD_ROTATION,  bj_DEGTORAD * degrees, 0.0)
+	endfunction
+
 static if (A_DEBUG_HANDLES) then
 	private function units takes ACheat cheat returns nothing
 		call ABenchmark.showUnits()
@@ -457,8 +476,8 @@ static if (DEBUG_MODE) then
 		call AStringPoolDebug()
 	endfunction
 
-	private function interfaceDebug takes ACheat cheat returns nothing
-		call AInterfaceDebug()
+	private function multiboardbarDebug takes ACheat cheat returns nothing
+		call AMultiboardBarDebug()
 	endfunction
 
 	private function signalDebug takes ACheat cheat returns nothing
@@ -488,10 +507,6 @@ static if (DEBUG_MODE and A_DEBUG_NATIVES) then
 endif
 
 static if (DEBUG_MODE) then
-	private function executionDebug takes ACheat cheat returns nothing
-		call AExecution()
-	endfunction
-
 	private function desyncDebug takes ACheat cheat returns nothing
 		call ADesyncDebug()
 	endfunction
@@ -535,6 +550,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("enable", false, enable)
 		call ACheat.create("disable", false, disable)
 		call ACheat.create("setdamage", false, setdamage)
+		call ACheat.create("rotate", false, rotate)
 endif
 
 static if (A_DEBUG_HANDLES) then
@@ -545,7 +561,7 @@ endif
 
 static if (DEBUG_MODE) then
 		call ACheat.create("debugstring", true, stringDebug)
-		call ACheat.create("debuginterface", true, interfaceDebug)
+		call ACheat.create("debugmultiboardbar", true, multiboardbarDebug)
 		call ACheat.create("debugsignal", true, signalDebug)
 		call ACheat.create("debuglist", true, listDebug)
 		call ACheat.create("debugmap", true, mapDebug)
@@ -557,7 +573,6 @@ static if (DEBUG_MODE and A_DEBUG_NATIVES) then
 endif
 
 static if (DEBUG_MODE) then
-		call ACheat.create("debugexecution", true, executionDebug)
 		call ACheat.create("debugdesync", true, desyncDebug)
 		call ACheat.create("debugbonusmod", true, bonusModDebug)
 		call ACheat.create("debugbash", true, bashDebug)

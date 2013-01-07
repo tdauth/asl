@@ -1,4 +1,4 @@
-library ALibraryCoreDebugDesync requires AStructCoreGeneralGroup, ALibraryCoreDebugMisc, AStructCoreInterfaceVolumeSet, ALibraryCoreInterfaceCamera, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceMusic, ALibraryCoreEnvironmentTerrainFog
+library ALibraryTestDesyncDesync requires AStructCoreGeneralGroup, ALibraryCoreDebugMisc, AStructCoreInterfaceVolumeSet, ALibraryCoreInterfaceCamera, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceMusic, ALibraryCoreEnvironmentTerrainFog
 
 	/**
 	 * 2012-12-15 works all, no desync!

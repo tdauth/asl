@@ -1,4 +1,4 @@
-library ALibraryCoreDebugBonusMod requires AStructCoreDebugUnitTest, ALibraryCoreDebugMisc, ALibrarySystemsBonusModBonusMod
+library ALibraryTestBonusModBonusMod requires AStructCoreDebugUnitTest, ALibraryCoreDebugMisc, ALibrarySystemsBonusModBonusMod
 
 	/*
 	constant integer A_BONUS_TYPE_DAMAGE = 0

@@ -1,4 +1,4 @@
-library ALibraryCoreDebugTimeOfDay requires ALibraryCoreDebugMisc, AStructCoreDebugBenchmark, ALibraryCoreEnvironmentTimeOfDay, ALibraryCoreStringConversion
+library ALibraryTestTimeOfDayTimeOfDay requires ALibraryCoreDebugMisc, AStructCoreDebugBenchmark, ALibraryCoreEnvironmentTimeOfDay, ALibraryCoreStringConversion
 
 	/**
 	 * Test for time of day functions.

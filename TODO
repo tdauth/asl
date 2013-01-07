@@ -1,22 +1,31 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
+* test A_DEBUG_NATIVES
+* Test CreateTrackableForPlayer() (sync?, crash?)!
+* Improve merge() of A_VECTOR.
+* Fix A_MAP.
+* No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
+* Change tests for containers, strings and time of day functions to unit tests:
+	* multiboard bar could get Unit Test too with dynamic refreshment
+* Revise MoveSubString() and MoveString() AND add unit tests.
+* 2.0 stuff:
+	* CreepSpotCreep
+	* effect functions
+	* environment functions
+	* group functions
+
 WORKS:
 static if (DEBUG_MODE) then
 	//! runtextmacro A_STRUCT_DEBUG("\"MyStruct\"")
 endif
 but deprecated since check is done in macro itself, optional is enough AND macro is declared even if the file isn't imported!
-Test
-* test A_DEBUG_NATIVES
+
 * DONE: test ResetTerrainFogForPlayer() for desync
 * DONE: fix IsUnitInvulnerable()
 * DEPRECATED: test AKillQuestItem.
 * FIXED: ShowBashTextTagForPlayer() needs proper colors?
 * DONE: Fix CreateImageForPlayer()
-* Test CreateTrackableForPlayer() (sync?, crash?)!
 * DEPRECATED: Revise AIndicator.
-* Improve merge() of A_VECTOR.
-* Fix A_MAP.
-* No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
 * DONE: test ALibraryCoreInterfaceCamera functions for desync
 * DONE: Test SetUnitVertexColourForPlayer()
 * DONE: Fix ShowUnitForPlayer()'s desync
@@ -30,8 +39,7 @@ Test
 	private integer m_shortcut
 * DONE: ARoutine: Maybe hook SetTimeOfDay etc. to get manual time changes and end routine periods?
 * DONE: Test new Unit Test framework.
-* Change tests for containers, strings and time of day functions to unit tests.
-* Move all tests into new directory "Test"
+* DONE: Move all tests into new directory "Test"
 *	//! runtextmacro A_TEST_RUN("ABonusModTest")
 	//! runtextmacro A_TEST_PRINT("ABonusModTest") doesn't print when run the first time
 * DONE: Test new string functions/change string test to unit test:
@@ -46,12 +54,6 @@ Test
 	function StringTrim takes string whichString returns string
 	function StringTrimLeft takes string whichString returns string
 	function StringTrimRight takes string whichString returns string
-* Revise MoveSubString() and MoveString() AND add unit tests.
-* 2.0 stuff:
-	* CreepSpotCreep
-	* effect functions
-	* environment functions
-	* group functions
 
 2011-11-22 Tamino Dauth <tamino@cdauth.eu>
 * Check out WaterKnight's ReviveUnit(): https://warcraft.ingame.de/forum/showthread.php?p=4633706&postcount=29#post4633706
