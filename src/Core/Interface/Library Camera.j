@@ -2,7 +2,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 
 	/**
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa PanCameraToWithZ()
 	 * \sa PanCameraToTimedLocForPlayer()
 	 */
@@ -14,7 +13,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 
 	/**
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa PanCameraToTimedWithZ()
 	 * \sa PanCameraToTimedLocForPlayer()
 	 */
@@ -26,7 +24,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 
 	/**
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa PanCameraToTimed()
 	 * \sa SmartCameraPanForPlayer()
 	 */
@@ -46,7 +43,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	/**
 	 * Similar to \ref SmartCameraPanBJ() but does not use location.
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa SmartCameraPanBJ()
 	 * \sa PanCameraToTimed()
 	 * \sa SmartCameraPan()
@@ -60,7 +56,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 
 	/**
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa PanCameraToTimedWithZ()
 	 * \sa SmartCameraPanWithZForPlayer()
 	 */
@@ -80,7 +75,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	/**
 	 * Similar to \ref SmartCameraPanBJ() but does not use location and uses Z value.
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa SmartCameraPanBJ()
 	 * \sa PanCameraToTimedWithZ()
 	 * \sa SmartCameraPanWithZ()
@@ -94,7 +88,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	/**
 	 * Similar to \ref SetCameraRotateMode() but uses degree not radian.
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa SetCameraRotateMode()
 	 */
 	function RotateCameraAround takes real x, real y, real degrees, real duration returns nothing
@@ -104,7 +97,6 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	/**
 	 * Similar to \ref RotateCameraAroundLocBJ() but does not use location.
 	 * \author Tamino Dauth
-	 * \todo synchron?
 	 * \sa RotateCameraAroundLocBJ()
 	 */
 	function RotateCameraAroundForPlayer takes player whichPlayer, real x, real y, real degrees, real duration returns nothing
