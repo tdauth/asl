@@ -30,11 +30,6 @@ library ALibraryTestStringMisc requires AStructCoreDebugUnitTest, ALibraryCoreDe
 				//! runtextmacro A_CHECK("InsertString(\"Peter went home!\", StringLength(\"Peter went home!\"), \" And this is the end!\") == \"Peter went home! And this is the end!\"")
 				//! runtextmacro A_CHECK("InsertString(\"Peter went home!\", 0, \"\") == \"Peter went home!\"")
 
-				// TODO fix/improve/revise and add tests
-				//function MoveSubString takes string whichString, integer position, integer length, integer newPosition returns string
-				//function MoveString takes string whichString, string movedString, integer newPosition returns string
-
-
 				//! runtextmacro A_CHECK("ReverseString(\"Peter went home!\") == \"!emoh tnew reteP\"")
 				//! runtextmacro A_CHECK("ReverseString(\"\") == \"\"")
 

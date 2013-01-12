@@ -27,12 +27,20 @@ library AStructCoreInterfacePlayerSelection requires optional ALibraryCoreDebugM
 
 		// methods
 
+		/**
+		 * Stores the current selection of the player.
+		 * \sa restore()
+		 */
 		public method store takes nothing returns nothing
 			call this.m_group.units().clear()
 			call SyncSelections()
 			call this.m_group.addUnitsSelected(this.m_player, null)
 		endmethod
 
+		/**
+		 * Restores the selection for its player which means that he selects the stored units only afterwards.
+		 * \sa store()
+		 */
 		public method restore takes nothing returns nothing
 			call this.m_group.selectOnlyForPlayer(this.m_player)
 		endmethod

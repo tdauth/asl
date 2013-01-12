@@ -13,7 +13,6 @@ library AStructSystemsGuiImage requires ALibraryCoreInterfaceImage, AStructSyste
 
 		// dynamic members
 
-		/// \todo Bugged in debug mode, causes game crash!
 		public method setFile takes string file returns nothing
 			set this.m_file = file
 			if (this.m_image != null) then // file is not dynamic :-(

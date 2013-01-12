@@ -1,3 +1,7 @@
+/**
+ * These functions extend Blizzard's music functions by new ones which can be used on players and forces only.
+ * They all have been tested and shouldn't lead to a desync!
+ */
 library ALibraryCoreInterfaceMusic
 
 	/**

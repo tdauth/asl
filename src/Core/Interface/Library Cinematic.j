@@ -144,7 +144,7 @@ library ALibraryCoreInterfaceCinematic
 	function SetUserInterfaceForPlayer takes player user, boolean show, boolean enableControl returns nothing
 		local player localPlayer = GetLocalPlayer()
 		if (user == localPlayer) then
-			call ShowInterface(show, 0.0)
+			call ShowInterface(show, 1.0) // never use 0.0!
 			call EnableUserControl(enableControl)
 		endif
 		set localPlayer = null

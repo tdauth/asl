@@ -174,7 +174,6 @@ endif
 	 * 	endmethod
 	 * endstruct
 	 * \endcode
-	 * \sa A_ZINC_STRUCT_DEBUG
 	 */
 	//! textmacro A_STRUCT_DEBUG takes STRUCTNAME
 static if (DEBUG_MODE) then
@@ -213,34 +212,6 @@ static if (DEBUG_MODE) then
 			return StaticPrintMethodErrorIf($STRUCTNAME$, condition, methodName, message)
 		endmethod
 endif
-	//! endtextmacro
-
-	/**
-	 * \sa A_STRUCT_DEBUG
-	 */
-	//! textmacro A_ZINC_STRUCT_DEBUG takes STRUCTNAME
-			/**
-			 * \copydoc PrintStructInstanceMessage
-			 */
-			public method print(string message)
-			{
-				if (IsPrintIdentifierDisabled($STRUCTNAME$))
-				{
-					return;
-				}
-
-				Print($STRUCTNAME$ + " - " + I2S(this) + ": " + message);
-			}
-
-			private static method staticPrint(string message)
-			{
-				if (IsPrintIdentifierDisabled($STRUCTNAME$))
-				{
-					return;
-				}
-
-				Print($STRUCTNAME$ + ": " + message);
-			}
 	//! endtextmacro
 
 	/**

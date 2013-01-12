@@ -39,6 +39,7 @@
 * debugbonusmod - Runs Bonus Mod test.
 * debugbash - Tests ShowBashTextTagForPlayer().
 * debugimage - Tests CreateImageForPlayer().
+* debugnatives - Test if option A_DEBUG_NATIVES does work.
 */
 library ALibrarySystemsDebugUtilities requires ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, ALibraryCoreStringConversion, ALibraryCoreInterfaceSelection, AStructCoreDebugBenchmark, AStructCoreDebugCheat, AStructCoreStringFormat, ALibrarySystemsBonusModBonusMod, ALibraryCoreInterfaceTextTag, ALibraryCoreInterfaceImage, ATest
 
@@ -91,6 +92,7 @@ static if (DEBUG_MODE) then
 		call Print("debugbonusmod")
 		call Print("debugbash")
 		call Print("debugimage")
+		call Print("debugnatives")
 endif
 		set triggerPlayer = null
 	endfunction
@@ -522,6 +524,10 @@ static if (DEBUG_MODE) then
 	private function imageDebug takes ACheat cheat returns nothing
 		call CreateImageForPlayer(Player(0), "Textures\\BackGround.blp", GetCameraTargetPositionX(), GetCameraTargetPositionY(), 0.0, 40.0, 40.0, true)
 	endfunction
+
+	private function nativesDebug takes ACheat cheat returns nothing
+		call ANativesDebug()
+	endfunction
 endif
 
 	function AInitUtilityCheats takes nothing returns nothing
@@ -577,6 +583,7 @@ static if (DEBUG_MODE) then
 		call ACheat.create("debugbonusmod", true, bonusModDebug)
 		call ACheat.create("debugbash", true, bashDebug)
 		call ACheat.create("debugimage", true, imageDebug)
+		call ACheat.create("debugnatives", true, nativesDebug)
 endif
 
 	endfunction

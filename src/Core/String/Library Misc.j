@@ -137,45 +137,6 @@ endif
 	endfunction
 
 	/**
-	 * Moves the sub string of string \p whichString at position \p position and with length \p length to position \p newPosition and returns the resulting string.
-	 * \param whichString String in which the sub string should be moved.
-	 * \param position Start position of the sub string.
-	 * \param length Length of the sub string.
-	 * \param newPosition Position in \p whichString with sub string contained to which the sub string should be moved.
-	 * \return Returns the new string with the moved string.
-	 */
-	function MoveSubString takes string whichString, integer position, integer length, integer newPosition returns string
-		local string result
-		local integer endIndex = position + length
-		debug call StringPositionDebug("MoveSubString", whichString, position)
-		debug call StringPositionDebug("MoveSubString", whichString, position + length - 1)
-		set result = RemoveSubString(whichString, position, length)
-		if (newPosition >= position + length) then
-			set newPosition = newPosition - length
-		endif
-		debug call StringPositionDebug("MoveSubString", result, newPosition)
-		debug call StringPositionDebug("MoveSubString", result, newPosition + length - 1)
-		return InsertString(result, newPosition, SubString(whichString, position, position + length))
-	endfunction
-
-	/**
-	* Moves string \p movedString of string \p whichString to position \p newPosition and returns the resulting string.
-	* \param whichString String in which string \p movedString should be moved.
-	* \param movedString String which should be moved.
-	* \param newPosition Position to which string \p movedString should be moved.
-	* \return Returns the new string with the moved string.
-	* \todo Doesn't work correctly. Missing rest of string when moving something.
-	*/
-	function MoveString takes string whichString, string movedString, integer newPosition returns string
-		local integer position = FindString(whichString, movedString)
-		if (position == -1) then
-			debug call PrintFunctionError("MoveString", "String \"" + whichString + "\" does not contain string \"" + movedString + "\".")
-			return whichString
-		endif
-		return MoveSubString(whichString, position, StringLength(movedString), newPosition)
-	endfunction
-
-	/**
 	* Reverses a string that it will be written backwards and returns the resulting string.
 	* \param whichString String which should be reversed.
 	* \return Returns the new reversed string.
