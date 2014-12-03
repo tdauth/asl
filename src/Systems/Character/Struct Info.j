@@ -1,10 +1,25 @@
 library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk, AStructSystemsCharacterVideo
 
-	/// \todo Shoud be a static member of \ref AInfo, vJass bug.
-	function interface AInfoCondition takes AInfo info returns boolean
+	/**
+	 * The interface for functions whiche are used as conditions for infos.
+	 * If they return false the info is not shown.
+	 * Since the function returns a value it is called by .evaluate().
+	 * \param info The info which should be shown.
+	 * \param character The character who the info is shown to.
+	 * \return Returns true if the info is shown. Otherwise it returns false and the info is hidden.
+	 * \todo Shoud be a static member of \ref AInfo, vJass bug.
+	 */
+	function interface AInfoCondition takes AInfo info, ACharacter character returns boolean
 
-	/// \todo Shoud be a static member of \ref AInfo, vJass bug.
-	function interface AInfoAction takes AInfo info returns nothing
+	/**
+	 * The interface for functions which are used as actions run when an info
+	 * is selected by the user.
+	 * Since the action is executed it is called by .execute().
+	 * \param info The info which has been selected by the user.
+	 * \param character The character which is talking to the NPC.
+	 * \todo Shoud be a static member of \ref AInfo, vJass bug.
+	 */
+	function interface AInfoAction takes AInfo info, ACharacter character returns nothing
 
 	/**
 	 * \brief Members of talks are called informations or just infos. Each info can be imagined like a choice for the character's owner displayed in the talk's dialog.
@@ -33,7 +48,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		// construction members
 		private ATalk m_talk
 		// members
-		private ADialogButton m_dialogButton
+		/// ADialogButton instances.
+		private ADialogButton array m_dialogButtons[12] /// \todo bj_MAX_PLAYERS
 		private integer m_talkIndex // store index for faster removal
 		private boolean array m_hasBeenShownToCharacter[12] /// \todo bj_MAX_PLAYERS
 
@@ -128,12 +144,13 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		// members
 
 		/**
+		 * \param whichPlayer The player which the info is shown to.
 		 * \return Returns true if the info is shown as \ref button in the talk's dialog.
 		 * \sa dialogButtonIndex()
 		 * \sa show()
 		 */
-		public method isShown takes nothing returns boolean
-			return this.m_dialogButton != 0
+		public method isShown takes player whichPlayer returns boolean
+			return this.m_dialogButtons[GetPlayerId(whichPlayer)] != 0
 		endmethod
 
 		/**
@@ -141,41 +158,29 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		 * \sa isShown()
 		 * \sa show()
 		 */
-		public method dialogButtonIndex takes nothing returns integer
-			if (not this.isShown()) then
+		public method dialogButtonIndex takes player whichPlayer returns integer
+			if (not this.isShown(whichPlayer)) then
 				return -1
 			endif
-			return this.m_dialogButton.index()
+			return ADialogButton(this.m_dialogButtons[GetPlayerId(whichPlayer)]).index()
 		endmethod
-
-		/**
-		 * \return Returns true if the info has been shown to \p character.
-		 * \sa hasBeenShown()
-		 * \sa hasBeenShownToPlayer()
-		 */
-		public method hasBeenShownToCharacter takes ACharacter character returns boolean
-			return this.m_hasBeenShownToCharacter[character.userId()]
-		endmethod
-
-		/**
-		 * \return Returns true if the info has been shown to the current character in talk.
-		 * \sa hasBeenShownToCharacter()
-		 * \sa hasBeenShownToPlayer()
-		 */
-		public method hasBeenShown takes nothing returns boolean
-			if (this.talk().isClosed()) then
-				return false
-			endif
-			return this.hasBeenShownToCharacter(this.talk().character())
-		endmethod
-
+		
 		/**
 		 * \return Returns true if the info has been shown to \p whichPlayer.
-		 * \sa hasBeenShown()
+		 * \sa hasBeenShownToCharacter()
 		 * \sa hasBeenShownToCharacter()
 		 */
 		public method hasBeenShownToPlayer takes player whichPlayer returns boolean
 			return this.m_hasBeenShownToCharacter[GetPlayerId(whichPlayer)]
+		endmethod
+
+		/**
+		 * \return Returns true if the info has been shown to \p character.
+		 * \sa hasBeenShownToCharacter()
+		 * \sa hasBeenShownToPlayer()
+		 */
+		public method hasBeenShownToCharacter takes ACharacter character returns boolean
+			return this.hasBeenShownToPlayer(character.player())
 		endmethod
 
 		/**
@@ -192,19 +197,28 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		 * Calls the info's action via .execute().
 		 * Afterwards it will be registered as shown for the corresponding player.
 		 * \sa action()
-		 * \sa hasBeenShown()
+		 * \sa hasBeenShownToCharacter()
 		 * \sa show()
 		 */
-		public method run takes nothing returns nothing
-			set this.m_hasBeenShownToCharacter[GetPlayerId(GetOwningPlayer(this.talk().character().unit()))] = true
-			call this.action().execute(this)
+		public method run takes ACharacter character returns nothing
+			set this.m_hasBeenShownToCharacter[GetPlayerId(character.player())] = true
+			call this.action().execute(this, character)
 		endmethod
 
 		private static method dialogButtonActionRunInfo takes ADialogButton dialogButton returns nothing
-			local ATalk talk = ACharacter.playerCharacter(dialogButton.dialog().player()).talk()
+			local ACharacter character = ACharacter.playerCharacter(dialogButton.dialog().player())
+			local ATalk talk = character.talk()
 			local thistype info = talk.getInfoByDialogButtonIndex(dialogButton.index())
-			call talk.clear() // NOTE necessary that all infos will return false for isShown()!
-			call info.run()
+			call talk.clear(character) // NOTE necessary that all infos will return false for isShown()!
+			call info.run(character)
+		endmethod
+		
+		private method createDialogButton takes player whichPlayer returns ADialogButton
+			if (this.m_dialogButtons[GetPlayerId(whichPlayer)] == 0) then
+				set this.m_dialogButtons[GetPlayerId(whichPlayer)] = AGui.playerGui(whichPlayer).dialog().addDialogButtonIndex(this.description(), thistype.dialogButtonActionRunInfo)
+			endif
+			
+			return this.m_dialogButtons[GetPlayerId(whichPlayer)]
 		endmethod
 
 		/**
@@ -215,18 +229,18 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		 * \sa hide()
 		 * \sa run()
 		 */
-		public method show takes nothing returns boolean
+		public method show takes ACharacter character returns boolean
 			local boolean result = false
-			if (this.permanent() or not this.hasBeenShown()) then
+			if (this.permanent() or not this.hasBeenShownToCharacter(character)) then
 				if (this.important()) then
-					if (this.condition() == 0 or this.condition().evaluate(this)) then
+					if (this.condition() == 0 or this.condition().evaluate(this, character)) then
 						set result = true
-						call this.run()
+						call this.run(character)
 					endif
 				else
-					if (this.condition() == 0 or this.condition().evaluate(this)) then
+					if (this.condition() == 0 or this.condition().evaluate(this, character)) then
 						set result = true
-						set this.m_dialogButton = AGui.playerGui(this.talk().character().player()).dialog().addDialogButtonIndex(this.description(), thistype.dialogButtonActionRunInfo)
+						call createDialogButton(character.player())
 					endif
 				endif
 			endif
@@ -237,9 +251,11 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		 * \todo This method is intended to hide the displayed \ref button but this cannot be done with any native function.
 		 * \sa show()
 		 */
-		public method hide takes nothing returns nothing
+		public method hide takes player whichPlayer returns nothing
 			// NOTE we cannot remove dialog buttons
-			set this.m_dialogButton = 0
+			if (this.m_dialogButtons[GetPlayerId(whichPlayer)] != 0) then
+				call ADialogButton(this.m_dialogButtons[GetPlayerId(whichPlayer)]).destroy()
+			endif
 		endmethod
 
 		/**
@@ -258,7 +274,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			// construction members
 			set this.m_talk = talk
 			// members
-			set this.m_dialogButton = 0
 			set this.m_talkIndex = talk.addInfoInstance(this)
 			return this
 		endmethod
@@ -331,22 +346,22 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	 * \sa speech2()
 	 * \sa ATalkLog
 	 */
-	function speech takes AInfo info, boolean toCharacter, string text, sound usedSound returns nothing
+	function speech takes AInfo info, ACharacter character, boolean toCharacter, string text, sound usedSound returns nothing
 		local real duration
-		local player user = info.talk().character().player()
+		local player user = character.player()
 		local unit speaker
 		local unit listener
 		local player speakerOwner
-		local boolean useThirdPerson = info.talk().useThirdPerson()
+		local boolean useThirdPerson = info.talk().useThirdPerson(user)
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
 			set speaker = info.talk().unit()
-			set listener = info.talk().character().unit()
+			set listener = character.unit()
 			set speakerOwner = GetOwningPlayer(info.talk().unit())
 		else
-			set speaker =  info.talk().character().unit()
+			set speaker =  character.unit()
 			set listener = info.talk().unit()
-			set speakerOwner = info.talk().character().player()
+			set speakerOwner = character.player()
 		endif
 		if (usedSound != null) then
 			set duration = GetSoundDurationBJ(usedSound)
@@ -360,8 +375,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(listener, 0.0)
 		endif
 		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, GetUnitName(speaker), text, duration, duration)
-		if (info.talk().character().talkLog() != 0) then
-			call info.talk().character().talkLog().addSpeech(info, toCharacter, text, usedSound)
+		if (character.talkLog() != 0) then
+			call character.talkLog().addSpeech(info, toCharacter, text, usedSound)
 		endif
 		if (skipTrigger == null) then
 			call TriggerSleepAction(duration)
@@ -397,14 +412,14 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	 * \sa initSpeechSkip()
 	 * \sa speech()
 	 */
-	function speech2 takes AInfo info, boolean toCharacter, string text, string soundFilePath returns nothing
+	function speech2 takes AInfo info, ACharacter character, boolean toCharacter, string text, string soundFilePath returns nothing
 		local sound whichSound = CreateSound(soundFilePath, false, false, true, 12700, 12700, "")
 		if (toCharacter) then
 			call SetSoundPosition(whichSound, GetUnitX(info.talk().unit()), GetUnitY(info.talk().unit()), GetUnitZ(info.talk().unit()))
 		else
-			call SetSoundPosition(whichSound, GetUnitX(info.talk().character().unit()), GetUnitY(info.talk().character().unit()), GetUnitZ(info.talk().character().unit()))
+			call SetSoundPosition(whichSound, GetUnitX(character.unit()), GetUnitY(character.unit()), GetUnitZ(character.unit()))
 		endif
-		call speech(info, toCharacter, text, whichSound)
+		call speech(info, character, toCharacter, text, whichSound)
 		call KillSoundWhenDone(whichSound)
 		set whichSound = null
 	endfunction

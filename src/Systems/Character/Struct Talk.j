@@ -1,7 +1,7 @@
 library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector, ALibraryCoreInterfaceMisc, ALibraryCoreMathsHandle, AStructSystemsCharacterCharacter
 
 	/// \todo Should be a part of \ref ATalk, vJass bug.
-	function interface ATalkStartAction takes ATalk talk returns nothing
+	function interface ATalkStartAction takes ATalk talk, ACharacter character returns nothing
 
 	/**
 	 * \brief Talks are a kind of dialogs with NPCs (\ref unit) which are implemented by using the Warcraft III \ref dialog natives.
@@ -49,7 +49,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		private unit m_unit
 		// members
 		private AIntegerVector m_infos
-		private ACharacter m_character
+		private AIntegerVector m_characters
 		private boolean m_isEnabled
 		private trigger m_orderTrigger
 		private effect m_effect
@@ -199,9 +199,12 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 
 		// members
 
-		/// \return Returns the character which is talking currently to the NPC.
-		public method character takes nothing returns ACharacter
-			return this.m_character
+		/**
+		 * The characters are stored in a vector which uses instances of type \ref ACharacter.
+		 * \return Returns the character which is talking currently to the NPC.
+		 */
+		public method characters takes nothing returns AIntegerVector
+			return this.m_characters
 		endmethod
 
 		/**
@@ -220,7 +223,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * \sa isClosed()
 		 */
 		public method isOpen takes nothing returns boolean
-			return this.character() != 0
+			return not this.characters().empty()
 		endmethod
 
 		/**
@@ -228,7 +231,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * \sa isOpen()
 		 */
 		public method isClosed takes nothing returns boolean
-			return this.character() == 0
+			return this.characters().empty()
 		endmethod
 
 		/**
@@ -237,19 +240,20 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * \sa setStartAction()
 		 * \sa startAction()
 		 */
-		public method showStartPage takes nothing returns nothing
+		public method showStartPage takes ACharacter character returns nothing
 			if (this.startAction() != 0) then
-				call this.startAction().execute(this) // create buttons
+				call this.startAction().execute(this, character) // create buttons
 			endif
 		endmethod
 
 		/**
 		 * Shows the talk's Warcraft III \ref dialog.
 		 * If no info has been added start page is shown automatically.
+		 * \param whichPlayer The player to which the dialog is shown.
 		 */
-		public method show takes nothing returns nothing
-			if (AGui.playerGui(this.m_character.player()).dialog().dialogButtons() > 0) then
-				call AGui.playerGui(this.m_character.player()).dialog().show()
+		public method show takes player whichPlayer returns nothing
+			if (AGui.playerGui(whichPlayer).dialog().dialogButtons() > 0) then
+				call AGui.playerGui(whichPlayer).dialog().show()
 			debug else
 				debug call this.print("No infos to be displayed in dialog.")
 			endif
@@ -262,7 +266,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * \sa show()
 		 * \sa hide()
 		 */
-		public method showRange takes integer first, integer last returns nothing
+		public method showRange takes integer first, integer last, ACharacter character returns nothing
 			local integer i = first
 static if (DEBUG_MODE) then
 			if (first < 0 or first >= this.m_infos.size()) then
@@ -274,10 +278,10 @@ static if (DEBUG_MODE) then
 endif
 			loop
 				exitwhen (i > last)
-				call AInfo(this.m_infos[i]).show.evaluate()
+				call AInfo(this.m_infos[i]).show.evaluate(character)
 				set i = i + 1
 			endloop
-			call this.show()
+			call this.show(character.player())
 		endmethod
 
 		/**
@@ -287,8 +291,8 @@ endif
 		 * \sa show()
 		 * \sa hide()
 		 */
-		public method showUntil takes integer last returns nothing
-			call this.showRange(0, last)
+		public method showUntil takes integer last, ACharacter character returns nothing
+			call this.showRange(0, last, character)
 		endmethod
 
 		/**
@@ -298,34 +302,40 @@ endif
 		 * \sa show()
 		 * \sa hide()
 		 */
-		public method showAll takes nothing returns nothing
-			call this.showUntil(this.m_infos.backIndex())
+		public method showAll takes ACharacter character returns nothing
+			call this.showUntil(this.m_infos.backIndex(), character)
 		endmethod
 
 		/**
-		 * Hides the talks dialog for the character's owner.
+		 * Hides the talks dialog for \p whichPlayer.
 		 * \sa showRange()
 		 * \sa showUntil()
 		 * \sa showAll()
 		 * \sa show()
 		 */
-		public method hide takes nothing returns nothing
-			call AGui.playerGui(this.m_character.player()).dialog().hide()
+		public method hide takes player whichPlayer returns nothing
+			call AGui.playerGui(whichPlayer).dialog().hide()
 		endmethod
 
 		/**
 		 * You do not have to clear the dialog anywhere since \ref AInfo clears it whenever an info is runned!
+		 * This clears the dialog manually.
 		 */
-		public method clear takes nothing returns nothing
+		public method clear takes player whichPlayer returns nothing
 			local integer i = 0
 			loop
 				exitwhen (i == this.m_infos.size())
-				call AInfo(this.m_infos[i]).hide.evaluate()
+				call AInfo(this.m_infos[i]).hide.evaluate(whichPlayer)
 				set i = i + 1
 			endloop
-			call AGui.playerGui(this.m_character.player()).dialog().clear()
+			call AGui.playerGui(whichPlayer).dialog().clear()
 		endmethod
 
+		/**
+		 * Adds a new info with the given values.
+		 * The same happens when the constructor of \ref AInfo is called externally.
+		 * \return Returns the newly created info.
+		 */
 		public method addInfo takes boolean permanent, boolean important, AInfoCondition condition, AInfoAction action, string description returns AInfo
 			return AInfo.create.evaluate(this, permanent, important, condition, action, description)
 		endmethod
@@ -335,26 +345,23 @@ endif
 			return AInfo.create.evaluate(this, true, false, 0, action, A_TEXT_BACK)
 		endmethod
 
-		private static method infoActionBackToStartPage takes AInfo info returns nothing
-			call info.talk.evaluate().showStartPage()
+		private static method infoActionBackToStartPage takes AInfo info, ACharacter character returns nothing
+			call info.talk.evaluate().showStartPage(character)
 		endmethod
 
 		/// \todo Use translated string from Warcraft III.
 		public method addBackToStartPageButton takes nothing returns AInfo
 			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionBackToStartPage, A_TEXT_BACK)
 		endmethod
-
+		
 		/**
-		 * \returns Returns if info with index \p index has already been shown to the character which is talking currently to the NPC.
+		 * \param whichPlayer Should be the owner of any character.
+		 * \sa infoHasBeenShown()
 		 * \sa infoHasBeenShownToCharacter()
-		 * \sa infoHasBeenShownToPlayer()
 		 * \sa AInfo.hasBeenShownToCharacter()
 		 */
-		public method infoHasBeenShown takes integer index returns boolean
-			if (this.isClosed()) then
-				return false
-			endif
-			return AInfo(this.m_infos[index]).hasBeenShownToCharacter.evaluate(this.character().userId())
+		public method infoHasBeenShownToPlayer takes integer index, player whichPlayer returns boolean
+			return AInfo(this.m_infos[index]).hasBeenShownToPlayer.evaluate(whichPlayer)
 		endmethod
 
 		/**
@@ -367,43 +374,32 @@ endif
 		endmethod
 
 		/**
-		 * \param whichPlayer Should be the owner of any character.
-		 * \sa infoHasBeenShown()
-		 * \sa infoHasBeenShownToCharacter()
-		 * \sa AInfo.hasBeenShownToCharacter()
-		 */
-		public method infoHasBeenShownToPlayer takes integer index, player whichPlayer returns boolean
-			return AInfo(this.m_infos[index]).hasBeenShownToCharacter.evaluate(GetPlayerId(whichPlayer))
-		endmethod
-
-		/**
-		 * \return Returns true if third person camera system is enabled for the current character.
+		 * \return Returns true if third person camera system is enabled for \p character.
 		 * \sa character()
 		 */
-		public method useThirdPerson takes nothing returns boolean
-			if (this.character() == 0) then
+		public method useThirdPerson takes ACharacter character returns boolean
+			if (not this.m_characters.contains(character)) then
 				return false
 			endif
-			return ACharacter.useViewSystem() and this.character().view().enableAgain()
+			return ACharacter.useViewSystem() and character.view().enableAgain()
 		endmethod
 
-		private method hideUserInterfaceForPlayer takes boolean hide returns nothing
-			call SetUserInterfaceForPlayer(this.character().player(), false, hide)
+		private method hideUserInterfaceForPlayer takes player whichPlayer, boolean hide returns nothing
+			call SetUserInterfaceForPlayer(whichPlayer, false, hide)
 		endmethod
 
 		/**
 		 * Opens the talks initial dialog by running its start action for owner of \p character.
 		 * Both, the NPC and the character are paused and do face each other.
 		 * The owner's dialog is cleared automatically and its title is set to the name of the NPC.
-		 * \return Returns true if talk has been started properly. Otherwise (for example if it's already in use by another one) it returns false.
+		 * 
 		 * \note Usually you don't have to call this method since talks will be activated by a specific unit order.
 		 */
-		public method openForCharacter takes ACharacter character returns boolean
-			if (this.m_character != 0) then
-				debug call this.print("Character is not 0.")
-				return false
-			endif
-			set this.m_character = character
+		public method openForCharacter takes ACharacter character returns nothing
+			debug if (this.characters().contains(character)) then
+				debug call this.print("Character " + character + " is already part of the talk.")
+			debug endif
+			call this.m_characters.pushBack(character)
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(true)
 			endif
@@ -414,7 +410,7 @@ endif
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
 			call SetUnitLookAt(character.unit(), "bone_head", this.m_unit, 0.0, 0.0, GetUnitFlyHeight(this.m_unit) + 90.0)
 			call SetUnitLookAt(this.m_unit, "bone_head", character.unit(), 0.0, 0.0, GetUnitFlyHeight(character.unit()) + 90.0)
-			if (this.useThirdPerson()) then
+			if (this.useThirdPerson(character)) then
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamAoa()
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamRot()
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).disable()
@@ -422,8 +418,7 @@ endif
 			endif
 			call AGui.playerGui(character.player()).dialog().clear()
 			call AGui.playerGui(character.player()).dialog().setMessage(GetUnitName(this.m_unit))
-			call this.showStartPage() // create buttons
-			return true
+			call this.showStartPage(character) // create buttons
 		endmethod
 
 		/**
@@ -431,13 +426,12 @@ endif
 		 * Besides unit looking constraints are reset.
 		 * \sa openForCharacter()
 		 */
-		public method close takes nothing returns nothing
-			local player characterUser = this.m_character.player()
-			if (this.isClosed()) then
+		public method close takes ACharacter character returns nothing
+			if (this.isClosed(character)) then
 				return
 			endif
-			call AGui.playerGui(characterUser).dialog().clear()
-			call ResetUnitLookAt(this.m_character.unit())
+			call AGui.playerGui(character.player()).dialog().clear()
+			call ResetUnitLookAt(character.unit())
 			call ResetUnitLookAt(this.m_unit)
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(false)
@@ -448,30 +442,20 @@ endif
 				call ResetToGameCameraForPlayer(characterUser, 0.0)
 			endif
 			*/
-			call this.m_character.setTalk(0)
-			call this.m_character.setMovable(true)
-			set this.m_character = 0
-			call PauseUnit(this.m_unit, false) //Enables routines or something else
-			set characterUser = null
+			call character.setTalk(0)
+			call character.setMovable(true)
+			call this.m_characters.remove(character)
+			/*
+			 * When there is no character left to talk to the NPC can go on working on anything.
+			 */
+			if (this.m_characters.empty()) then
+				call PauseUnit(this.m_unit, false) // Enables routines or something else
+			endif
 		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			local boolean result = false
-			if (GetIssuedOrderId() == this.orderId()) then
-				// Is character, if there is shared control or controller is computer player talks can not be used.
-				if (GetPlayerSlotState(GetOwningPlayer(GetTriggerUnit())) != PLAYER_SLOT_STATE_LEFT and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) then
-					if (GetOrderTargetUnit() == this.unit()) then
-						if (not this.hasMaxOrderDistance() or GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance()) then //Z value is not checked
-							set result = (this.character() == 0)
-							if (not result and this.hasOrderErrorMessage()) then
-								call ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).displayMessage(ACharacter.messageTypeError, this.orderErrorMessage())
-							endif
-						endif
-					endif
-				endif
-			endif
-			return result
+			return (GetIssuedOrderId() == this.orderId()) and (GetPlayerSlotState(GetOwningPlayer(GetTriggerUnit())) != PLAYER_SLOT_STATE_LEFT and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) and (GetOrderTargetUnit() == this.unit()) and (not this.hasMaxOrderDistance() or GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance())
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
@@ -512,8 +496,8 @@ endif
 			call this.updateOrderTrigger()
 		endmethod
 
-		private static method infoActionExit takes AInfo info returns nothing
-			call info.talk.evaluate().close()
+		private static method infoActionExit takes AInfo info, ACharacter character returns nothing
+			call info.talk.evaluate().close(character)
 		endmethod
 
 		/**
@@ -552,8 +536,8 @@ endif
 			endif
 		endmethod
 
-		public method isInfoShown takes integer index returns boolean
-			return AInfo(this.m_infos[index]).isShown.evaluate()
+		public method isInfoShown takes integer index, player whichPlayer returns boolean
+			return AInfo(this.m_infos[index]).isShown.evaluate(whichPlayer)
 		endmethod
 
 		/**
@@ -564,18 +548,18 @@ endif
 		endmethod
 
 		/// Used by \ref AInfo.
-		public method showInfo takes integer index returns boolean
-			return AInfo(this.m_infos[index]).show.evaluate()
+		public method showInfo takes integer index, ACharacter character returns boolean
+			return AInfo(this.m_infos[index]).show.evaluate(character)
 		endmethod
 
 		/**
 		 * \note Returns only shown info!
 		 */
-		public method getInfoByDialogButtonIndex takes integer dialogButtonIndex returns AInfo
+		public method getInfoByDialogButtonIndex takes integer dialogButtonIndex, player whichPlayer returns AInfo
 			local integer i = 0
 			loop
 				exitwhen (i == this.m_infos.size())
-				if (AInfo(this.m_infos[i]).isShown.evaluate() and AInfo(this.m_infos[i]).dialogButtonIndex.evaluate() == dialogButtonIndex) then
+				if (AInfo(this.m_infos[i]).isShown.evaluate(whichPlayer) and AInfo(this.m_infos[i]).dialogButtonIndex.evaluate(whichPlayer) == dialogButtonIndex) then
 					return AInfo(this.m_infos[i])
 				endif
 				set i = i + 1
@@ -651,13 +635,7 @@ endif
 		 * \sa hideUserInterface()
 		 */
 		public method setHideUserInterface takes boolean hide returns nothing
-			if (hide == this.m_hideUserInterface) then
-				return
-			endif
 			set this.m_hideUserInterface = hide
-			if (hide and this.isOpen()) then
-				call this.hideUserInterfaceForPlayer(true)
-			endif
 		endmethod
 
 		/**
@@ -688,7 +666,7 @@ endif
 			set this.m_startAction = startAction
 			// members
 			set this.m_infos = AIntegerVector.create()
-			set this.m_character = 0
+			set this.m_characters = AIntegerVector.create()
 			set this.m_isEnabled = true
 			set this.m_orderTrigger = null
 			set this.m_effect = null
@@ -728,12 +706,24 @@ endif
 			endloop
 			call this.m_infos.destroy()
 		endmethod
+		
+		/**
+		 * Closes the talk for all characters which still have it open.
+		 */
+		private method destroyCharacters takes nothing returns nothing
+			loop
+				exitwhen (this.m_characters.empty())
+				call this.close(ACharacter(this.m_characters.back()))
+			endloop
+			call this.m_characters.destroy()
+		endmethod
 
 		public method onDestroy takes nothing returns nothing
 			// construction members
 			set this.m_unit = null
 
 			call this.destroyInfos()
+			call this.destroyCharacters()
 			call this.destroyOrderTrigger()
 			call this.destroyEffect()
 		endmethod

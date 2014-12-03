@@ -1,5 +1,6 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
+* ATalk should work with multiple characters at the same time. Required feature from "Die Macht des Feuers". It is very annoying to use a talk for only one player at once.
 * Test CreateTrackableForPlayer() (sync?, crash?)!
 * Improve merge() of A_VECTOR.
 * Fix A_MAP.

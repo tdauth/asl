@@ -440,6 +440,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call thistype.clearItemIndex(slotItem)
 			call DisableTrigger(this.m_dropTrigger)
 			call RemoveItem(slotItem)
+			debug call Print("Removing slot item: " + GetItemName(slotItem))
 			call EnableTrigger(this.m_dropTrigger)
 			// equipped items must always have an item type
 			//if (itemType != 0) then

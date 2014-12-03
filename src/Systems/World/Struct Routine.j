@@ -93,7 +93,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		/**
-		 * Called by .evaluate().
+		 * Called by .execute().
 		 * Usually calls \ref startAction() via .execute().
 		 */
 		public stub method onStart takes ARoutinePeriod period returns nothing
@@ -103,7 +103,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		/**
-		 * Called by .evaluate().
+		 * Called by .execute().
 		 * Usually calls \ref endAction() via .execute().
 		 */
 		public stub method onEnd takes ARoutinePeriod period returns nothing
@@ -113,7 +113,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		/**
-		 * Called by .evaluate().
+		 * Called by .execute().
 		 * Usually calls \ref targetAction() via .execute().
 		 */
 		public stub method onTarget takes ARoutinePeriod period returns nothing
@@ -300,7 +300,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call DisableTrigger(GetTriggeringTrigger())
 			//debug call this.print("Routine is " + I2S(this.routine()))
-			call this.routine().onTarget.evaluate(this)
+			call this.routine().onTarget.execute(this)
 			//debug call this.print("Before destroying target trigger")
 			call this.destroyTargetTrigger() // destroys this trigger
 			//debug call this.print("After target trigger destruction")
@@ -334,10 +334,10 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 						call thistype.clearNext(this.unit())
 					endif
 					call thistype.setCurrent(this.unit(), this)
-					call this.routine().onStart.evaluate(this)
+					call this.routine().onStart.execute(this)
 					if (this.routine().hasTarget()) then
 						if (RectContainsUnit(this.m_targetRect, this.unit())) then // already at target
-							call this.routine().onTarget.evaluate(this)
+							call this.routine().onTarget.execute(this)
 						else
 							call this.createTargetTrigger()
 						endif
@@ -373,7 +373,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				if (this.routine().hasTarget() and this.m_targetTrigger != null) then
 					call this.destroyTargetTrigger()
 				endif
-				call this.routine().onEnd.evaluate(this)
+				call this.routine().onEnd.execute(this)
 			endif
 		endmethod
 
@@ -395,7 +395,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				call EnableTrigger(this.m_endTrigger)
 				if (this.m_targetTrigger != null) then
 					if (RectContainsUnit(this.m_targetRect, this.unit())) then // reached target
-						call this.routine().onTarget.evaluate(this)
+						call this.routine().onTarget.execute(this)
 						call this.destroyTargetTrigger()
 					else // has to reach target
 						call EnableTrigger(this.m_targetTrigger)
@@ -403,7 +403,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					endif
 				// is still in target and loop action
 				elseif (RectContainsUnit(this.m_targetRect, this.unit()) and this.routine().isLoop()) then
-					call this.routine().onTarget.evaluate(this)
+					call this.routine().onTarget.execute(this)
 				endif
 			endif
 		endmethod
@@ -583,7 +583,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				if (this.isInTime()) then
 					call thistype.clearNext(whichUnit)
 					call thistype.setCurrent(whichUnit, this)
-					call this.routine().onStart.evaluate(this)
+					call this.routine().onStart.execute(this)
 				endif
 			endif
 		endmethod
