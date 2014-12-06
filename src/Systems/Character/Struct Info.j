@@ -208,8 +208,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		private static method dialogButtonActionRunInfo takes ADialogButton dialogButton returns nothing
 			local ACharacter character = ACharacter.playerCharacter(dialogButton.dialog().player())
 			local ATalk talk = character.talk()
-			local thistype info = talk.getInfoByDialogButtonIndex(dialogButton.index())
-			call talk.clear(character) // NOTE necessary that all infos will return false for isShown()!
+			local thistype info = talk.getInfoByDialogButtonIndex(dialogButton.index(), character.player())
+			call talk.clear(character.player()) // NOTE necessary that all infos will return false for isShown()!
 			call info.run(character)
 		endmethod
 		
@@ -253,9 +253,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		 */
 		public method hide takes player whichPlayer returns nothing
 			// NOTE we cannot remove dialog buttons
-			if (this.m_dialogButtons[GetPlayerId(whichPlayer)] != 0) then
-				call ADialogButton(this.m_dialogButtons[GetPlayerId(whichPlayer)]).destroy()
-			endif
+			set this.m_dialogButtons[GetPlayerId(whichPlayer)] = 0
 		endmethod
 
 		/**
@@ -265,6 +263,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		 */
 		public static method create takes ATalk talk, boolean permanent, boolean important, AInfoCondition condition, AInfoAction action, string description returns thistype
 			local thistype this = thistype.allocate()
+			local integer i
 			// dynamic members
 			set this.m_permanent = permanent
 			set this.m_important = important
@@ -274,7 +273,14 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			// construction members
 			set this.m_talk = talk
 			// members
+			set i = 0
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				set m_dialogButtons[i] = 0
+				set i = i + 1
+			endloop
 			set this.m_talkIndex = talk.addInfoInstance(this)
+			
 			return this
 		endmethod
 
@@ -352,7 +358,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		local unit speaker
 		local unit listener
 		local player speakerOwner
-		local boolean useThirdPerson = info.talk().useThirdPerson(user)
+		local boolean useThirdPerson = info.talk().useThirdPerson(character)
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
 			set speaker = info.talk().unit()

@@ -819,17 +819,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private method setEquipmentItem takes integer equipmentType, AInventoryItemData inventoryItemData, boolean add returns nothing
-			local AItemType itemType
+			local AItemType itemType = AItemType.itemTypeOfItemTypeId(inventoryItemData.itemTypeId())
 			set this.m_equipmentItemData[equipmentType] = inventoryItemData
 			if (add) then
 				call this.showEquipmentItem(equipmentType)
 			elseif (this.m_rucksackIsEnabled) then
-				set itemType = AItemType.itemTypeOfItemTypeId(inventoryItemData.itemTypeId())
 				// equipped items must always have an item type
 				//if (itemType != 0) then
 					call itemType.addPermanentAbilities(this.character().unit())
 				//endif
 			endif
+			call itemType.onEquipItem.execute(this.character().unit(), equipmentType)
 		endmethod
 
 		private method setEquipmentItemByItem takes integer equipmentType, item usedItem, boolean add returns nothing
@@ -844,7 +844,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method clearEquipmentItem takes integer equipmentType, boolean drop returns nothing
 			local unit characterUnit = this.character().unit()
 			local item slotItem
-			local AItemType itemType
+			local AItemType itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 
 			if (not this.m_rucksackIsEnabled) then
 				set slotItem = UnitItemInSlot(characterUnit, equipmentType)
@@ -860,7 +860,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					set slotItem = null
 				endif
 			else
-				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 				// equipped items must always have an item type
 				//if (itemType != 0) then
 					call itemType.removePermanentAbilities(characterUnit)
@@ -868,6 +867,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 			call this.m_equipmentItemData[equipmentType].destroy()
 			set this.m_equipmentItemData[equipmentType] = 0
+			call itemType.onUnequipItem.execute(characterUnit, equipmentType)
 			call this.checkEquipment.evaluate() //added
 			set characterUnit = null
 		endmethod

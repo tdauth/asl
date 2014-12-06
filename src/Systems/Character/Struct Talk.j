@@ -219,19 +219,19 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		//methods
 
 		/**
-		 * \return Returns true if talk is currently in use by any character.
+		 * \return Returns true if talk is currently in use by \p character.
 		 * \sa isClosed()
 		 */
-		public method isOpen takes nothing returns boolean
-			return not this.characters().empty()
+		public method isOpen takes ACharacter character returns boolean
+			return not this.characters().contains(character)
 		endmethod
 
 		/**
-		 * \return Returns true if no character talks to the NPC at the moment.
+		 * \return Returns true if \p character does not talk to the NPC at the moment.
 		 * \sa isOpen()
 		 */
-		public method isClosed takes nothing returns boolean
-			return this.characters().empty()
+		public method isClosed takes ACharacter character returns boolean
+			return not this.characters().contains(character)
 		endmethod
 
 		/**
@@ -378,9 +378,6 @@ endif
 		 * \sa character()
 		 */
 		public method useThirdPerson takes ACharacter character returns boolean
-			if (not this.m_characters.contains(character)) then
-				return false
-			endif
 			return ACharacter.useViewSystem() and character.view().enableAgain()
 		endmethod
 
@@ -397,11 +394,11 @@ endif
 		 */
 		public method openForCharacter takes ACharacter character returns nothing
 			debug if (this.characters().contains(character)) then
-				debug call this.print("Character " + character + " is already part of the talk.")
+				debug call this.print("Character " + I2S(character) + " is already part of the talk.")
 			debug endif
 			call this.m_characters.pushBack(character)
 			if (this.hideUserInterface()) then
-				call this.hideUserInterfaceForPlayer(true)
+				call this.hideUserInterfaceForPlayer(character.player(), true)
 			endif
 			call character.setTalk(this)
 			call character.setMovable(false)
@@ -427,6 +424,7 @@ endif
 		 * \sa openForCharacter()
 		 */
 		public method close takes ACharacter character returns nothing
+			debug call Print("Close for character: " + I2S(character))
 			if (this.isClosed(character)) then
 				return
 			endif
@@ -434,7 +432,7 @@ endif
 			call ResetUnitLookAt(character.unit())
 			call ResetUnitLookAt(this.m_unit)
 			if (this.hideUserInterface()) then
-				call this.hideUserInterfaceForPlayer(false)
+				call this.hideUserInterfaceForPlayer(character.player(), false)
 			endif
 			/*
 			if (not ACharacter.useViewSystem() or not this.m_character.view().enableAgain()) then
@@ -497,7 +495,8 @@ endif
 		endmethod
 
 		private static method infoActionExit takes AInfo info, ACharacter character returns nothing
-			call info.talk.evaluate().close(character)
+			debug call Print("Execute exit: " + I2S(character))
+			call info.talk.evaluate().close.evaluate(character)
 		endmethod
 
 		/**

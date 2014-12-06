@@ -191,14 +191,6 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			return this.m_dialogButtons.backIndex()
 		endmethod
 
-		/// \todo Friend relation to \ref ADialogButton, do not use!
-		public method removeDialogButtonInstanceByIndex takes integer index returns nothing
-			if (this.m_dialogButtons.size() - this.m_maxPageNumber * thistype.maxPageButtons == 0) then
-				set this.m_maxPageNumber = this.m_maxPageNumber - 1
-			endif
-			call this.m_dialogButtons.erase(index)
-		endmethod
-
 		public method dialogButtons takes nothing returns integer
 			return this.m_dialogButtons.size()
 		endmethod
@@ -216,6 +208,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			loop
 				exitwhen (this.m_dialogButtons.empty())
 				call ADialogButton(this.m_dialogButtons.back()).destroy() // removes itself from the list!
+				call this.m_dialogButtons.popBack()
 			endloop
 			set this.m_currentPage = 0
 			call DialogClear(this.m_dialog)
