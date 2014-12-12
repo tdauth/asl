@@ -1,36 +1,83 @@
-library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPointInterface, optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreMathsPoint
+library AStructSystemsWorldItemSpawnPoint requires ALibraryCoreEnvironmentSound, AInterfaceSystemsWorldSpawnPointInterface,  optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable
 
 	/**
-	 * Unfortunately there is no known possibility to register generic item death or pickup events.
-	 * For this reason there is being created a single timer which checks if any item was moved away from its respawn position.
-	 * Instead of having a group of members which have all to be dead or removed, item spawn points have to be created for each item uniquely.
+	 * \brief Item spawn points allow to place items from an item pool in a given period of time whenever they are picked up or destroyed.
+	 *
+	 * Use \ref addItemType() to add any item type with a specific weight to the pool.
+	 * The constructor \ref createFromItemWithType() can be used to create a spawn point using an existing item and adding its type.
+	 *
 	 * \sa ASpawnPoint
 	 */
 	struct AItemSpawnPoint extends ASpawnPointInterface
-		// static construction members
-		private static real m_time
-		private static real m_removalRange
-		// static members
-		private static AIntegerList m_itemSpawnPoints
-		private static timer m_respawnTimer
-		// members
+		// dynamic members
+		private real m_time
 		private real m_x
 		private real m_y
+		private string m_effectFilePath
+		private string m_soundFilePath
+		// members
 		private itempool m_itemPool
 		private item m_item
 		private timer m_timer
 		private boolean m_isEnabled
 		private boolean m_runs // required because of restarting before finishing!
+		private trigger m_pickUpTrigger
+		private trigger m_deathTrigger
 
 		//! runtextmacro A_STRUCT_DEBUG("\"AItemSpawnPoint\"")
-
+		
+		// dynamic members
+		
+		/**
+		 * \param time This is the value of the time (in seconds) which has to expired until the item is respawned.
+		 */
+		public method setTime takes real time returns nothing
+			set this.m_time = time
+		endmethod
+		
+		public method time takes nothing returns real
+			return this.m_time
+		endmethod
+		
+		public method setX takes real x returns nothing
+			set this.m_x = x
+		endmethod
+		
 		public method x takes nothing returns real
 			return this.m_x
+		endmethod
+		
+		public method setY takes real y returns nothing
+			set this.m_y = y
 		endmethod
 
 		public method y takes nothing returns real
 			return this.m_y
 		endmethod
+		
+		/**
+		 * \param effectFilePath File fath of the effect which is shown when the units respawn. If this value is null there won't be shown any effect.
+		 */
+		public method setEffectFilePath takes string effectFilePath returns nothing
+			set this.m_effectFilePath = effectFilePath
+		endmethod
+		
+		public method effectFilePath takes nothing returns string
+			return this.m_effectFilePath
+		endmethod
+		
+		/**
+		 * \param soundFilePath File path of the sound which is played when the units respawn. If this value is null there won't be played any sound.
+		 */
+		public method setSoundFilePath takes string soundFilePath returns nothing
+			set this.m_soundFilePath = soundFilePath
+		endmethod
+	
+		public method soundFilePath takes nothing returns string
+			return this.m_soundFilePath
+		endmethod
+		
+		// members
 
 		public method item takes nothing returns item
 			return this.m_item
@@ -55,10 +102,18 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 			return TimerGetRemaining(this.m_timer)
 		endmethod
 
+		/**
+		 * \return Returns true if the timer for the respawn is running.
+		 */
 		public method runs takes nothing returns boolean
 			return this.m_runs
 		endmethod
 
+		/**
+		 * Pauses the respawn if it does already run.
+		 * \return Returns true if the timer has been paused. Otherwise if the timer does not run it returns false.
+		 * \sa runs()
+		 */
 		public method pause takes nothing returns boolean
 			if (not this.runs()) then
 				return false
@@ -84,26 +139,64 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 			set this.m_isEnabled = false
 			call this.pause()
 		endmethod
+		
+		private static method triggerConditionDeath takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+	
+			return GetTriggerWidget() == this.m_item
+		endmethod
+		
+		private static method triggerActionDeath takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			
+			call this.respawn.evaluate()
+		endmethod
+		
+		private method createDeathTrigger takes nothing returns nothing
+			set this.m_deathTrigger = CreateTrigger()
+			call TriggerRegisterDeathEvent(this.m_deathTrigger, this.m_item)
+			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionDeath))
+			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
+			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
+		endmethod
+		
+		private method destroyDeathTrigger takes nothing returns nothing
+			if (this.m_deathTrigger != null) then
+				call AHashTable.global().destroyTrigger(this.m_deathTrigger)
+				set this.m_deathTrigger = null
+			endif
+		endmethod
 
 		public method spawn takes nothing returns boolean
+			local effect whichEffect = null
 			if (this.m_item != null) then
 				return false
 			endif
 			set this.m_item = PlaceRandomItem(this.m_itemPool, this.m_x, this.m_y)
+			
 			debug if (this.m_item == null) then
 				debug call this.print("Could not spawn item.")
 			debug endif
-			return true
+			
+			if (this.m_item != null) then
+				call EnableTrigger(this.m_pickUpTrigger)
+				call this.createDeathTrigger()
+				
+				if (this.effectFilePath() != null) then
+					set whichEffect = AddSpecialEffect(this.effectFilePath(), GetItemX(this.m_item), GetItemX(this.m_item))
+					call DestroyEffect(whichEffect)
+					set whichEffect = null
+				endif
+				if (this.soundFilePath() != null) then
+					call PlaySoundFileAt(this.soundFilePath(), GetItemX(this.m_item), GetItemY(this.m_item), GetItemZ(this.m_item))
+				endif
+				
+				return true
+			endif
+			
+			return false
 		endmethod
-
-		/**
-		 * Since you can't recognize when an item is killed we check its position and life manually.
-		 * \return Returns true if the item will be respawned next time.
-		 */
-		public method willBeRespawned takes nothing returns boolean
-			return (not this.runs() and this.m_isEnabled and (this.m_item == null or IsItemOwned(this.m_item) or GetWidgetLife(this.m_item) <= 0.0 or GetDistanceBetweenPoints(GetItemX(this.m_item), GetItemY(this.m_item), 0.0, this.m_x, this.m_y, 0.0) > thistype.m_removalRange))
-		endmethod
-
+		
 		private static method timerFunctionRespawn takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), "this")
 			call this.spawn()
@@ -111,28 +204,58 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		endmethod
 
 		private method respawn takes nothing returns nothing
-			if (this.willBeRespawned()) then
-				set this.m_runs = true
-				set this.m_item = null
-				if (this.m_timer == null) then
-					set this.m_timer = CreateTimer()
-					call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
-				endif
-				call TimerStart(this.m_timer, thistype.m_time, false, function thistype.timerFunctionRespawn)
+			debug call this.print("Starting respawn with item: " + GetItemName(this.m_item) + " with time " + R2S(this.time()))
+			call DisableTrigger(this.m_pickUpTrigger)
+			call this.destroyDeathTrigger()
+			set this.m_item = null
+			if (this.m_timer == null) then
+				set this.m_timer = CreateTimer()
+				call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
 			endif
+			call TimerStart(this.m_timer, this.time(), false, function thistype.timerFunctionRespawn)
+			set this.m_runs = true
+		endmethod
+		
+		private static method triggerConditionPickUp takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+	
+			return GetManipulatedItem() == this.m_item
+		endmethod
+		
+		private static method triggerActionPickUp takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			
+			call this.respawn()
 		endmethod
 
-		public static method create takes item whichItem, real weight returns thistype
+		/**
+		 * Creates a new item spawn point using \p x and \p y as coordinates and \p whichItem as initially spawned item.
+		 * \param whichItem If this value is null the respawn has to be started manually at any time.
+		 */
+		public static method create takes real x, real y, item whichItem returns thistype
 			local thistype this = thistype.allocate()
-			set this.m_x = GetItemX(whichItem)
-			set this.m_y = GetItemY(whichItem)
+			// dynamic members
+			set this.m_time = 60.0
+			set this.m_x = x
+			set this.m_y = y
+			set this.m_effectFilePath = null
+			set this.m_soundFilePath = null
+			// members
 			set this.m_itemPool = CreateItemPool()
-			call this.addItemType(GetItemTypeId(whichItem), weight)
 			set this.m_item = whichItem
 			set this.m_timer = null
 			set this.m_isEnabled = true
 			set this.m_runs = false
-			call thistype.m_itemSpawnPoints.pushBack(this)
+			
+			set this.m_pickUpTrigger = CreateTrigger()
+			call TriggerRegisterAnyUnitEventBJ(this.m_pickUpTrigger, EVENT_PLAYER_UNIT_PICKUP_ITEM)
+			call TriggerAddCondition(this.m_pickUpTrigger, Condition(function thistype.triggerConditionPickUp))
+			call TriggerAddAction(this.m_pickUpTrigger, function thistype.triggerActionPickUp)
+			call AHashTable.global().setHandleInteger(this.m_pickUpTrigger, "this", this)
+			
+			if (whichItem != null) then
+				call this.createDeathTrigger()
+			endif
 
 			return this
 		endmethod
@@ -140,22 +263,23 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 		/**
 		 * Respawn will be started immediately after creation.
 		 */
-		public static method createWithoutItem takes real x, real y returns thistype
-			local thistype this = thistype.allocate()
-			set this.m_x = x
-			set this.m_y = y
-			set this.m_itemPool = CreateItemPool()
-			set this.m_item = null
-			set this.m_timer = null
-			set this.m_isEnabled = true
-			set this.m_runs = false
-			call thistype.m_itemSpawnPoints.pushBack(this)
-			call this.respawn()
-
+		public static method createWithoutItem takes real x, real y, integer itemTypeId, real weight returns thistype
+			local thistype this = thistype.create(x, y, null)
+			call this.addItemType(itemTypeId, weight)
+			
+			return this
+		endmethod
+		
+		public static method createFromItemWithType takes item whichItem, real weight returns thistype
+			local thistype this = thistype.create(GetItemX(whichItem), GetItemY(whichItem), whichItem)
+			call this.addItemType(GetItemTypeId(whichItem), weight)
+			
 			return this
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
+			set this.m_effectFilePath = null
+			set this.m_soundFilePath = null
 			call DestroyItemPool(this.m_itemPool)
 			set this.m_itemPool = null
 			set this.m_item = null
@@ -164,95 +288,9 @@ library AStructSystemsWorldItemSpawnPoint requires AInterfaceSystemsWorldSpawnPo
 				call AHashTable.global().destroyTimer(this.m_timer)
 				set this.m_timer = null
 			endif
-			call thistype.m_itemSpawnPoints.remove(this)
-		endmethod
-
-		private static method timerFunctionRespawnCheck takes nothing returns nothing
-			local AIntegerListIterator iterator = thistype.m_itemSpawnPoints.begin()
-			//debug call thistype.staticPrint("Calling item spawn points check with count of " + I2S(thistype.m_itemSpawnPoints.size()))
-			loop
-				exitwhen (not iterator.isValid())
-				call thistype(iterator.data()).respawn() // checks if item has to be respawned!
-				call iterator.next()
-			endloop
-			call iterator.destroy()
-		endmethod
-
-		/**
-		 * \param checkRate There's a global timer which checks for items every n seconds. This is required because of the limited engine which doesn't allow you to get "item is being killed" events etc.
-		 * \param time This is the value of the time (in seconds) which has to expired until the item is respawned.
-		 * \param removalRange This is the value of the range where the item is checked for its removal. If the item is not owned and not dead it could have been dropped somewhere.
-		 */
-		public static method init takes real checkRate, real time, real removalRange returns nothing
-			set thistype.m_time = time
-			set thistype.m_removalRange = removalRange
-			set thistype.m_itemSpawnPoints = AIntegerList.create()
-			set thistype.m_respawnTimer = CreateTimer()
-			call TimerStart(thistype.m_respawnTimer, checkRate, true, function thistype.timerFunctionRespawnCheck)
-		endmethod
-
-		public static method time takes nothing returns real
-			return thistype.m_time
-		endmethod
-
-		public static method removalRange takes nothing returns real
-			return thistype.m_removalRange
-		endmethod
-
-		public static method pauseAll takes nothing returns nothing
-			local AIntegerListIterator iterator
-			set iterator = thistype.m_itemSpawnPoints.begin()
-			loop
-				exitwhen (not iterator.hasNext())
-				call thistype(iterator.data()).pause()
-				call iterator.next()
-			endloop
-		endmethod
-
-		public static method resumeAll takes nothing returns nothing
-			local AIntegerListIterator iterator
-			set iterator = thistype.m_itemSpawnPoints.begin()
-			loop
-				exitwhen (not iterator.hasNext())
-				call thistype(iterator.data()).resume()
-				call iterator.next()
-			endloop
-		endmethod
-
-		// do not resume or stop the global timer since user could enable or disable single instances afterwards
-		public static method enableAll takes nothing returns nothing
-			local AIntegerListIterator iterator
-			set iterator = thistype.m_itemSpawnPoints.begin()
-			loop
-				exitwhen (not iterator.hasNext())
-				call thistype(iterator.data()).enable()
-				call iterator.next()
-			endloop
-		endmethod
-
-		// do not resume or stop the global timer since user could enable or disable single instances afterwards
-		public static method disableAll takes nothing returns nothing
-			local AIntegerListIterator iterator
-			set iterator = thistype.m_itemSpawnPoints.begin()
-			loop
-				exitwhen (not iterator.hasNext())
-				call thistype(iterator.data()).disable()
-				call iterator.next()
-			endloop
-		endmethod
-
-		public static method cleanUp takes nothing returns nothing
-			local AIntegerListIterator iterator
-			call PauseTimer(thistype.m_respawnTimer)
-			call DestroyTimer(thistype.m_respawnTimer)
-			set iterator = thistype.m_itemSpawnPoints.begin()
-			loop
-				exitwhen (not iterator.hasNext())
-				call thistype(iterator.data()).destroy()
-				call thistype.m_itemSpawnPoints.popFront()
-				call iterator.next()
-			endloop
-			call thistype.m_itemSpawnPoints.destroy()
+			call AHashTable.global().destroyTrigger(this.m_pickUpTrigger)
+			set this.m_pickUpTrigger = null
+			call this.destroyDeathTrigger()
 		endmethod
 	endstruct
 

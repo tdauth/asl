@@ -411,19 +411,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_rucksackItemData[index] = 0
 		endmethod
 
-		/// Removes the first found item with item type id \p itemTypeId.
-		public method removeFromRucksackByTypeId takes integer itemTypeId, boolean drop returns nothing
-			local integer i = 0
-			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i].itemTypeId() != itemTypeId) then
-					call this.clearRucksackItem(i, drop)
-					exitwhen (true)
-				endif
-				set i = i + 1
-			endloop
-		endmethod
-
 		/// \return Returns the rucksack item index by a Warcraft inventory slot number.
 		public method slotRucksackIndex takes integer slot returns integer
 			debug if (slot >= thistype.maxRucksackItemsPerPage or slot < 0) then
@@ -433,7 +420,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.m_rucksackPage * thistype.maxRucksackItemsPerPage + slot
 		endmethod
 
-		private method hideEquipmentItem takes integer equipmentType returns nothing
+		private method hideEquipmentItem takes integer equipmentType, boolean addPermanentAbilities returns nothing
 			local unit characterUnit = this.character().unit()
 			local item slotItem = UnitItemInSlot(characterUnit, equipmentType)
 			local AItemType itemType = AItemType.itemTypeOfItem(slotItem)
@@ -444,19 +431,21 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call EnableTrigger(this.m_dropTrigger)
 			// equipped items must always have an item type
 			//if (itemType != 0) then
+			if (addPermanentAbilities) then
 				call itemType.addPermanentAbilities(characterUnit)
+			endif
 			//endif
 			set characterUnit = null
 			set slotItem = null
 		endmethod
 
-		private method disableEquipment takes nothing returns nothing
+		private method disableEquipment takes boolean addPermanentAbilities returns nothing
 			local integer i
 			set i = 0
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.m_equipmentItemData[i] != 0) then
-					call this.hideEquipmentItem(i)
+					call this.hideEquipmentItem(i, addPermanentAbilities)
 				endif
 				set i = i + 1
 			endloop
@@ -511,7 +500,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			if (this.m_rucksackIsEnabled) then
 				call this.disableRucksack()
 			else
-				call this.disableEquipment()
+				call this.disableEquipment(false)
 			endif
 
 			/// \todo wait for calling methods above?
@@ -870,6 +859,35 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call itemType.onUnequipItem.execute(characterUnit, equipmentType)
 			call this.checkEquipment.evaluate() //added
 			set characterUnit = null
+		endmethod
+		
+		/**
+		 * Removes item by type \p itemTypeId completely from the inventory.
+		 * \sa hasItemType()
+		 */
+		public method removeItemType takes integer itemTypeId returns boolean
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.m_equipmentItemData[i].itemTypeId() == itemTypeId) then
+					call clearEquipmentItem(i, false)
+				
+					return true
+				endif
+				set i = i + 1
+			endloop
+			set i = 0
+			loop
+				exitwhen (i == thistype.maxRucksackItems)
+				if (this.m_rucksackItemData[i].itemTypeId() == itemTypeId) then
+					call this.setRucksackItemCharges(i, this.m_rucksackItemData[i].charges() - 1)
+					
+					return true
+				endif
+				set i = i + 1
+			endloop
+			
+			return false
 		endmethod
 
 		/**
@@ -1244,7 +1262,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.disableRucksack()
 				call this.enableEquipment()
 			else
-				call this.disableEquipment()
+				call this.disableEquipment(true)
 				call this.enableRucksack()
 			endif
 			set triggeringTrigger = null

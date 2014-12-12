@@ -7,9 +7,6 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private real m_x
 		private real m_y
 		private real m_facing
-		// members
-		private unit m_unit
-		private item m_item
 
 		// dynamic members
 
@@ -53,30 +50,21 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return this.m_facing
 		endmethod
 
-		// members
-
-		public method unit takes nothing returns unit
-			return this.m_unit
-		endmethod
-
-		public method item takes nothing returns item
-			return this.m_item
-		endmethod
-
 		// methods
 
-		public method placeUnit takes player whichPlayer returns nothing
+		public method placeUnit takes player whichPlayer returns unit
 			local real facing
 			if (this.m_facing < 0.0) then
 				set facing = GetRandomReal(0.0, 360.0)
 			else
 				set facing = this.m_facing
 			endif
-			set this.m_unit = PlaceRandomUnit(this.m_unitPool, whichPlayer, this.m_x, this.m_y, facing)
+			return PlaceRandomUnit(this.m_unitPool, whichPlayer, this.m_x, this.m_y, facing)
 		endmethod
 
-		public method placeItem takes nothing returns nothing
-			set this.m_item = PlaceRandomItem(this.m_itemPool, GetUnitX(this.m_unit), GetUnitY(this.m_unit))
+		public method placeItem takes real x, real y returns item
+			debug call Print("Placed item!")
+			return PlaceRandomItem(this.m_itemPool, x, y)
 		endmethod
 
 		/**
@@ -89,8 +77,6 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			set this.m_x = x
 			set this.m_y = y
 			set this.m_facing = facing
-			set this.m_unit = null
-			set this.m_item = null
 
 			return this
 		endmethod
@@ -100,33 +86,31 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			set this.m_unitPool = null
 			call DestroyItemPool(this.m_itemPool)
 			set this.m_itemPool = null
-			if (this.m_unit != null) then
-				call RemoveUnit(this.m_unit)
-				set this.m_unit = null
-			endif
-			if (this.m_item != null) then
-				call RemoveItem(this.m_item)
-				set this.m_item = null
-			endif
 		endmethod
 	endstruct
 
 
 	/**
 	 * \brief ASpawnPoint provides the functionality of common creep spawn points, mostly used in RPG maps.
+	 * It offers features such as respawning of creeps in a specific interval when all units of the spawn point are dead.
+	 * Besides it can create special effects and sounds on respawning the creeps.
+	 * Item pools are supported as well and will be placed on the creeps deaths.
+	 * The items then could be distributed equally to players setting a player as the owner of the dropped item.
+	 * This can prevent players from collecting all items and leaving other players with no items.
+	 * 
 	 * \sa AItemSpawnPoint
 	 */
 	struct ASpawnPoint extends ASpawnPointInterface
-		// static construction members
-		private static real m_time
-		private static string m_effectFilePath
-		private static string m_soundFilePath
-		private static integer m_dropChance
-		private static boolean m_distributeItems
-		private static player m_owner
-		private static string m_textDistributeItem
 		// static member
 		private static integer m_dropOwnerId
+		// dynamic members
+		private real m_time
+		private string m_effectFilePath
+		private string m_soundFilePath
+		private integer m_dropChance
+		private boolean m_distributeItems
+		private player m_owner
+		private string m_textDistributeItem
 		// members
 		private AIntegerVector m_members
 		private AGroup m_group
@@ -134,6 +118,99 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private timer m_spawnTimer
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ASpawnPoint\"")
+		
+		/**
+		 * \param time Time which has to elapse before the units respawn.
+		 */
+		public method setTime takes real time returns nothing
+			set this.m_time = time
+		endmethod
+		
+		public method time takes nothing returns real
+			return this.m_time
+		endmethod
+		
+		/**
+		 * \param effectFilePath File fath of the effect which is shown when the units respawn. If this value is null there won't be shown any effect.
+		 */
+		public method setEffectFilePath takes string effectFilePath returns nothing
+			set this.m_effectFilePath = effectFilePath
+		endmethod
+		
+		public method effectFilePath takes nothing returns string
+			return this.m_effectFilePath
+		endmethod
+		
+		/**
+		 * \param soundFilePath File path of the sound which is played when the units respawn. If this value is null there won't be played any sound.
+		 */
+		public method setSoundFilePath takes string soundFilePath returns nothing
+			set this.m_soundFilePath = soundFilePath
+		endmethod
+	
+		public method soundFilePath takes nothing returns string
+			return this.m_soundFilePath
+		endmethod
+		
+		/**
+		 * Should be a value between 0 and 100.
+		 * \param dropChance The chance (percentaged) for dropping items.
+		 */
+		public method setDropChance takes integer dropChance returns nothing
+			set this.m_dropChance = dropChance
+		endmethod
+		
+		public method dropChance takes nothing returns integer
+			return this.m_dropChance
+		endmethod
+		
+		/**
+		 * If this value is set to true all dropped items will be distributed between the players equally.
+		 * Only human players are considered as owners.
+		 * This might prevent looting from specific players who collect all items at the time they drop and do not leave any items for others.
+		 */
+		public method setDistributeItems takes boolean distributeItems returns nothing
+			set this.m_distributeItems = distributeItems
+		endmethod
+		
+		public method distributeItems takes nothing returns boolean
+			return this.m_distributeItems
+		endmethod
+		
+		/**
+		  * \param owner The player who owns all spawn point units.
+		  */
+		public method setOwner takes player owner returns nothing
+			set this.m_owner = owner
+		endmethod
+		
+		public method owner takes nothing returns player
+			return this.m_owner
+		endmethod
+		
+		/**
+		 * This text is displayed to all human players when distributing a dropped item.
+		 * It gets two arguments: The item name and the player name of the player who got the item.
+		 */
+		public method setTextDistributeItem takes string textDistributeItems returns nothing
+			set this.m_textDistributeItem = textDistributeItems
+		endmethod
+		
+		public method textDistributeItem takes nothing returns string
+			return this.m_textDistributeItem
+		endmethod
+		
+		public static method spawnPointMember takes unit whichUnit returns ASpawnPointMember
+			return ASpawnPointMember(AHashTable.global().handleInteger(whichUnit, "member"))
+		endmethod
+		
+		public static method setSpawnPointMember takes unit whichUnit, ASpawnPointMember member returns nothing
+			call AHashTable.global().setHandleInteger(whichUnit, "member", member)
+		endmethod
+		
+		public static method clearSpawnPointMember takes unit whichUnit returns nothing
+			call AHashTable.global().removeHandleInteger(whichUnit, "member")
+		endmethod
 
 		// convenience methods
 
@@ -200,9 +277,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		/**
-		* Adds an existing unit to group. If all units of the group has been died, new units will be spawned.
-		*/
-		public method addUnit takes unit whichUnit returns nothing
+		 * Adds an existing unit to group. If all units of the group has been died, new units will be spawned.
+		 */
+		public method addUnit takes unit whichUnit, integer memberIndex returns nothing
+			call thistype.setSpawnPointMember(whichUnit, this.m_members[memberIndex])
 			call this.m_group.units().pushBack(whichUnit)
 		endmethod
 
@@ -211,10 +289,17 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		* units means that the old ones will be removed from game (not like hero revivals).
 		*/
 		public method removeUnit takes unit whichUnit returns nothing
+			call thistype.clearSpawnPointMember(whichUnit)
 			call this.m_group.units().remove(whichUnit)
 		endmethod
 
 		public method clearUnits takes nothing returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_group.units().size())
+				call thistype.clearSpawnPointMember(this.m_group.units()[i])
+				set i = i + 1
+			endloop
 			call this.m_group.units().clear()
 		endmethod
 
@@ -258,7 +343,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method addUnitWithType takes unit whichUnit, real weight returns integer
 			local integer index = this.addMember(GetUnitX(whichUnit), GetUnitY(whichUnit), GetUnitFacing(whichUnit))
 			call this.addUnitType(index, GetUnitTypeId(whichUnit), weight)
-			call this.addUnit(whichUnit)
+			call this.addUnit(whichUnit, index)
 			return index
 		endmethod
 
@@ -270,6 +355,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				set i = i + 1
 			endloop
 			call this.removeUnit(whichUnit)
+			call thistype.clearSpawnPointMember(whichUnit)
 		endmethod
 
 		public method remainingTime takes nothing returns real
@@ -317,6 +403,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method spawn takes nothing returns boolean
 			local integer i
 			local effect whichEffect
+			local unit whichUnit
 			if (not this.m_group.units().empty()) then
 				debug call this.print("Warning: Unit group is not dead yet.")
 				return false
@@ -324,18 +411,18 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			set i = 0
 			loop
 				exitwhen (i == this.m_members.size())
-				call ASpawnPointMember(this.m_members[i]).placeUnit(thistype.m_owner)
+				set whichUnit = ASpawnPointMember(this.m_members[i]).placeUnit(this.owner())
 
-				if (ASpawnPointMember(this.m_members[i]).unit() != null) then
-					call this.m_group.units().pushBack(ASpawnPointMember(this.m_members[i]).unit())
+				if (whichUnit != null) then
+					call this.addUnit(whichUnit, i)
 					// need global, faster?
-					if (thistype.m_effectFilePath != null) then
-						set whichEffect = AddSpecialEffect(thistype.m_effectFilePath, ASpawnPointMember(this.m_members[i]).x(), ASpawnPointMember(this.m_members[i]).y())
+					if (this.effectFilePath() != null) then
+						set whichEffect = AddSpecialEffect(this.effectFilePath(), GetUnitX(whichUnit), GetUnitY(whichUnit))
 						call DestroyEffect(whichEffect)
 						set whichEffect = null
 					endif
-					if (thistype.m_soundFilePath != null) then
-						call PlaySoundFileAt(thistype.m_soundFilePath, ASpawnPointMember(this.m_members[i]).x(), ASpawnPointMember(this.m_members[i]).y(), GetUnitZ(ASpawnPointMember(this.m_members[i]).unit()))
+					if (this.soundFilePath() != null) then
+						call PlaySoundFileAt(this.soundFilePath(), GetUnitX(whichUnit), GetUnitY(whichUnit), GetUnitZ(whichUnit))
 					endif
 				debug else
 					debug call this.print("Warning: Couldn't place unit.")
@@ -344,24 +431,56 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endloop
 			return true
 		endmethod
+		
+		/**
+		 * This returns a new item owner using a uniform distribution.
+		 * It considers ownly playing users.
+		 */
+		private static method getRandomItemOwner takes nothing returns player
+			local player user
+			local integer oldDropId = thistype.m_dropOwnerId
+			set thistype.m_dropOwnerId = thistype.m_dropOwnerId + 1
+			loop
+				if (thistype.m_dropOwnerId == bj_MAX_PLAYERS) then
+					set thistype.m_dropOwnerId = 0
+				endif
+				set user = Player(thistype.m_dropOwnerId)
+				if (IsPlayerPlayingUser(user) or thistype.m_dropOwnerId == oldDropId) then
+					return user
+				endif
+				set user = null
+				set thistype.m_dropOwnerId = thistype.m_dropOwnerId + 1
+			endloop
+			return user
+		endmethod
 
-		private method dropItem takes unit diedUnit returns nothing
-			local integer i
-			if (GetRandomInt(0, 100) <= thistype.m_dropChance) then
-				set i = 0
-				loop
-					exitwhen (i == this.m_members.size())
-					if (diedUnit == ASpawnPointMember(this.m_members[i]).unit()) then
-						call ASpawnPointMember(this.m_members[i]).placeItem()
-						if (ASpawnPointMember(this.m_members[i]).item() != null and thistype.m_distributeItems) then // item can be null if member has no item types to place
-							call thistype.distributeDroppedItem.evaluate(ASpawnPointMember(this.m_members[i]).item())
-						debug else
-							debug call this.print("Warning: Couldn't place item.")
-						endif
-						exitwhen (true)
-					endif
-					set i = i + 1
-				endloop
+		public method distributeDroppedItem takes item whichItem returns nothing
+			local player itemOwner = thistype.getRandomItemOwner()
+			local player user
+			local integer i = 0
+			call SetItemPlayer(whichItem, itemOwner, true)
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				set user = Player(i)
+				if (IsPlayerPlayingUser(user) and this.textDistributeItem() != null) then
+					call DisplayTimedTextToPlayer(user, 0.0, 0.0, 6.0, StringArg(StringArg(this.textDistributeItem(), GetItemName(whichItem)), GetPlayerName(itemOwner)))
+				endif
+				set user = null
+				set i = i + 1
+			endloop
+			set itemOwner = null
+		endmethod
+
+		private method dropItem takes ASpawnPointMember member, real x, real y returns nothing
+			local item whichItem
+			if (GetRandomInt(0, 100) <= this.dropChance()) then
+				set whichItem = member.placeItem(x, y)
+				if (whichItem != null and this.distributeItems()) then // item can be null if member has no item types to place
+					call this.distributeDroppedItem(whichItem)
+				debug else
+					debug call this.print("Warning: Couldn't place item.")
+				endif
+					
 			endif
 		endmethod
 
@@ -381,7 +500,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				set this.m_spawnTimer = CreateTimer()
 				call AHashTable.global().setHandleInteger(this.m_spawnTimer, "this", this)
 			endif
-			call TimerStart(this.m_spawnTimer, thistype.m_time, false, function thistype.timerFunctionSpawn)
+			call TimerStart(this.m_spawnTimer, this.time(), false, function thistype.timerFunctionSpawn)
 		endmethod
 
 		private static method triggerConditionDeath takes nothing returns boolean
@@ -398,8 +517,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			local trigger triggeringTrigger = GetTriggeringTrigger()
 			local unit triggerUnit = GetTriggerUnit()
 			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			call this.m_group.units().remove(triggerUnit)
-			call this.dropItem(triggerUnit)
+			local ASpawnPointMember member = thistype.spawnPointMember(triggerUnit)
+			call this.dropItem(member, GetUnitX(triggerUnit), GetUnitY(triggerUnit)) // drop before removing member
+			call this.removeUnit(triggerUnit)
 			if (this.m_group.units().empty()) then
 				call this.startTimer()
 			endif
@@ -436,17 +556,30 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 
 		public static method create takes nothing returns thistype
 			local thistype this = thistype.allocate()
+			// dynamic members
+			set this.m_time = 30.0
+			set this.m_effectFilePath = null
+			set this.m_soundFilePath = null
+			set this.m_dropChance = 50
+			set this.m_distributeItems = false
+			set this.m_owner = Player(PLAYER_NEUTRAL_AGGRESSIVE)
+			set this.m_textDistributeItem = ""
 			// members
 			set this.m_members = AIntegerVector.create()
 			set this.m_group = AGroup.create()
 			set this.m_spawnTimer = null
 
 			call this.createDeathTrigger()
+	
 			return this
 		endmethod
 
 		/// Removes all contained units.
 		public method onDestroy takes nothing returns nothing
+			// dynamic members
+			set this.m_effectFilePath = null
+			set this.m_soundFilePath = null
+			set this.m_owner = null
 			// members
 			loop
 				exitwhen (this.m_members.empty())
@@ -465,68 +598,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endif
 		endmethod
 
-		/**
-		 * Initializes the spawn point system. Please call this method before using anything of this system.
-		 * \param time Time which has to elapse before the units respawn.
-		 * \param effectFilePath File fath of the effect which is shown when the units respawn. If this value is null there won't be shown any effect.
-		 * \param soundPath File path of the sound which is played when the units respawn. If this value is null there won't be played any sound.
-		 * \param dropChance The chance (percentaged) for dropping items.
-		 * \param owner The player who owns all spawn point units.
-		 */
-		public static method init takes real time, string effectFilePath, string soundFilePath, integer dropChance, boolean distributeItems, player owner, string textDistributeItem returns nothing
-			// static construction members
-			set thistype.m_time = time
-			set thistype.m_effectFilePath = effectFilePath
-			set thistype.m_soundFilePath = soundFilePath
-			set thistype.m_dropChance = dropChance
-			set thistype.m_distributeItems = distributeItems
-			set thistype.m_owner = owner
-			set thistype.m_textDistributeItem = textDistributeItem
+		public static method init takes nothing returns nothing
 			// static members
 			set thistype.m_dropOwnerId = 0
-
-			if (thistype.m_soundFilePath != null) then
-				call PreloadSoundFile(thistype.m_soundFilePath)
-			endif
-		endmethod
-
-		public static method time takes nothing returns real
-			return thistype.m_time
-		endmethod
-
-		public static method distributeDroppedItem takes item whichItem returns nothing
-			local player itemOwner = thistype.getRandomItemOwner.evaluate()
-			local player user
-			local integer i = 0
-			call SetItemPlayer(whichItem, itemOwner, true)
-			loop
-				exitwhen (i == bj_MAX_PLAYERS)
-				set user = Player(i)
-				if (IsPlayerPlayingUser(user)) then
-					call DisplayTimedTextToPlayer(user, 0.0, 0.0, 6.0, StringArg(StringArg(thistype.m_textDistributeItem, GetItemName(whichItem)), GetPlayerName(itemOwner)))
-				endif
-				set user = null
-				set i = i + 1
-			endloop
-			set itemOwner = null
-		endmethod
-
-		private static method getRandomItemOwner takes nothing returns player
-			local player user
-			local integer oldDropId = thistype.m_dropOwnerId
-			set thistype.m_dropOwnerId = thistype.m_dropOwnerId + 1
-			loop
-				if (thistype.m_dropOwnerId == bj_MAX_PLAYERS) then
-					set thistype.m_dropOwnerId = 0
-				endif
-				set user = Player(thistype.m_dropOwnerId)
-				if (IsPlayerPlayingUser(user) or thistype.m_dropOwnerId == oldDropId) then
-					return user
-				endif
-				set user = null
-				set thistype.m_dropOwnerId = thistype.m_dropOwnerId + 1
-			endloop
-			return user
 		endmethod
 	endstruct
 

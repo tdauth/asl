@@ -757,6 +757,16 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set i = i + 1
 			endloop
 		endmethod
+		
+		public static method setActorsOwner takes player owner returns nothing
+			local integer i = 0
+			call SetUnitOwner(thistype.actor(), owner, true)
+			loop
+				exitwhen (i == thistype.m_actorData.size())
+				call SetUnitOwner(AActorData(thistype.m_actorData[i]).actor(), owner, true)
+				set i = i + 1
+			endloop
+		endmethod
 	 endstruct
 
 	/**
