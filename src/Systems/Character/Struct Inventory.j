@@ -829,6 +829,20 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set usedItem = null
 			call this.setEquipmentItem(equipmentType, inventoryItemData, add)
 		endmethod
+		
+		private method clearEquipmentType takes integer equipmentType returns nothing
+			local unit characterUnit
+			local AItemType itemType = 0
+			if (this.m_equipmentItemData[equipmentType] != 0) then
+				set characterUnit = this.character().unit()
+				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
+				call this.m_equipmentItemData[equipmentType].destroy()
+				set this.m_equipmentItemData[equipmentType] = 0
+				call itemType.onUnequipItem.execute(characterUnit, equipmentType)
+				call this.checkEquipment.evaluate() //added
+				set characterUnit = null
+			endif
+		endmethod
 
 		private method clearEquipmentItem takes integer equipmentType, boolean drop returns nothing
 			local unit characterUnit = this.character().unit()
@@ -854,10 +868,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call itemType.removePermanentAbilities(characterUnit)
 				//endif
 			endif
-			call this.m_equipmentItemData[equipmentType].destroy()
-			set this.m_equipmentItemData[equipmentType] = 0
-			call itemType.onUnequipItem.execute(characterUnit, equipmentType)
-			call this.checkEquipment.evaluate() //added
+			call this.clearEquipmentType(equipmentType)
 			set characterUnit = null
 		endmethod
 		
@@ -880,12 +891,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			loop
 				exitwhen (i == thistype.maxRucksackItems)
 				if (this.m_rucksackItemData[i].itemTypeId() == itemTypeId) then
+					debug call Print("Setting item type " + GetObjectName(itemTypeId) + " charges " + I2S(this.m_rucksackItemData[i].charges()) + " -1")
 					call this.setRucksackItemCharges(i, this.m_rucksackItemData[i].charges() - 1)
 					
 					return true
 				endif
 				set i = i + 1
 			endloop
+			
+			debug call Print("Error: Did not find " + GetObjectName(itemTypeId) + " in inventory!")
 			
 			return false
 		endmethod
@@ -1441,8 +1455,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 			// unequip and drop
 			else
-				call this.m_equipmentItemData[index].destroy()
-				set this.m_equipmentItemData[index] = 0
+				call this.clearEquipmentType(index)
 			endif
 			set triggeringTrigger = null
 			set usedItem = null

@@ -770,9 +770,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	 endstruct
 
 	/**
-	* Waits (synchronized) until no video is running anymore.
-	* \param interval Check interval.
-	*/
+	 * Waits (synchronized) until no video is running anymore.
+	 * \param interval Check interval.
+	 */
 	function waitForVideo takes real interval returns nothing
 		loop
 			exitwhen (AVideo.runningVideo() == 0)

@@ -493,7 +493,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		public method spell takes integer index returns ASpell
 			return this.m_spells[index]
 		endmethod
-
+		
 		public method spellByAbilityId takes integer abilityId returns ASpell
 			local integer i = 0
 			loop
