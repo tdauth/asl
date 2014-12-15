@@ -1508,6 +1508,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.refreshRucksackItemCharges(index)
 				// use == drop
 				/// Drop action is called when last charge is used!!!
+			debug else
+				debug call Print("No usable item. Should not use any charges")
 			endif
 			set usedItem = null
 			set triggeringTrigger = null

@@ -69,6 +69,7 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 
 		private static method triggerConditionCheat takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			debug call this.print("Checking cheat with string: " + GetEventPlayerChatString())
 			return (this.findCheat(GetEventPlayerChatString()) != -1)
 		endmethod
 
@@ -118,6 +119,7 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 		public method onDestroy takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_cheatTrigger)
 			set this.m_cheatTrigger = null
+			debug call this.print("Destroying cheat " + this.m_cheat)
 		endmethod
 	endstruct
 

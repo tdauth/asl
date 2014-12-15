@@ -777,6 +777,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		loop
 			exitwhen (AVideo.runningVideo() == 0)
 			//call TriggerSleepAction(interval)
+			debug call Print("Checking for finishing video with interval " + R2S(interval))
 			call PolledWait(interval) // synchron waiting, important for multiplayer games
 		endloop
 	endfunction

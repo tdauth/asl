@@ -6,9 +6,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 	/// \todo Should be part of \ref AClassSelection, vJass bug.
 	function interface AClassSelectionCharacterCreationAction takes AClassSelection classSelection, unit whichUnit returns ACharacter
 
-	/// \todo Should be part of \ref AClassSelection, vJass bug.
-	function interface AClassSelectionStartGameAction takes nothing returns nothing
-
 	struct AClassSelection
 		// static construction members
 		private static camerasetup m_cameraSetup
@@ -21,7 +18,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private static AClass m_firstClass
 		private static AClass m_lastClass
 		private static AClassSelectionCharacterCreationAction m_characterCreationAction
-		private static AClassSelectionStartGameAction m_startGameAction
 		private static string m_strengthIconPath
 		private static string m_agilityIconPath
 		private static string m_intelligenceIconPath
@@ -493,13 +489,9 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call this.destroySelectTrigger()
 			call this.destroyInfoSheet()
 			call this.removeClassUnit()
-
-			if (thistype.m_stack == 0 and thistype.m_startGameAction != 0) then
-				call thistype.m_startGameAction.execute()
-			endif
 		endmethod
 
-		public static method init takes camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, AClassSelectionCharacterCreationAction characterCreationAction, AClassSelectionStartGameAction startGameAction, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence, string textAbilities, string textDescription returns nothing
+		public static method init takes camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, AClassSelectionCharacterCreationAction characterCreationAction, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence, string textAbilities, string textDescription returns nothing
 			local integer i
 			// static construction members
 			set thistype.m_cameraSetup = cameraSetup
@@ -512,7 +504,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			set thistype.m_firstClass = firstClass
 			set thistype.m_lastClass = lastClass
 			set thistype.m_characterCreationAction = characterCreationAction
-			set thistype.m_startGameAction = startGameAction
 			set thistype.m_strengthIconPath = strengthIconPath
 			set thistype.m_agilityIconPath = agilityIconPath
 			set thistype.m_intelligenceIconPath = intelligenceIconPath
