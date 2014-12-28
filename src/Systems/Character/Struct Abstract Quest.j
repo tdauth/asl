@@ -67,13 +67,13 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AAbstractQuest\"")
 
-		debug private method checkState takes integer state returns boolean
-			debug if ((state < thistype.stateNotUsed) or (state >= thistype.maxStates)) then
+		private method checkState takes integer state returns boolean
+			if ((state < thistype.stateNotUsed) or (state >= thistype.maxStates)) then
 				debug call this.print("Wrong state: " + I2S(state) + ".")
-				debug return false
-			debug endif
-			debug return true
-		debug endmethod
+				return false
+			endif
+			return true
+		endmethod
 
 		// dynamic members
 
@@ -220,7 +220,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		// used by state trigger
 		/// \todo Should be protected
 		public stub method setStateWithoutCondition takes integer state returns nothing
-			debug if (this.checkState(state)) then
+			if (this.checkState(state)) then
 				if (this.m_state == state) then
 					debug call this.print("Has already state " + I2S(state))
 					return
@@ -271,12 +271,12 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 					endif
 				endif
 				call this.onStateAction(state)
-			debug endif
+			endif
 		endmethod
 
 		/// Call this method if you want to set the state manually.
 		public stub method setState takes integer state returns boolean
-			debug if (this.checkState(state)) then
+			if (this.checkState(state)) then
 				if (this.m_state == state) then
 					return true
 				endif
@@ -285,8 +285,8 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 				endif
 				call this.setStateWithoutCondition(state)
 				return true
-			debug endif
-			debug return false
+			endif
+			return false
 		endmethod
 
 		public method state takes nothing returns integer
@@ -295,9 +295,9 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		// call first setStateEvent then setStateCondition and at least setStateAction
 		public method setStateEvent takes integer state, AAbstractQuestStateEvent stateEvent returns nothing
-			debug if (not this.checkState(state)) then
-				debug return
-			debug endif
+			if (not this.checkState(state)) then
+				return
+			endif
 			if (this.m_stateTrigger[state] == null) then
 				call this.createStateTrigger.evaluate(state)
 			//else
@@ -306,30 +306,30 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		endmethod
 
 		public method setStateCondition takes integer state, AAbstractQuestStateCondition stateCondition returns nothing
-			debug if (not this.checkState(state)) then
-				debug return
-			debug endif
+			if (not this.checkState(state)) then
+				return
+			endif
 			set this.m_stateCondition[state] = stateCondition
 		endmethod
 
 		public method stateCondition takes integer state returns AAbstractQuestStateCondition
-			debug if (not this.checkState(state)) then
-				debug return 0
-			debug endif
+			if (not this.checkState(state)) then
+				return 0
+			endif
 			return this.m_stateCondition[state]
 		endmethod
 
 		public method setStateAction takes integer state, AAbstractQuestStateAction stateAction returns nothing
-			debug if (not this.checkState(state)) then
-				debug return
-			debug endif
+			if (not this.checkState(state)) then
+				return
+			endif
 			set this.m_stateAction[state] = stateAction
 		endmethod
 
 		public method stateAction takes integer state returns AAbstractQuestStateAction
-			debug if (not this.checkState(state)) then
-				debug return 0
-			debug endif
+			if (not this.checkState(state)) then
+				return 0
+			endif
 			return this.m_stateAction[state]
 		endmethod
 

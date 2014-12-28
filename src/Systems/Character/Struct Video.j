@@ -406,6 +406,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 		endmethod
 
+		/**
+		 * Called by .evaluate() when the video is being skipped.
+		 * .evaluates() the skip action by default.
+		 */
 		public stub method onSkipAction takes nothing returns nothing
 			if (this.m_skipAction != 0) then
 				call this.m_skipAction.evaluate(this) // evaluate since it is called before stop action
@@ -508,7 +512,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_skipped = true
 			call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
+			debug call Print("Before on skip action")
 			call this.onSkipAction.evaluate()
+			debug call Print("After on skip action")
+			
 			call this.stop()
 		endmethod
 
@@ -516,6 +523,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
 		 * You can overwrite this method in your custom derived structure to avoid this default behaviour.
 		 * This method is called every time a player skips the video.
+		 * Called with .evaluate().
 		 */
 		public stub method onSkipCondition takes integer skipablePlayers returns boolean
 			return thistype.m_skippingPlayers >= skipablePlayers / thistype.m_divident
@@ -558,6 +566,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endloop
 
 			if (thistype.m_runningVideo.onSkipCondition.evaluate(skipablePlayers)) then
+				debug call Print("Skipping video: " + I2S(thistype.m_runningVideo))
 				call thistype.m_runningVideo.skip()
 				return true
 			endif
@@ -780,6 +789,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			debug call Print("Checking for finishing video with interval " + R2S(interval))
 			call PolledWait(interval) // synchron waiting, important for multiplayer games
 		endloop
+		debug call Print("After checking for finishing video")
 	endfunction
 
 	private function WaitCondition takes nothing returns boolean

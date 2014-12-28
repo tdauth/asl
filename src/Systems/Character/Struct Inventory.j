@@ -426,8 +426,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local AItemType itemType = AItemType.itemTypeOfItem(slotItem)
 			call thistype.clearItemIndex(slotItem)
 			call DisableTrigger(this.m_dropTrigger)
-			call RemoveItem(slotItem)
 			debug call Print("Removing slot item: " + GetItemName(slotItem))
+			call RemoveItem(slotItem)
 			call EnableTrigger(this.m_dropTrigger)
 			// equipped items must always have an item type
 			//if (itemType != 0) then
@@ -664,14 +664,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local unit characterUnit
 			local integer slot
 			local item slotItem
-			if (not this.m_rucksackIsEnabled or this.m_rucksackPage != this.itemRucksackPage(index) or this.m_rucksackItemData[index] == 0) then
+			
+			if (this.m_rucksackItemData[index] == 0) then
 				return
 			endif
 
 			if (this.m_rucksackItemData[index].charges() <= 0) then // all items have charges starting at least with 1 in rucksack
 				debug call this.print("Clear rucksack item!")
 				call this.clearRucksackItem(index, false)
-			else
+			// only update charges if item is visible
+			elseif (this.m_rucksackIsEnabled and this.m_rucksackPage == this.itemRucksackPage(index)) then
 				set characterUnit = this.character().unit()
 				set slot = this.rucksackItemSlot(index)
 				set slotItem = UnitItemInSlot(characterUnit, slot)
@@ -694,6 +696,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			set charges = IMaxBJ(0, charges)
 			call this.m_rucksackItemData[index].setCharges(charges)
+			// clears the items if charges are equal to 0
 			call this.refreshRucksackItemCharges(index)
 
 			return charges
@@ -1436,9 +1439,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					endif
 				// destack and drop
 				elseif (this.m_rucksackItemData[index].charges() > 1) then
+					debug call Print("Destacking and dropping item " + GetItemName(usedItem))
 					if (GetItemType(usedItem) == ITEM_TYPE_CHARGED) then
+						debug call Print("Is charged so 1")
 						call SetItemCharges(usedItem, 1)
 					else
+						debug call Print("Is not charged so 0")
 						call SetItemCharges(usedItem, 0)
 					endif
 					call TriggerSleepAction(0.0) // wait until it has been dropped

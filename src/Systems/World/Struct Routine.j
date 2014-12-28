@@ -28,6 +28,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 
 		// dynamic members
 
+		/**
+		 * Routines with targets send their NPCs to target rects and call the target action when the NPC reached its target.
+		 */
 		public method setHasTarget takes boolean hasTarget returns nothing
 			set this.m_hasTarget = hasTarget
 		endmethod
@@ -36,6 +39,11 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return this.m_hasTarget
 		endmethod
 
+		/**
+		 * Loop routines will be automatically resumed on \ref ARoutinePeriod.resume() as well as
+		 * checked in \ref AContinueRoutineLoop().
+		 * Despite setting this to true \ref AContinueRoutineLoop() has to be called manually in the routine target action.
+		 */
 		public method setIsLoop takes boolean isLoop returns nothing
 			set this.m_isLoop = isLoop
 		endmethod
@@ -117,9 +125,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		 * Usually calls \ref targetAction() via .execute().
 		 */
 		public stub method onTarget takes ARoutinePeriod period returns nothing
-			//debug call this.print("OnTarget")
+			debug call this.print("OnTarget for unit " + GetUnitName(period.unit.evaluate()))
 			if (this.targetAction() != 0) then
-				//debug call this.print("OnTarget has target action, calling with execute")
+				debug call this.print("OnTarget has target action, calling with execute for unit " + GetUnitName(period.unit.evaluate()))
 				call this.targetAction().execute(period)
 			endif
 		endmethod
@@ -264,6 +272,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			return (not IsUnitPaused(this.unit()) and this.isEnabled())
 		endmethod
 
+		/**
+		 * \return Returns true if \p timeOfDay is during the routine's time.
+		 */
 		public method isInSpecifiedTime takes real timeOfDay returns boolean
 			if (this.startTimeOfDay() > this.endTimeOfDay()) then // next day
 				return timeOfDay >= this.startTimeOfDay() or timeOfDay <= this.endTimeOfDay()
@@ -318,23 +329,55 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call IssueRectOrder(this.unit(), "move", this.targetRect())
 			//debug call this.print("Created target trigger for " + GetUnitName(this.unit()))
 		endmethod
+		
+		/**
+		 * Ends the routine period and clears it from the unit.
+		 * Destroys the target trigger and calls \ref ARoutine.onEnd() with .execute() if it is enabled.
+		 */
+		private method end takes nothing returns nothing
+			if (thistype.current(this.unit()) == this) then
+				call thistype.clearCurrent(this.unit())
+			endif
+			if (thistype.next(this.unit()) == this) then
+				call thistype.clearNext(this.unit())
+			endif
+			if (this.routine().hasTarget() and this.m_targetTrigger != null) then
+				call this.destroyTargetTrigger()
+			endif
+			if (this.isEnabled()) then
+				call this.routine().onEnd.execute(this)
+			endif
+		endmethod
 
 		/**
 		 * Internal method which is called when routine period time of day is reached.
 		 * Should only be called manually with checking \ref isInTime().
+		 * It does also automatically call end() of the currently enabled routine of the unit.
 		 */
-		public method onStart takes nothing returns nothing
+		public method start takes nothing returns nothing
+			local boolean condition = this.routine().onCondition.evaluate(this)
 			// start immediately
 			if (not IsUnitPaused(this.unit())) then
-				if (this.routine().onCondition.evaluate(this)) then // optional condition
-					if (thistype.hasNext(this.unit())) then
-						debug if (thistype.next(this.unit()) != this) then
-							debug call this.print("Warning: Overlaps with " + I2S(thistype.next(this.unit())))
-						debug endif
-						call thistype.clearNext(this.unit())
+				if (condition) then // optional condition
+					// current routine has not been disabled already
+					if (thistype.hasCurrent(this.unit()) and thistype.current(this.unit()) != this) then
+						debug call this.print("Warning: " + GetUnitName(this.unit()) + " routine period " + I2S(thistype.current(this.unit())) + " has not been disabled before starting " + I2S(this))
+						call thistype.current(this.unit()).end()
+						call thistype.clearCurrent(this.unit())
 					endif
+				
+					/*
+					 * Clear the next queued.
+					 */
+					if (thistype.hasNext(this.unit()) and thistype.next(this.unit()) == this) then
+						call thistype.clearNext(this.unit())
+					elseif (thistype.next(this.unit()) != this) then
+						debug call this.print("Warning: " + GetUnitName(this.unit()) + " at start time " + R2S(this.startTimeOfDay()) + " overlaps with " + I2S(thistype.next(this.unit())) + " with start time " + R2S(thistype.next(this.unit()).startTimeOfDay()))
+					endif
+
 					call thistype.setCurrent(this.unit(), this)
 					call this.routine().onStart.execute(this)
+					
 					if (this.routine().hasTarget()) then
 						if (RectContainsUnit(this.m_targetRect, this.unit())) then // already at target
 							call this.routine().onTarget.execute(this)
@@ -344,7 +387,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					endif
 				endif
 			// queue for paused unit that it will be started on unpausing the unit
-			elseif (this.routine().onCondition.evaluate(this)) then // optional condition
+			elseif (condition) then // optional condition
 				call thistype.setNext(this.unit(), this)
 			endif
 		endmethod
@@ -352,7 +395,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		private static method triggerActionStart takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			//debug call this.print("Starting for unit " + GetUnitName(this.unit()))
-			call this.onStart()
+			call this.start()
 		endmethod
 
 		private method createStartTrigger takes nothing returns nothing
@@ -360,21 +403,6 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call TriggerRegisterGameStateEvent(this.m_startTrigger, GAME_STATE_TIME_OF_DAY, EQUAL, this.m_startTimeOfDay)
 			call TriggerAddAction(this.m_startTrigger, function thistype.triggerActionStart)
 			call AHashTable.global().setHandleInteger(this.m_startTrigger, "this", this)
-		endmethod
-
-		private method end takes nothing returns nothing
-			if (thistype.current(this.unit()) == this) then
-				call thistype.clearCurrent(this.unit())
-			endif
-			if (thistype.next(this.unit()) == this) then
-				call thistype.clearNext(this.unit())
-			endif
-			if (this.isEnabled()) then
-				if (this.routine().hasTarget() and this.m_targetTrigger != null) then
-					call this.destroyTargetTrigger()
-				endif
-				call this.routine().onEnd.execute(this)
-			endif
 		endmethod
 
 		private static method triggerActionEnd takes nothing returns nothing
@@ -557,33 +585,38 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				debug return
 			debug endif
 
-			if (not this.isEnabled()) then
-				return
-			endif
-
 			// pause
 			if (flag) then
-				call DisableTrigger(this.m_endTrigger)
-				if (this.m_targetTrigger != null) then
-					call DisableTrigger(this.m_targetTrigger)
+			
+				if (this.isEnabled()) then
+					call DisableTrigger(this.m_endTrigger)
+					if (this.m_targetTrigger != null) then
+						call DisableTrigger(this.m_targetTrigger)
+					endif
 				endif
 			// unpause
-			elseif (this.isInTime()) then
-				call this.resume()
-			// not in time, run next!
 			else
-				call this.end() // run onEnd() and clear current
-
-				if (not thistype.hasNext(this.unit())) then
-					return
+				if (this.isEnabled()) then
+					if (this.isInTime()) then
+						call this.resume()
+					// not in time, run next!
+					else
+						call this.end() // run onEnd() and clear current
+					endif
 				endif
+				
+				if (not this.isInTime()) then
+					call thistype.clearCurrent(this.unit())
 
-				set this = thistype.next(whichUnit)
+					if (not thistype.hasNext(this.unit())) then
+						return
+					endif
 
-				if (this.isInTime()) then
-					call thistype.clearNext(whichUnit)
-					call thistype.setCurrent(whichUnit, this)
-					call this.routine().onStart.execute(this)
+					set this = thistype.next(whichUnit)
+
+					if (this.isInTime()) then
+						call this.start()
+					endif
 				endif
 			endif
 		endmethod
@@ -604,27 +637,58 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		 */
 		public static method hookSetFloatGameState takes fgamestate whichFloatGameState, real value returns nothing
 			local AIntegerListIterator iterator
+			local AIntegerList toEndRoutines
+			local AIntegerList toStartRoutines
 			local real currentTime
 			if (whichFloatGameState == GAME_STATE_TIME_OF_DAY) then
 				set currentTime = GetTimeOfDay()
-				if (value != currentTime) then
-					//debug call Print("Hook for time of day with " + I2S(thistype.m_routinePeriods.size()) + " periods, new time " + R2S(value) + " and old time " + R2S(currentTime))
-					set iterator = thistype.m_routinePeriods.begin()
-					loop
-						exitwhen (not iterator.isValid())
-						if (thistype(iterator.data()).isEnabled()) then
-							if (thistype(iterator.data()).startTimeOfDay() != value and thistype(iterator.data()).endTimeOfDay() != value) then
-								if (thistype(iterator.data()).isInSpecifiedTime(value) and not thistype(iterator.data()).isInSpecifiedTime(currentTime)) then // is now in time but wasn't before
-									call thistype(iterator.data()).onStart()
-								elseif (not thistype(iterator.data()).isInSpecifiedTime(value) and thistype(iterator.data()).isInSpecifiedTime(currentTime)) then // was in time but isn't now
-									call thistype(iterator.data()).end()
-								endif
+				set toEndRoutines = AIntegerList.create()
+				set toStartRoutines = AIntegerList.create()
+				// do not compare currentTime and values, real type!
+				//debug call Print("Hook for time of day with " + I2S(thistype.m_routinePeriods.size()) + " periods, new time " + R2S(value) + " and old time " + R2S(currentTime))
+				set iterator = thistype.m_routinePeriods.begin()
+				loop
+					exitwhen (not iterator.isValid())
+					if (thistype(iterator.data()).isEnabled()) then
+						// TODO only check if it is in specified time and call the start action!
+						if (thistype(iterator.data()).startTimeOfDay() != value and thistype(iterator.data()).endTimeOfDay() != value) then
+							// is now in time but wasn't before
+							if (thistype(iterator.data()).isInSpecifiedTime(value) and not thistype(iterator.data()).isInSpecifiedTime(currentTime)) then
+								call toStartRoutines.pushBack(thistype(iterator.data()))
+							// was in time but isn't now
+							elseif (not thistype(iterator.data()).isInSpecifiedTime(value) and thistype(iterator.data()).isInSpecifiedTime(currentTime)) then
+								call toEndRoutines.pushBack(thistype(iterator.data()))
 							endif
 						endif
-						call iterator.next()
-					endloop
-					call iterator.destroy()
-				endif
+					endif
+					call iterator.next()
+				endloop
+				call iterator.destroy()
+				
+				/*
+				 * Now end first and then start other routines.
+				 * Otherwise bugs may appear since a routine might be started and another one ended after that (enter and leave house bugs).
+				 */
+				set iterator = toEndRoutines.begin()
+				loop
+					exitwhen (not iterator.isValid())
+					debug call Print("Ending routine period " + GetUnitName(thistype(iterator.data()).unit()))
+					call thistype(iterator.data()).end()
+					call iterator.next()
+				endloop
+				call iterator.destroy()
+				
+				set iterator = toStartRoutines.begin()
+				loop
+					exitwhen (not iterator.isValid())
+					debug call Print("Starting routine period " + GetUnitName(thistype(iterator.data()).unit()))
+					call thistype(iterator.data()).start()
+					call iterator.next()
+				endloop
+				call iterator.destroy()
+				
+				call toEndRoutines.destroy()
+				call toStartRoutines.destroy()
 			endif
 		endmethod
 
@@ -798,7 +862,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			loop
 				exitwhen (not iterator.isValid())
 				if (thistype(iterator.data()).isInTime() and thistype.current(whichUnit) != (thistype(iterator.data()))) then // check if it's the current period already, as well to prevent multiple starts
-					call thistype(iterator.data()).onStart()
+					call thistype(iterator.data()).start()
 				endif
 				call iterator.next()
 			endloop

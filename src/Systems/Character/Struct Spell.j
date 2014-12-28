@@ -107,12 +107,24 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			endif
 		endmethod
 
+		/**
+		 * Called by .evaluate().
+		 * If this does not return true the spell cast is canceled.
+		 * By default this evaluates the \ref castCondition().
+		 */
 		public stub method onCastCondition takes nothing returns boolean
+			debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
 			return (this.m_castCondition == 0 or this.m_castCondition.evaluate(this))
 		endmethod
 
+		/**
+		 * Called by .execute().
+		 * By default this executes the \ref castAction().
+		 */
 		public stub method onCastAction takes nothing returns nothing
 			debug call Print("Spell: onCastAction")
+			debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
+			debug call Print("Spell target Location in action: " + R2S(GetLocationX(GetSpellTargetLoc())) + " and " + R2S(GetLocationY(GetSpellTargetLoc())))
 			if (this.m_castAction != 0) then
 				debug call Print("Running action (is not zero).")
 				call this.m_castAction.execute(this)
@@ -136,61 +148,47 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 		/// \todo upgradeAction won't be called correctly
 		private method createUpgradeTrigger takes nothing returns nothing
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_upgradeTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_upgradeTrigger, this.character().unit(), EVENT_UNIT_HERO_SKILL)
-			set conditionFunction = Condition(function thistype.triggerConditionRightAbility)
-			set triggerCondition = TriggerAddCondition(this.m_upgradeTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_upgradeTrigger, function thistype.triggerActionUpgrade)
+			call TriggerRegisterUnitEvent(this.m_upgradeTrigger, this.character().unit(), EVENT_UNIT_HERO_SKILL)
+			call TriggerAddCondition(this.m_upgradeTrigger, Condition(function thistype.triggerConditionRightAbility))
+			call TriggerAddAction(this.m_upgradeTrigger, function thistype.triggerActionUpgrade)
 			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, "this", this)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerConditionCast takes nothing returns boolean
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local boolean result = (GetSpellAbilityId() == this.m_ability)
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local boolean result = (GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability)
 			if (result) then
+				debug call Print("Spell: triggerConditionCast")
+				debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
+				debug call Print("Spell target Location in condition: " + R2S(GetLocationX(GetSpellTargetLoc())) + " and " + R2S(GetLocationY(GetSpellTargetLoc())))
 				set result = this.onCastCondition()
 				if (not result) then
 					//taken from wc3jass.com
 					//call PauseUnit(this.character().unit(), true)
 					call IssueImmediateOrder(this.character().unit(), "stop")
 					//call PauseUnit(this.character().unit(), false)
+					debug call Print("Stop: " + GetAbilityName(this.ability()))
 				endif
 			endif
-			set triggeringTrigger = null
 			return result
 		endmethod
 
 		private static method triggerActionCast takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			debug call Print("Spell: triggerActionCast")
+			debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
+			debug call Print("Spell target Location in action: " + R2S(GetLocationX(GetSpellTargetLoc())) + " and " + R2S(GetLocationY(GetSpellTargetLoc())))
 			call this.onCastAction.execute()
-			set triggeringTrigger = null
 		endmethod
 
 		private method createCastTrigger takes nothing returns nothing
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_castTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_castTrigger, this.character().unit(), EVENT_UNIT_SPELL_ENDCAST)
-			set conditionFunction = Condition(function thistype.triggerConditionCast)
-			set triggerCondition = TriggerAddCondition(this.m_castTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_castTrigger, function thistype.triggerActionCast)
+			// never use ENDCAST since GetSpellTargetX() etc. won't work anymore
+			call TriggerRegisterUnitEvent(this.m_castTrigger, this.character().unit(), EVENT_UNIT_SPELL_CHANNEL)
+			call TriggerAddCondition(this.m_castTrigger, Condition(function thistype.triggerConditionCast))
+			call TriggerAddAction(this.m_castTrigger, function thistype.triggerActionCast)
 			call AHashTable.global().setHandleInteger(this.m_castTrigger, "this", this)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		/// \param character Used character.
@@ -238,6 +236,12 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call this.destroyCastTrigger()
 		endmethod
 
+		/**
+		 * This static method can be used in an exitwhen() statement to determine when to stop the loop on an enemy target \p target.
+		 * When the target gets killed or becomes spell immune spell effects have to stop.
+		 * This should be used for negative effects.
+		 * For positive effects on allies you can use \ref allyTargetLoopCondition().
+		 */
 		public static method enemyTargetLoopCondition takes unit target returns boolean
 			return IsUnitDeadBJ(target) or IsUnitSpellImmune(target)
 		endmethod

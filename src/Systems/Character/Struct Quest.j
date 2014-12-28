@@ -223,11 +223,13 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			if (state == AAbstractQuest.stateNotUsed) then
 				if (this.character() == 0 or GetLocalPlayer() == this.character().player()) then
 					//call QuestSetDiscovered(this.m_questLogQuest, false)
+					call BJDebugMsg("Disable Quest log quest: " + I2S(GetHandleId(this.m_questLogQuest)))
 					call QuestSetEnabled(this.m_questLogQuest, false)
 				endif
 			elseif (state == AAbstractQuest.stateNew) then
 				if (this.character() == 0 or GetLocalPlayer() == this.character().player()) then
 					//call QuestSetDiscovered(this.m_questLogQuest, true)
+					call BJDebugMsg("Quest log quest: " + I2S(GetHandleId(this.m_questLogQuest)))
 					call QuestSetEnabled(this.m_questLogQuest, true)
 				endif
 			elseif (state == AAbstractQuest.stateCompleted) then

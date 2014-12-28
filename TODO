@@ -1,9 +1,12 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
+* AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
+* AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
 * ATalk should work with multiple characters at the same time. Required feature from "Die Macht des Feuers". It is very annoying to use a talk for only one player at once.
 * Test CreateTrackableForPlayer() (sync?, crash?)!
 * Improve merge() of A_VECTOR.
 * Fix A_MAP.
+* Fix ARoutine when setting the time of day manually. For example AVideo stores the time and then calls SetTimeOfDay() to restore it. Appearently, the routines are not called properly in those cases. When setting the time from 12 to 4 and the NPC should THEN sleep, he tries to enter the house but just stands there and is still visible. The problem is that "end()" is called in "start" is called in different orders.
 * String misc unit test has still 2 errors and comments!
 * Implement AVolumeSet.setDefaultVolume()
 * Test EndCinematicSceneForPlayer() for desync!

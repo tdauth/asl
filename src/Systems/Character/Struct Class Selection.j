@@ -26,7 +26,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private static string m_textAgility
 		private static string m_textIntelligence
 		private static string m_textAbilities
-		private static string m_textDescription
 		// static members
 		private static thistype array m_playerClassSelection[12] /// \todo \ref bj_MAX_PLAYERS, JassHelper bug
 		private static integer m_stack //required for the start game action
@@ -115,7 +114,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			local integer result = 0
 			local integer i
 			call vector.pushBack(thistype.m_textAbilities)
-			call vector.pushBack(thistype.m_textDescription)
 			set i = 0
 			loop
 				exitwhen (i == vector.size())
@@ -174,7 +172,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			endif
 
 			if (this.m_class.descriptionLines() > 0) then
-				set count = count + 1 + this.m_class.descriptionLines()
+				set count = count + this.m_class.descriptionLines()
 			endif
 
 			call MultiboardSetRowCount(this.m_infoSheet, count)
@@ -227,12 +225,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			endif
 
 			if (this.m_class.descriptionLines() > 0) then
-				set multiboardItem = MultiboardGetItem(this.m_infoSheet, index, 0)
-				call MultiboardSetItemStyle(multiboardItem, true, false)
-				call MultiboardSetItemValue(multiboardItem, thistype.m_textDescription)
-				call MultiboardReleaseItem(multiboardItem)
-				set multiboardItem = null
-				set index = index + 1
 
 				set i = 0
 				loop
@@ -491,7 +483,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call this.removeClassUnit()
 		endmethod
 
-		public static method init takes camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, AClassSelectionCharacterCreationAction characterCreationAction, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence, string textAbilities, string textDescription returns nothing
+		public static method init takes camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, AClassSelectionCharacterCreationAction characterCreationAction, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence, string textAbilities returns nothing
 			local integer i
 			// static construction members
 			set thistype.m_cameraSetup = cameraSetup
@@ -512,7 +504,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			set thistype.m_textAgility = textAgility
 			set thistype.m_textIntelligence = textIntelligence
 			set thistype.m_textAbilities = textAbilities
-			set thistype.m_textDescription = textDescription
 			//static members
 			set i = 0
 			loop
