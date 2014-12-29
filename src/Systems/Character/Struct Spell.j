@@ -159,9 +159,6 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local boolean result = (GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability)
 			if (result) then
-				debug call Print("Spell: triggerConditionCast")
-				debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
-				debug call Print("Spell target Location in condition: " + R2S(GetLocationX(GetSpellTargetLoc())) + " and " + R2S(GetLocationY(GetSpellTargetLoc())))
 				set result = this.onCastCondition()
 				if (not result) then
 					//taken from wc3jass.com
@@ -176,24 +173,24 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 		private static method triggerActionCast takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			debug call Print("Spell: triggerActionCast")
-			debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
-			debug call Print("Spell target Location in action: " + R2S(GetLocationX(GetSpellTargetLoc())) + " and " + R2S(GetLocationY(GetSpellTargetLoc())))
 			call this.onCastAction.execute()
 		endmethod
 
-		private method createCastTrigger takes nothing returns nothing
+		private method createCastTrigger takes unitevent castEvent returns nothing
 			set this.m_castTrigger = CreateTrigger()
 			// never use ENDCAST since GetSpellTargetX() etc. won't work anymore
-			call TriggerRegisterUnitEvent(this.m_castTrigger, this.character().unit(), EVENT_UNIT_SPELL_CHANNEL)
+			call TriggerRegisterUnitEvent(this.m_castTrigger, this.character().unit(), castEvent)
 			call TriggerAddCondition(this.m_castTrigger, Condition(function thistype.triggerConditionCast))
 			call TriggerAddAction(this.m_castTrigger, function thistype.triggerActionCast)
 			call AHashTable.global().setHandleInteger(this.m_castTrigger, "this", this)
 		endmethod
 
-		/// \param character Used character.
-		/// \param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
-		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction returns thistype
+		/**
+		 * \param character Used character.
+		 * \param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
+		 * \param castEvent Use EVENT_UNIT_SPELL_CHANNEL for regular spells since event data such as GetSpellTargetX() does work with this event. In other cases such as removing the cast ability EVENT_UNIT_SPELL_ENDCAST is recommendet but event data does not work with this one.
+		 */
+		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction, unitevent castEvent returns thistype
 			local thistype this = thistype.allocate(character)
 			//start members
 			set this.m_ability = usedAbility
@@ -204,14 +201,14 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call character.addSpell(this)
 
 			call this.createUpgradeTrigger()
-			call this.createCastTrigger()
+			call this.createCastTrigger(castEvent)
 
 			return this
 		endmethod
 
 		/// Use this constructor if you either don't any event response functions or you overwrite the stub methods.
 		public static method createSimple takes ACharacter character, integer whichAbility returns thistype
-			return thistype.create(character, whichAbility, 0, 0, 0)
+			return thistype.create(character, whichAbility, 0, 0, 0, EVENT_UNIT_SPELL_CHANNEL)
 		endmethod
 
 		public static method createRestored takes ACharacter character, gamecache cache, string missionKey, string labelPrefix returns thistype

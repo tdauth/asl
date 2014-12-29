@@ -364,6 +364,11 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		public method pingY takes nothing returns real
 			return this.m_pingY
 		endmethod
+		
+		public method setPingRect takes rect whichRect returns nothing
+			call this.setPingX(GetRectCenterX(whichRect))
+			call this.setPingY(GetRectCenterY(whichRect))
+		endmethod
 
 		public method setPingDuration takes real pingDuration returns nothing
 			set this.m_pingDuration = pingDuration
