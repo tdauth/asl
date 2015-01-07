@@ -75,7 +75,11 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 
 		private static method triggerActionCheat takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			call this.m_action.execute(this)
+			if (this.m_action != 0) then
+				call this.m_action.execute(this)
+			debug else
+				debug call this.print("Missing cheat action.")
+			endif
 		endmethod
 
 		private method createCheatTrigger takes nothing returns nothing

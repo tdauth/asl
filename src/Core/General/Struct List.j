@@ -593,13 +593,13 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 	 * 150000 is struct space maximum
 	 * max instances = 150000 / 1 = 150000 since there is no array member
 	 */
-	//! runtextmacro A_LIST("", "AIntegerList", "integer", "0", "150000", "150000", "8192")
-	//! runtextmacro A_LIST("", "AStringList", "string", "null", "150000", "15000", "8192")
-	//! runtextmacro A_LIST("", "ABooleanList", "boolean", "false", "150000", "15000", "8192")
-	//! runtextmacro A_LIST("", "ARealList", "real", "0.0", "150000", "150000", "8192")
-	//! runtextmacro A_LIST("", "AHandleList", "handle", "null", "150000", "150000", "8192")
+	//! runtextmacro A_LIST("", "AIntegerList", "integer", "0", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "AStringList", "string", "null", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "ABooleanList", "boolean", "false", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "ARealList", "real", "0.0", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "AHandleList", "handle", "null", "150000", "150000", "150000")
 
-	//! runtextmacro A_LIST("", "APlayerList", "player", "null", "150000", "150000", "8192")
-	//! runtextmacro A_LIST("", "ARegionList", "region", "null", "150000", "150000", "8192")
+	//! runtextmacro A_LIST("", "APlayerList", "player", "null", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "ARegionList", "region", "null", "150000", "150000", "150000")
 
 endlibrary

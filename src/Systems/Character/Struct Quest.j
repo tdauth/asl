@@ -66,7 +66,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 
 		// methods
 
-		private method displayStateMessage takes nothing returns nothing
+		private method displayStateMessage takes string soundPath returns nothing
 			local integer i
 
 			if (this.character() != 0) then
@@ -82,7 +82,9 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 						set i = i + 1
 					endloop
 				endif
-				call PlaySoundFileForPlayer(this.character().player(), this.soundPath())
+				if (soundPath != null) then
+					call PlaySoundFileForPlayer(this.character().player(), soundPath)
+				endif
 			else
 				call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, this.title())
 				if (not thistype.m_likeWarcraft or (not this.isCompleted() and not this.isFailed())) then
@@ -95,7 +97,9 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 						set i = i + 1
 					endloop
 				endif
-				call PlaySound(this.soundPath())
+				if (soundPath != null) then
+					call PlaySound(soundPath)
+				endif
 			endif
 
 			if (thistype.m_useQuestLog) then
@@ -134,9 +138,13 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 				endif
 			endif
 
-			call this.displayStateMessage()
+			call this.displayStateMessage(this.soundPath())
 		endmethod
 
+		/**
+		 * Displays all quest item states as well as the quest state as an update message to the corresponding player
+		 * or all players.
+		 */
 		public method displayUpdate takes nothing returns nothing
 			if (this.character() != 0) then
 				if (thistype.m_textQuestUpdate != null) then
@@ -148,7 +156,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 				endif
 			endif
 
-			call this.displayStateMessage()
+			call this.displayStateMessage(thistype.m_updateSoundPath)
 		endmethod
 
 		public method displayUpdateMessage takes string message returns nothing
