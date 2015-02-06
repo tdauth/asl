@@ -184,16 +184,20 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		/// Single call!
 		public stub method enableUntil takes integer questItemIndex returns boolean
 			local integer i = 0
+			call BJDebugMsg("Enable quest until " + I2S(questItemIndex))
 			if (this.setState(AAbstractQuest.stateNew)) then
+				call BJDebugMsg("set state successfull to new")
 				set i = 0
 				loop
 					exitwhen (i == IMinBJ(this.m_questItems.size(), questItemIndex + 1))
+					call BJDebugMsg("set state of item " + I2S(i) + " to new")
 					call AQuestItem(this.m_questItems[i]).setState(AAbstractQuest.stateNew)
 					set i = i + 1
 				endloop
 				call this.displayState()
 				return true
 			endif
+			call BJDebugMsg("set state NOT to new")
 			return false
 		endmethod
 
@@ -237,7 +241,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			elseif (state == AAbstractQuest.stateNew) then
 				if (this.character() == 0 or GetLocalPlayer() == this.character().player()) then
 					//call QuestSetDiscovered(this.m_questLogQuest, true)
-					call BJDebugMsg("Quest log quest: " + I2S(GetHandleId(this.m_questLogQuest)))
+					call BJDebugMsg("Set quest to new: Quest log quest: " + I2S(GetHandleId(this.m_questLogQuest)))
 					call QuestSetEnabled(this.m_questLogQuest, true)
 				endif
 			elseif (state == AAbstractQuest.stateCompleted) then
@@ -324,6 +328,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		private method createQuestLogQuest takes nothing returns nothing
 			if (thistype.m_useQuestLog) then
 				set this.m_questLogQuest = CreateQuest()
+				call BJDebugMsg("Creating disable quest log quest: " + I2S(GetHandleId(this.m_questLogQuest)))
 				call QuestSetEnabled(this.m_questLogQuest, false)
 				//call this.setQuestLogState(this.state()) // hide quest before setting state
 				call QuestSetRequired(this.m_questLogQuest, this.character() == 0)

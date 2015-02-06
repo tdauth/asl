@@ -66,6 +66,11 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			call PauseUnit(this.m_unit, not movable)
 			call SetUnitInvulnerable(this.m_unit, not movable)
 			if (movable) then
+				call BJDebugMsg("is movable")
+			else
+				call BJDebugMsg("is not movable")
+			endif
+			if (movable) then
 				call this.enableMovableSystems.evaluate()
 			else
 				call this.disableMovableSystems.evaluate()
@@ -877,6 +882,12 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				exitwhen (i == bj_MAX_PLAYERS)
 				set user = Player(i)
 				if (thistype.playerCharacter(user) != 0) then
+					call BJDebugMsg("Setting character " + I2S(thistype.playerCharacter(user)) + " movable again")
+					if (movable) then
+						call BJDebugMsg("Is true")
+					else
+						call BJDebugMsg("Is false")
+					endif
 					call thistype.playerCharacter(user).setMovable(movable)
 				endif
 				set user = null

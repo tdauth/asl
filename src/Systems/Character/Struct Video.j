@@ -1,11 +1,21 @@
 library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, ALibraryCoreGeneralPlayer, ALibraryCoreGeneralUnit, ALibraryCoreInterfaceCinematic, AStructCoreInterfacePlayerSelection, ALibraryCoreInterfaceMisc, ALibraryCoreStringConversion, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk
 
+	/**
+	 * \brief Interface for all unit based actor data.
+	 *
+	 * Allows restoring from the video sequence as well as access to the stored actor.
+	 */
 	private interface AActorInterface
 		public method restore takes nothing returns nothing
 		public method restoreOnActorsLocation takes nothing returns nothing
 		public method actor takes nothing returns unit
 	endinterface
 
+	/**
+	 * \brief This struct stores a copy of an existing unit which is used as actor in a video.
+	 *
+	 * \sa AUnitTypeActorData
+	 */
 	private struct AActorData extends AActorInterface
 		// construction members
 		private unit m_unit
@@ -102,6 +112,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 	endstruct
 
+	/**
+	 * \brief This struct stores a unit which is only used during a video sequence and removed afterwards.
+	 * Use this struct whenever units should newly be created for videos and not made by copies.
+	 * \sa AActorData
+	 */
 	private struct AUnitTypeActorData extends AActorInterface
 		// construction members
 		private player m_owner
@@ -293,7 +308,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private static AActorData m_actor //copy of first character
 		private static AVideoPlayerData array m_playerData[12] /// \todo \ref bj_MAX_PLAYERS
 		private static AVideoCharacterData array m_playerCharacterData[12] /// \todo \ref bj_MAX_PLAYERS
-		private static AIntegerVector m_actorData
+		/// Vector of \ref AActorInterface instances.
+		private static AIntegerVector m_actors
 		private static real m_timeOfDay
 		// dynamic members
 		private AVideoAction m_initAction
@@ -400,6 +416,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 		endmethod
 
+		/**
+		 * Called by .evaluate() when the video is being stopped (skipped or ended normally).
+		 * It is called AFTER the units have been unpaused and all player and character data has been restored successfully.
+		 * After this method the cinematic fade is done and the running video is finally set to 0.
+		 */
 		public stub method onStopAction takes nothing returns nothing
 			if (this.m_stopAction != 0) then
 				call this.m_stopAction.evaluate(this) // evaluate since it is called between fading
@@ -409,6 +430,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		/**
 		 * Called by .evaluate() when the video is being skipped.
 		 * .evaluates() the skip action by default.
+		 * This is called immediately before \ref stop() is called.
 		 */
 		public stub method onSkipAction takes nothing returns nothing
 			if (this.m_skipAction != 0) then
@@ -488,13 +510,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				call thistype.m_actor.destroy()
 				set thistype.m_actor = 0
 			endif
+			// make sure all actors are restored before unpausing and restoring player selection
+			call thistype.restoreUnitActors.evaluate()
 			call ACharacter.showAll(true)
 			call PauseAllUnits(false)
+			// make sure data is already restored when calling the on stop action
+			// otherwise characters are being set unmovable etc. after onStopAction() is called
+			call thistype.restorePlayerData()
+			call SetTimeOfDay(thistype.m_timeOfDay)
 			call this.onStopAction.evaluate()
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
-			call SetTimeOfDay(thistype.m_timeOfDay)
 			call TriggerSleepAction(thistype.m_waitTime)
-			call thistype.restorePlayerData()
 			set thistype.m_runningVideo = 0
 			//No camera pan! Call it manually, please.
 		endmethod
@@ -638,7 +664,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_skipped = false
 			set thistype.m_skippingPlayers = 0
 			set thistype.m_actor = 0
-			set thistype.m_actorData = AIntegerVector.create()
+			set thistype.m_actors = AIntegerVector.create()
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
@@ -660,11 +686,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			local integer i
 			// static members
 			loop
-				exitwhen (thistype.m_actorData.empty())
-				call AActorData(thistype.m_actorData.back()).destroy()
-				call thistype.m_actorData.popBack()
+				exitwhen (thistype.m_actors.empty())
+				call AActorInterface(thistype.m_actors.back()).destroy()
+				call thistype.m_actors.popBack()
 			endloop
-			call thistype.m_actorData.destroy()
+			call thistype.m_actors.destroy()
 
 			set i = 0
 			loop
@@ -709,14 +735,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		public static method saveUnitActor takes unit actor returns integer
 			local AActorData data = AActorData.create(actor)
-			call thistype.m_actorData.pushBack(data)
-			return thistype.m_actorData.backIndex()
+			call thistype.m_actors.pushBack(data)
+			return thistype.m_actors.backIndex()
 		endmethod
 
+		/**
+		 * \return Returns the corresponding internal index of the created unit actor.
+		 */
 		public static method createUnitActor takes player owner, integer unitTypeId, real x, real y, real face returns integer
 			local AUnitTypeActorData data = AUnitTypeActorData.create(owner, unitTypeId, x, y, face)
-			call thistype.m_actorData.pushBack(data)
-			return thistype.m_actorData.backIndex()
+			call thistype.m_actors.pushBack(data)
+			return thistype.m_actors.backIndex()
 		endmethod
 
 		public static method createUnitActorAtLocation takes player owner, integer unitTypeId, location whichLocation, real face returns integer
@@ -727,33 +756,40 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			return thistype.createUnitActor(owner, unitTypeId, GetRectCenterX(whichRect), GetRectCenterY(whichRect), face)
 		endmethod
 
+		/**
+		 * \param index The internal index of the unit actor.
+		 */
 		public static method unitActor takes integer index returns unit
-			return AActorData(thistype.m_actorData[index]).actor()
+			// TEST
+			debug if ( AActorInterface(thistype.m_actors[index]).actor() == null) then
+			debug call Print("Unit actor " + I2S(index) + " is null")
+			debug endif
+			return AActorInterface(thistype.m_actors[index]).actor()
 		endmethod
 
 		public static method restoreUnitActor takes integer index returns nothing
-			call AActorData(thistype.m_actorData[index]).restore()
-			call AActorData(thistype.m_actorData[index]).destroy()
-			call thistype.m_actorData.erase(index)
+			call AActorInterface(thistype.m_actors[index]).restore()
+			call AActorInterface(thistype.m_actors[index]).destroy()
+			call thistype.m_actors.erase(index)
 		endmethod
 
 		public static method restoreUnitActorOnActorLocation takes integer index returns nothing
-			call AActorData(thistype.m_actorData[index]).restoreOnActorsLocation()
-			call AActorData(thistype.m_actorData[index]).destroy()
-			call thistype.m_actorData.erase(index)
+			call AActorInterface(thistype.m_actors[index]).restoreOnActorsLocation()
+			call AActorInterface(thistype.m_actors[index]).destroy()
+			call thistype.m_actors.erase(index)
 		endmethod
 
 		public static method restoreUnitActors takes nothing returns nothing
 			loop
-				exitwhen (thistype.m_actorData.empty())
-				call thistype.restoreUnitActor(thistype.m_actorData.backIndex())
+				exitwhen (thistype.m_actors.empty())
+				call thistype.restoreUnitActor(thistype.m_actors.backIndex())
 			endloop
 		endmethod
 
 		public static method restoreUnitActorsOnActorsLocations takes nothing returns nothing
 			loop
-				exitwhen (thistype.m_actorData.empty())
-				call thistype.restoreUnitActorOnActorLocation(thistype.m_actorData.backIndex())
+				exitwhen (thistype.m_actors.empty())
+				call thistype.restoreUnitActorOnActorLocation(thistype.m_actors.backIndex())
 			endloop
 		endmethod
 
@@ -761,8 +797,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			local integer i = 0
 			call SetUnitMoveSpeed(thistype.actor(), moveSpeed)
 			loop
-				exitwhen (i == thistype.m_actorData.size())
-				call SetUnitMoveSpeed(AActorData(thistype.m_actorData[i]).actor(), moveSpeed)
+				exitwhen (i == thistype.m_actors.size())
+				call SetUnitMoveSpeed(AActorInterface(thistype.m_actors[i]).actor(), moveSpeed)
 				set i = i + 1
 			endloop
 		endmethod
@@ -771,8 +807,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			local integer i = 0
 			call SetUnitOwner(thistype.actor(), owner, true)
 			loop
-				exitwhen (i == thistype.m_actorData.size())
-				call SetUnitOwner(AActorData(thistype.m_actorData[i]).actor(), owner, true)
+				exitwhen (i == thistype.m_actors.size())
+				call SetUnitOwner(AActorInterface(thistype.m_actors[i]).actor(), owner, true)
 				set i = i + 1
 			endloop
 		endmethod
