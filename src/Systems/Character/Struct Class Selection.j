@@ -6,6 +6,15 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 	/// \todo Should be part of \ref AClassSelection, vJass bug.
 	function interface AClassSelectionCharacterCreationAction takes AClassSelection classSelection, unit whichUnit returns ACharacter
 
+	/**
+	 * \brief Simple class selection for the player's character which offers keyboard selection and a multiboard with information about the corresponding class as well as automatic camera view and unit rotation updates.
+	 *
+	 * The class selection creates the corresponding unit of the class and updates the camera of the player to a fixed view.
+	 * It displays a multiboard with the name and a description of the class.
+	 * The arrow keys can be used to change the currently displayed class.
+	 * The escape key can be used to select the currently displayed class.
+	 * It may rotate the shown class unit automatically.
+	 */
 	struct AClassSelection
 		// static construction members
 		private static camerasetup m_cameraSetup
@@ -330,80 +339,58 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 
 		private method createRefreshTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			if (thistype.m_refreshRate > 0.0) then
 				set this.m_refreshTrigger = CreateTrigger()
-				set triggerEvent = TriggerRegisterTimerEvent(this.m_refreshTrigger, thistype.m_refreshRate, true)
-				set triggerAction = TriggerAddAction(this.m_refreshTrigger, function thistype.triggerActionRefresh)
+				call TriggerRegisterTimerEvent(this.m_refreshTrigger, thistype.m_refreshRate, true)
+				call TriggerAddAction(this.m_refreshTrigger, function thistype.triggerActionRefresh)
 				call AHashTable.global().setHandleInteger(this.m_refreshTrigger, "this", this)
-				set triggerEvent = null
-				set triggerAction = null
 			endif
 		endmethod
 
 		private static method triggerActionChangeToPrevious takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			if (this.m_class == thistype.m_firstClass) then
 				set this.m_class = thistype.m_lastClass
 			else
 				set this.m_class = this.m_class - 1
 			endif
 			call this.createUnit()
-			set triggeringTrigger = null
 		endmethod
 
 		private method createChangePreviousTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_changePreviousTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterKeyEventForPlayer(this.m_user, this.m_changePreviousTrigger, AKeyLeft, true)
-			set triggerAction = TriggerAddAction(this.m_changePreviousTrigger, function thistype.triggerActionChangeToPrevious)
+			call TriggerRegisterKeyEventForPlayer(this.m_user, this.m_changePreviousTrigger, AKeyLeft, true)
+			call TriggerAddAction(this.m_changePreviousTrigger, function thistype.triggerActionChangeToPrevious)
 			call AHashTable.global().setHandleInteger(this.m_changePreviousTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerActionChangeToNext takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			if (this.m_class == thistype.m_lastClass) then
 				set this.m_class = thistype.m_firstClass
 			else
 				set this.m_class = this.m_class + 1
 			endif
 			call this.createUnit()
-			set triggeringTrigger = null
 		endmethod
 
 		private method createChangeNextTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_changeNextTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterKeyEventForPlayer(this.m_user, this.m_changeNextTrigger, AKeyRight, true)
-			set triggerAction = TriggerAddAction(this.m_changeNextTrigger, function thistype.triggerActionChangeToNext)
+			call TriggerRegisterKeyEventForPlayer(this.m_user, this.m_changeNextTrigger, AKeyRight, true)
+			call TriggerAddAction(this.m_changeNextTrigger, function thistype.triggerActionChangeToNext)
 			call AHashTable.global().setHandleInteger(this.m_changeNextTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerActionSelectClass takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call this.selectClass()
-			set triggeringTrigger = null
 		endmethod
 
 		private method createSelectTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_selectTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterKeyEventForPlayer(this.m_user, this.m_selectTrigger, AKeyEscape, true)
-			set triggerAction = TriggerAddAction(this.m_selectTrigger, function thistype.triggerActionSelectClass)
+			call TriggerRegisterKeyEventForPlayer(this.m_user, this.m_selectTrigger, AKeyEscape, true)
+			call TriggerAddAction(this.m_selectTrigger, function thistype.triggerActionSelectClass)
 			call AHashTable.global().setHandleInteger(this.m_selectTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		private method createInfoSheet takes nothing returns nothing

@@ -1,7 +1,7 @@
 library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralVector, ALibraryCoreGeneralPlayer, ALibraryCoreGeneralUnit, ALibraryCoreInterfaceCinematicFilter, ALibraryCoreInterfaceCamera, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterAbstractCharacterSystem
 
 	/**
-	 * This structure represents a single RPG character. Each player can own exactly one character.
+	 * \brief This structure represents a single RPG character. Each player can own exactly one character.
 	 * You can configure the character systems and enable or disable the several character system modules.
 	 * Each module makes the system requiring more memory, so clearly think of which system modules are required and which aren't.
 	 */
@@ -16,9 +16,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		private static boolean m_shareOnPlayerLeaves
 		private static boolean m_destroyOnDeath
 		private static boolean m_useViewSystem
-		private static boolean m_useFocusSystem
-		private static boolean m_useMovementSystem
-		private static boolean m_useFightSystem
 		private static boolean m_useRevivalSystem
 		private static boolean m_useInventorySystem
 		private static boolean m_useTalkLogSystem
@@ -37,9 +34,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		private trigger m_deathTrigger
 		//insert the character systems here
 		private AView m_view
-		private AFocus m_focus
-		private AMovement m_movement
-		private AFight m_fight
 		private ARevival m_revival
 		private AInventory m_inventory
 		private ATalkLog m_talkLog
@@ -140,18 +134,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 
 		public method view takes nothing returns AView
 			return this.m_view
-		endmethod
-
-		public method focus takes nothing returns AFocus
-			return this.m_focus
-		endmethod
-
-		public method movement takes nothing returns AMovement
-			return this.m_movement
-		endmethod
-
-		public method fight takes nothing returns AFight
-			return this.m_fight
 		endmethod
 
 		/**
@@ -410,15 +392,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			if (thistype.m_useViewSystem) then
 				call this.m_view.store(cache, missionKey, "View")
 			endif
-			if (thistype.m_useFocusSystem) then
-				call this.m_focus.store(cache, missionKey, "Focus")
-			endif
-			if (thistype.m_useMovementSystem) then
-				call this.m_movement.store(cache, missionKey, "Movement")
-			endif
-			if (thistype.m_useFightSystem) then
-				call this.m_fight.store(cache, missionKey, "Fight")
-			endif
 			if (thistype.m_useRevivalSystem) then
 				call this.m_revival.store(cache, missionKey, "Revival")
 			endif
@@ -451,15 +424,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			/// \todo call refresh unit actions
 			if (thistype.m_useViewSystem) then
 				call this.m_view.restore(cache, missionKey, "View")
-			endif
-			if (thistype.m_useFocusSystem) then
-				call this.m_focus.restore(cache, missionKey, "Focus")
-			endif
-			if (thistype.m_useMovementSystem) then
-				call this.m_movement.restore(cache, missionKey, "Movement")
-			endif
-			if (thistype.m_useFightSystem) then
-				call this.m_fight.restore(cache, missionKey, "Fight")
 			endif
 			if (thistype.m_useRevivalSystem) then
 				call this.m_revival.restore(cache, missionKey, "Revival")
@@ -515,15 +479,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			if (thistype.m_useViewSystem and this.m_view.enableAgain()) then
 				call this.m_view.enable.evaluate()
 			endif
-			if (thistype.m_useFocusSystem and this.m_focus.enableAgain()) then
-				call this.m_focus.enable.evaluate()
-			endif
-			if (thistype.m_useMovementSystem and this.m_movement.enableAgain()) then
-				call this.m_movement.enable.evaluate()
-			endif
-			if (thistype.m_useFightSystem and this.m_fight.enableAgain()) then
-				call this.m_fight.enable.evaluate()
-			endif
 			if (thistype.m_useRevivalSystem and this.m_revival.enableAgain()) then
 				call this.m_revival.enable.evaluate()
 			endif
@@ -541,15 +496,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		private method disableMovableSystems takes nothing returns nothing
 			if (thistype.m_useViewSystem and this.m_view.isEnabled()) then
 				call this.m_view.disable.evaluate()
-			endif
-			if (thistype.m_useFocusSystem and this.m_focus.isEnabled()) then
-				call this.m_focus.disable.evaluate()
-			endif
-			if (thistype.m_useMovementSystem and this.m_movement.isEnabled()) then
-				call this.m_movement.disable.evaluate()
-			endif
-			if (thistype.m_useFightSystem and this.m_fight.isEnabled()) then
-				call this.m_fight.disable.evaluate()
 			endif
 			if (thistype.m_useRevivalSystem and this.m_revival.isEnabled()) then
 				call this.m_revival.disable.evaluate()
@@ -610,15 +556,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			if (thistype.m_useViewSystem) then
 				set this.m_view = AView.create.evaluate(this)
 			endif
-			if (thistype.m_useFocusSystem) then
-				set this.m_focus = AFocus.create.evaluate(this)
-			endif
-			if (thistype.m_useMovementSystem) then
-				set this.m_movement = AMovement.create.evaluate(this)
-			endif
-			if (thistype.m_useFightSystem) then
-				set this.m_fight = AFight.create.evaluate(this)
-			endif
 			if (thistype.m_useRevivalSystem) then
 				set this.m_revival = ARevival.create.evaluate(this)
 			endif
@@ -676,15 +613,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			if (thistype.m_useViewSystem) then
 				call this.m_view.destroy()
 			endif
-			if (thistype.m_useFocusSystem) then
-				call this.m_focus.destroy()
-			endif
-			if (thistype.m_useMovementSystem) then
-				call this.m_movement.destroy()
-			endif
-			if (thistype.m_useFightSystem) then
-				call this.m_fight.destroy()
-			endif
 			if (thistype.m_useRevivalSystem) then
 				call this.m_revival.destroy()
 			endif
@@ -723,21 +651,15 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		 * \param shareOnPlayerLeaves If this value is true control over character will be shared with other character owners.
 		 * \param destroyOnDeath If this value is false the character will be set unmovable when he dies otherwise he will be destroyed.
 		 * \param useViewSystem Shows if the view system is used.
-		 * \param useFocusSystem Shows if the focus system is used.
-		 * \param useMovementSystem Shows if the movement system is used.
-		 * \param useFightSystem Shows if the fight system is used.
 		 * \param useRevivalSystem Shows if the revival system is used.
 		 * \param useInventorySystem Shows if the inventory system is used.
 		 * \param useTalkLogSystem Shows if the talk log system is used.
 		 * \sa AView
-		 * \sa AFocus
-		 * \sa AMovement
-		 * \sa AFight
 		 * \sa ARevival
 		 * \sa AInventory
 		 * \sa ATalkLog
 		 */
-		public static method init takes boolean doAlwaysAddExperience, boolean removeUnitOnDestruction, boolean destroyOnPlayerLeaves, boolean shareOnPlayerLeaves, boolean destroyOnDeath, boolean useViewSystem, boolean useFocusSystem, boolean useMovementSystem, boolean useFightSystem, boolean useRevivalSystem, boolean useInventorySystem, boolean useTalkLogSystem returns nothing
+		public static method init takes boolean doAlwaysAddExperience, boolean removeUnitOnDestruction, boolean destroyOnPlayerLeaves, boolean shareOnPlayerLeaves, boolean destroyOnDeath, boolean useViewSystem, boolean useRevivalSystem, boolean useInventorySystem, boolean useTalkLogSystem returns nothing
 			// static initialization members
 			set thistype.m_doAlwaysAddExperience = doAlwaysAddExperience
 			set thistype.m_removeUnitOnDestruction = removeUnitOnDestruction
@@ -745,9 +667,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			set thistype.m_shareOnPlayerLeaves = shareOnPlayerLeaves
 			set thistype.m_destroyOnDeath = destroyOnDeath
 			set thistype.m_useViewSystem = useViewSystem
-			set thistype.m_useFocusSystem = useFocusSystem
-			set thistype.m_useMovementSystem = useMovementSystem
-			set thistype.m_useFightSystem = useFightSystem
 			set thistype.m_useRevivalSystem = useRevivalSystem
 			set thistype.m_useInventorySystem = useInventorySystem
 			set thistype.m_useTalkLogSystem = useTalkLogSystem
@@ -782,18 +701,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 
 		public static method useViewSystem takes nothing returns boolean
 			return thistype.m_useViewSystem
-		endmethod
-
-		public static method useFocusSystem takes nothing returns boolean
-			return thistype.m_useFocusSystem
-		endmethod
-
-		public static method useMovementSystem takes nothing returns boolean
-			return thistype.m_useMovementSystem
-		endmethod
-
-		public static method useFightSystem takes nothing returns boolean
-			return thistype.m_useFightSystem
 		endmethod
 
 		public static method useRevivalSystem takes nothing returns boolean

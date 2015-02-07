@@ -1,5 +1,9 @@
 library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc, AStructSystemsCharacterAbstractQuest
 
+	/**
+	 * \brief The item of a \ref AQuest.
+	 * An item represents one single task in a quest. A quest can consist of multiple items which have independent states.
+	 */
 	struct AQuestItem extends AAbstractQuest
 		// construction members
 		private AQuest m_quest

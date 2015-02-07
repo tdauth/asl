@@ -173,6 +173,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 			set this.m_actor = CreateUnit(this.owner(), this.unitTypeId(), this.x(), this.y(), this.face())
 			call SetUnitInvulnerable(this.m_actor, true)
+			call IssueImmediateOrder(this.m_actor, "stop") // cancel orders.
 		endmethod
 
 		public static method create takes player owner, integer unitTypeId, real x, real y, real face returns thistype
@@ -322,6 +323,12 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		// dynamic members
 
+		/**
+		 * The init action is called using .evaluate() in \ref onInitAction() by default
+		 * to initialize the video which is about the being played.
+		 * The init action is evaluated when the black screen faded in.
+		 * @{
+		 */
 		public method setInitAction takes AVideoAction initAction returns nothing
 			set this.m_initAction = initAction
 		endmethod
@@ -329,7 +336,15 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public method initAction takes nothing returns AVideoAction
 			return this.m_initAction
 		endmethod
+		/**
+		 @}
+		 */
 
+		/**
+		 * The play action is called using .execute() in \ref onPlayAction() by default.
+		 * It is called after the black screen faded out and the video starts.
+		 * @{
+		 */
 		public method setPlayAction takes AVideoAction playAction returns nothing
 			set this.m_playAction = playAction
 		endmethod
@@ -337,6 +352,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public method playAction takes nothing returns AVideoAction
 			return this.m_playAction
 		endmethod
+		/**
+		 * @}
+		 */
 
 		public method setStopAction takes AVideoAction stopAction returns nothing
 			set this.m_stopAction = stopAction
@@ -446,7 +464,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * <li>character movability</li>
 		 * <li>time of day</li>
 		 * </ul>
-		 * \sa CinematicModeExBJ
+		 * \sa CinematicModeExBJ()
 		 */
 		public method play takes nothing returns nothing
 			local force playersAll
@@ -488,8 +506,21 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call this.onPlayAction.execute() // execute since we need to be able to use TriggerSleepAction calls (stop method has to be called in this method)
 		endmethod
 
-		/// You have to call this method at the end of your video action.
-		/// Since there is an execution of the action, TriggerSleepAction functions will be ignored, so this method could not be called by the play method.
+		/**
+		 * Stops the video and does the following things:
+		 * <ul>
+		 * <li>fades out and disables cinematic mode</li>
+		 * <li>resets game camera</li>
+		 * <li>enables all \ref ATalk effects again</li>
+		 * <li>restores all actors automatically</li>
+		 * <li>unpauses all units which have not been paused before</li>
+		 * <li>restores time of day</li>
+		 * <li>restores player data (selection, leaderboard and dialog visibility)</li>
+		 * <li>calls \ref onStopAction() with .evaluate()</li>
+		 * </ul>
+		 * \note You have to call this method at the end of your video play action.
+		 * \note Since there is an execution of the action, TriggerSleepAction functions will be ignored, so this method could not be called by the play method.
+		 */
 		public method stop takes nothing returns nothing
 			local force playersAll
 			debug if (thistype.m_runningVideo != this) then
@@ -525,6 +556,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			//No camera pan! Call it manually, please.
 		endmethod
 
+		/**
+		 * Skips the video immediately which means the cinematic scene is ended and the sound is stopped if \ref transmissionFromUnitType() had been used.
+		 * This means that \ref onSkipAction() is called by .evaluate() and afterwards \ref stop() is called.
+		 * Besides it displays a message that the video has been skipped (useful in multiplayer games).
+		 */
 		public method skip takes nothing returns nothing
 			debug if (thistype.m_runningVideo != this) then
 				debug call this.print("Video is not being run.")
@@ -546,10 +582,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/**
-		 * Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
+		 * This method is called every time a player attempts to skip the video. It is called with .evaluate().
+		 * It returns whether the video is actually being skipped or not.
 		 * You can overwrite this method in your custom derived structure to avoid this default behaviour.
-		 * This method is called every time a player skips the video.
-		 * Called with .evaluate().
+		 * Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
+		 * \param skipablePlayers The number of players controlled by humans.
+		 * \return Returns true if the video actually will be skipped.
+		 * \todo If a player leaves the game who should have skipped the video or all players leave the game who did not skip what happens? Store the number of skips!
 		 */
 		public stub method onSkipCondition takes integer skipablePlayers returns boolean
 			return thistype.m_skippingPlayers >= skipablePlayers / thistype.m_divident
@@ -569,7 +608,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		public static method playerSkips takes player whichPlayer returns boolean
 			local integer i
-			local player user
 			local integer skipablePlayers = 0
 
 			if (thistype.m_runningVideo == 0 or thistype.m_skipped) then
@@ -583,11 +621,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
-					set user = Player(i)
-					if (IsPlayerPlayingUser(user)) then
-						set skipablePlayers = skipablePlayers + 1
-					endif
-					set user = null
+				if (IsPlayerPlayingUser(Player(i))) then
+					set skipablePlayers = skipablePlayers + 1
+				endif
 				set i = i + 1
 			endloop
 
@@ -619,31 +655,18 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		private static method createSkipTrigger takes nothing returns nothing
 			local integer i
-			local player user
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set thistype.m_skipTrigger = CreateTrigger()
 			call DisableTrigger(thistype.m_skipTrigger) //will be enabled by first running video
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
-				set user = Player(i)
-				if (IsPlayerPlayingUser(user)) then
-					set triggerEvent = TriggerRegisterKeyEventForPlayer(user, thistype.m_skipTrigger, AKeyEscape, true) //important: If it is the escape key it is the same key as in the character selection.
-					set triggerEvent = null
+				if (IsPlayerPlayingUser(Player(i))) then
+					call TriggerRegisterKeyEventForPlayer(Player(i), thistype.m_skipTrigger, AKeyEscape, true) //important: If it is the escape key it is the same key as in the character selection.
 				endif
-				set user = null
 				set i = i + 1
 			endloop
-			set conditionFunction = Condition(function thistype.triggerConditionSkip)
-			set triggerCondition = TriggerAddCondition(thistype.m_skipTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(thistype.m_skipTrigger, function thistype.triggerActionSkip)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
+			call TriggerAddCondition(thistype.m_skipTrigger, Condition(function thistype.triggerConditionSkip))
+			call TriggerAddAction(thistype.m_skipTrigger, function thistype.triggerActionSkip)
 		endmethod
 
 		/// \param divident This value represents the divident which is used for comparing the number of skipping players with the number of requested skipping players for skipping the video.
@@ -733,6 +756,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			return thistype.m_actor.actor()
 		endmethod
 
+		/**
+		 * Stores an actor for unit \p actor and returns the corresponding internal index.
+		 *
+		 * \return Returns the internal index which can be used for further treatment.
+		 * \note If you want to create a newly actor based on a unit type use \ref createUnitActor().
+		 * \note Use \ref unitActor() to get the corresponding created unit.
+		 */
 		public static method saveUnitActor takes unit actor returns integer
 			local AActorData data = AActorData.create(actor)
 			call thistype.m_actors.pushBack(data)
@@ -740,7 +770,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/**
+		 * Creates a newly actor unit based on a unit type rather than an existing unit.
 		 * \return Returns the corresponding internal index of the created unit actor.
+		 * \note Use \ref unitActor() to get the corresponding created unit.
 		 */
 		public static method createUnitActor takes player owner, integer unitTypeId, real x, real y, real face returns integer
 			local AUnitTypeActorData data = AUnitTypeActorData.create(owner, unitTypeId, x, y, face)
@@ -757,6 +789,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/**
+		 * Returns the created actor unit for the video based on the internal index.
 		 * \param index The internal index of the unit actor.
 		 */
 		public static method unitActor takes integer index returns unit
@@ -779,6 +812,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call thistype.m_actors.erase(index)
 		endmethod
 
+		/**
+		 * Restores all stored unit actors.
+		 * This method is called automatically when the video is being stopped.
+		 */
 		public static method restoreUnitActors takes nothing returns nothing
 			loop
 				exitwhen (thistype.m_actors.empty())

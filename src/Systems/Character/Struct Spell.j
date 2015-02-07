@@ -44,6 +44,9 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 		// convenience methods
 
+		/**
+		 * \return Returns the name of the corresponding ability.
+		 */
 		public method name takes nothing returns string
 			return GetObjectName(this.m_ability)
 		endmethod
@@ -64,10 +67,16 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			return GetUnitAbilityLevel(this.character().unit(), this.m_ability)
 		endmethod
 
+		/**
+		 * Adds the corresponding ability \ref ability() to the character's unit.
+		 */
 		public method add takes nothing returns boolean
 			return UnitAddAbility(this.character().unit(), this.m_ability)
 		endmethod
 
+		/**
+		 * Removes the corresponding ability \ref ability() from the character's unit.
+		 */
 		public method remove takes nothing returns boolean
 			return UnitRemoveAbility(this.character().unit(), this.m_ability)
 		endmethod
