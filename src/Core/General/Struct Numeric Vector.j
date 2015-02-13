@@ -11,6 +11,9 @@ library AStructCoreGeneralNumericVector requires AStructCoreGeneralVector
 		$STRUCTPREFIX$ struct $NAME$ extends $PARENTNAME$
 			public static constant string parentName = "$PARENTNAME$"
 
+			/**
+			 * \return Returns the maximum element of the vector.
+			 */
 			public method max takes nothing returns $ELEMENTTYPE$
 				local integer i = 0
 				local $ELEMENTTYPE$ result = 0
@@ -24,6 +27,9 @@ library AStructCoreGeneralNumericVector requires AStructCoreGeneralVector
 				return result
 			endmethod
 
+			/**
+			 * \return Returns the minimum element of the vector.
+			 */
 			public method min takes nothing returns $ELEMENTTYPE$
 				local integer i
 				local $ELEMENTTYPE$ result
@@ -42,6 +48,9 @@ library AStructCoreGeneralNumericVector requires AStructCoreGeneralVector
 				return result
 			endmethod
 
+			/**
+			 * \return Returns the sum of all elements from the vector.
+			 */
 			public method sum takes nothing returns $ELEMENTTYPE$
 				local integer i = 0
 				local $ELEMENTTYPE$ result = 0
@@ -97,18 +106,38 @@ library AStructCoreGeneralNumericVector requires AStructCoreGeneralVector
 				endloop
 			endmethod
 
+			/**
+			 * Compares the sums of two vectors.
+			 * \param other Compared vector.
+			 * \return Returns true if this vector has a greater sum than \p other.
+			 */
 			public method greaterThan takes thistype other returns boolean
 				return this.sum() > other.sum()
 			endmethod
 
+			/**
+			 * Compares the sums of two vectors.
+			 * \param other Compared vector.
+			 * \return Returns true if this vector has a smaller sum than \p other.
+			 */
 			public method lessThan takes thistype other returns boolean
 				return this.sum() < other.sum()
 			endmethod
 
+			/**
+			 * Compares the sums of two vectors.
+			 * \param other Compared vector.
+			 * \return Returns true if the sums of this vector and \p other are equal.
+			 */
 			public method equal takes thistype other returns boolean
 				return this.sum() == other.sum()
 			endmethod
 
+			/**
+			 * Compares the sums of two vectors.
+			 * \param other Compared vector.
+			 * \return Returns true if the sums of this vector and \p other are not equal.
+			 */
 			public method unequal takes thistype other returns boolean
 				return this.sum() != other.sum()
 			endmethod

@@ -1,11 +1,12 @@
 library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreGeneralUnit
 
 	/**
-	 * This structure is a kind of wrapper for data type \ref group. Since \ref group does not allow
-	 * direct accesses to internally stored units it's very annoying to get any group member
-	 * which is not the first one.
+	 * \brief This structure is a kind of wrapper for data type \ref group.
+	 * Since \ref group does not allow direct accesses to internally stored units it's
+	 * very annoying to get any group member which is not the first one.
 	 * You'll always have to iterate the whole group, remove the first member and copying it into
-	 * another group which should replace your first one in the end.
+	 * another group which should replace your first one in the end since \ref FirstOfGroup() is the only function
+	 * which is available to access any member.
 	 * This process has to go on until you found your required unit.
 	 * Another possibility is to use filters but they have to be global functions and therefore
 	 * you will either have to attach data anywhere or have to use a global variable.

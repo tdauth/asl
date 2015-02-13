@@ -180,6 +180,10 @@ library AStructCoreGeneralHashTable
 		/**
 		 * Global hash table is used by the ASL itself.
 		 * \warning Please do not use this method to prevent conflicts with the ASL.
+		 * The global hash table is used in all ASL systems to store data of handles for example.
+		 * For example whenever a system uses triggers which are created for specific instance of an object
+		 * the reference "this" can be stored using the trigger's handle ID as hash key.
+		 * When the trigger is run it loads the reference from the global hash table again using handle ID of the triggering trigger.
 		 */
 		public static method global takes nothing returns thistype
 			if (thistype.m_global == 0) then

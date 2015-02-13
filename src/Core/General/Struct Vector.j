@@ -132,7 +132,9 @@ endif
 			 */
 			public method begin takes nothing returns $NAME$Iterator
 				local $NAME$Iterator begin = $NAME$Iterator.create(this)
-				call begin.setIndex(0)
+				if (this.m_size > 0) then
+					call begin.setIndex(0)
+				endif
 
 				return begin
 			endmethod
