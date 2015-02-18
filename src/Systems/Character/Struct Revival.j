@@ -104,6 +104,17 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 				endif
 			endif
 		endmethod
+		
+		/**
+		 * Ends the revival without reviving the character.
+		 * This should be used carefully for example whenever the character is revived manually.
+		 */
+		public method end takes nothing returns nothing
+			call PauseTimer(this.m_timer) // stop for safety
+			if (this.showDialog()) then
+				call TimerDialogDisplay(this.m_timerDialog, false)
+			endif
+		endmethod
 
 		private method revive takes nothing returns nothing
 			call ReviveHero(this.character().unit(), this.x(), this.y(), this.showEffect())
@@ -115,7 +126,7 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			local thistype this = AHashTable.global().handleInteger(expiredTimer, "this")
 			set this.m_runs = false
 			call this.revive()
-			call this.end.evaluate()
+			call this.end()
 			set expiredTimer = null
 		endmethod
 
@@ -124,13 +135,6 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			set this.m_runs = true
 			if (this.showDialog()) then
 				call TimerDialogDisplay(this.m_timerDialog, true)
-			endif
-		endmethod
-
-		private method end takes nothing returns nothing
-			call PauseTimer(this.m_timer) //Zur Sicherheit auch stoppen
-			if (this.showDialog()) then
-				call TimerDialogDisplay(this.m_timerDialog, false)
 			endif
 		endmethod
 
