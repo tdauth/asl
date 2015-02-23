@@ -59,7 +59,11 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call DecUnitAbilityLevel(this.character().unit(), this.m_ability)
 		endmethod
 
-		public method setLevel takes integer level returns nothing
+		/**
+		 * Sets the spell's ability level to \p level.
+		 * Can be overwritten as stub method to change the behaviour.
+		 */
+		public stub method setLevel takes integer level returns nothing
 			call SetUnitAbilityLevel(this.character().unit(), this.m_ability, level)
 		endmethod
 
@@ -122,7 +126,6 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		 * By default this evaluates the \ref castCondition().
 		 */
 		public stub method onCastCondition takes nothing returns boolean
-			debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
 			return (this.m_castCondition == 0 or this.m_castCondition.evaluate(this))
 		endmethod
 
@@ -131,9 +134,6 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		 * By default this executes the \ref castAction().
 		 */
 		public stub method onCastAction takes nothing returns nothing
-			debug call Print("Spell: onCastAction")
-			debug call Print("Spell target X: " + R2S(GetSpellTargetX()) + " Y: " + R2S(GetSpellTargetY()))
-			debug call Print("Spell target Location in action: " + R2S(GetLocationX(GetSpellTargetLoc())) + " and " + R2S(GetLocationY(GetSpellTargetLoc())))
 			if (this.m_castAction != 0) then
 				debug call Print("Running action (is not zero).")
 				call this.m_castAction.execute(this)
