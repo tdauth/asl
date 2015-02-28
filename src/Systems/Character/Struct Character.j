@@ -817,6 +817,27 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				set i = i + 1
 			endloop
 		endmethod
+		
+		/**
+		 * Counts all characters.
+		 * \return Returns the number of all characters.
+		 */
+		public static method countAll takes nothing returns integer
+			local integer i
+			local player user
+			local integer result = 0
+			set i = 0
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				set user = Player(i)
+				if (thistype.playerCharacter(user) != 0) then
+					set result = result + 1
+				endif
+				set user = null
+				set i = i + 1
+			endloop
+			return result
+		endmethod
 
 		public static method countAllPlaying takes nothing returns integer
 			local integer i

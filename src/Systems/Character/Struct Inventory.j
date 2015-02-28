@@ -1021,6 +1021,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 			set characterUnit = null
 		endmethod
+		
+		/**
+		 * Adds an item to the inventory.
+		 */
+		public method addItem takes item whichItem returns nothing
+			call this.equipItem(whichItem, false, false, true) // try always equipment first!
+		endmethod
 
 		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage returns nothing
 			local integer i
@@ -1384,7 +1391,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local trigger triggeringTrigger = GetTriggeringTrigger()
 			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
 			local item usedItem = GetManipulatedItem()
-			call this.equipItem(usedItem, false, false, true) // try always equipment first!
+			call this.addItem(usedItem)
 			set triggeringTrigger = null
 			set usedItem = null
 		endmethod

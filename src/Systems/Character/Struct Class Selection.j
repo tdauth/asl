@@ -218,6 +218,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call ResetToGameCameraForPlayer(this.m_user, 0.0)
 			call character.setClass(this.m_class)
 			call this.onSelectClass.evaluate(character, this.class(), thistype.m_stack == 1)
+			debug call Print("Destroy it!")
 			call this.destroy()
 		endmethod
 
@@ -333,7 +334,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			set this.m_classUnit = CreateUnit(this.m_user, this.m_class.unitType(), thistype.m_x, thistype.m_y, thistype.m_facing)
 			call SetUnitInvulnerable(this.m_classUnit, true)
 			// make sure that the unit does not move or do anything else
-			//call MakeUnitMovable(this.m_classUnit, false) // TODO in this case it cannot be rotated
 			call SetUnitMoveSpeed(this.m_classUnit, 0.0) // should not be moved but be rotatable, the map Azeroth Grandprix uses a movement speed of 0.0 but a rotation rate of 0.10 for the selectable cars
 			// do not block units from other players by the unit's pathing
 			call SetUnitPathing(this.m_classUnit, false)
@@ -389,6 +389,9 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call this.onPlayerLeaves.evaluate(GetTriggerPlayer(), thistype.m_stack == 1)
 			if (ACharacter.destroyOnPlayerLeaves()) then
 				call this.destroy()
+			/*
+			 * If the character is not destroyed when the player leaves a class is selected automatically.
+			 */
 			else
 				call this.selectClass()
 			endif
