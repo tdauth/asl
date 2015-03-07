@@ -323,7 +323,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				endloop
 			endif
 			call ShowMultiboardForPlayer(this.m_user, this.m_infoSheet, true)
-			call MultiboardMinimize(this.m_infoSheet, false)
 		endmethod
 
 		private method createUnit takes nothing returns nothing
