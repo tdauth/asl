@@ -20,6 +20,10 @@
 * ASpell and AUnitSpell: Use one base struct or module since it is the same functionaility.
 * AClassSelection: Remove static members, make more members dynamic, add event handler methods, make it more flexible, handle player leaves who still has to select a class and for whom the class is not selected automatically since it is destroyed completely.
 * ACharacter: Remove displayMessage() and convenience stuff.
+* ASpawnPoint: allow multiple item pools per member similar to creep spots in strategy game.
+* ASpawnPoint: Add API docs.
+* ASpawnPoint: make it widget based that destructables are also usable.
+* ASpawnPoint: Use events: call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_DEATH ) and call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_CHANGE_OWNER )
 * 2.0 stuff:
 	* CreepSpotCreep
 	* effect functions
