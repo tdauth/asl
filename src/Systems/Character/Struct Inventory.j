@@ -1147,6 +1147,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call EnableTrigger(this.m_pickupTrigger)
 		endmethod
 
+		/**
+		 * Moves item \p slotItem to the previous or the next rucksack pages which means it will be moved as long as there is a free slot or a slot to which it can be stacked.
+		 * If no free slot or stackable item is found the item should be moved to its old position again since if it reaches the last slot it starts at the beginning etc.
+		 * \todo Instead of clearing the old slot and moving the whole item only one charge should be moved.
+		 */
 		private method moveRucksackItemToPage takes item slotItem, boolean next returns nothing
 			local unit characterUnit = this.character().unit()
 			local integer oldIndex = this.itemIndex(slotItem)
@@ -1192,7 +1197,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					exitwhen (true)
 				// found stack place
 				elseif (this.m_rucksackItemData[i].itemTypeId() == this.m_rucksackItemData[oldIndex].itemTypeId()) then
-					call this.m_rucksackItemData[i].setCharges(this.m_rucksackItemData[i].charges() + 1)
+					call this.m_rucksackItemData[i].setCharges(this.m_rucksackItemData[i].charges() + this.m_rucksackItemData[oldIndex].charges())
 					call this.clearRucksackItem(oldIndex, false)
 					exitwhen (true)
 				// found a free place
@@ -1293,20 +1298,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private method createOpenTrigger takes nothing returns nothing
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_openTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_openTrigger, this.character().unit(), EVENT_UNIT_SPELL_CAST)
-			set conditionFunction = Condition(function thistype.triggerConditionOpen)
-			set triggerCondition = TriggerAddCondition(this.m_openTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_openTrigger, function thistype.triggerActionOpen)
+			call TriggerRegisterUnitEvent(this.m_openTrigger, this.character().unit(), EVENT_UNIT_SPELL_CAST)
+			call TriggerAddCondition(this.m_openTrigger, Condition(function thistype.triggerConditionOpen))
+			call TriggerAddAction(this.m_openTrigger, function thistype.triggerActionOpen)
 			call AHashTable.global().setHandleInteger(this.m_openTrigger, "this", this)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerConditionOrder takes nothing returns boolean
@@ -1335,23 +1331,23 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					if (thistype.m_textMovePageItem != null) then
 						call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textMovePageItem)
 					endif
-				//move item previous - player drops an item on the next page item
+				// move item previous - player drops an item on the next page item
 				elseif (GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and newSlot == thistype.maxRucksackItemsPerPage) then
 					call this.moveRucksackItemToPage(usedItem, false)
-				//move item next - player drops an item on the previous page item
+				// move item next - player drops an item on the previous page item
 				elseif (GetItemTypeId(usedItem) != thistype.m_rightArrowItemType and newSlot == thistype.maxRucksackItemsPerPage + 1) then
 					call this.moveRucksackItemToPage(usedItem, true)
 				//equip item/stack items/swap items
 				elseif (newSlot >= 0 and newSlot < thistype.maxRucksackItemsPerPage) then
 					call this.moveRucksackItem(usedItem, newSlot)
 				endif
-			//equipment is enabled
+			// equipment is enabled
 			else
 				set oldSlot = thistype.itemIndex(usedItem)
-				//reset moved equipped items to their positions
+				// reset moved equipped items to their positions
 				if (newSlot != oldSlot) then
 					call this.resetItemSlots(newSlot, oldSlot)
-				//old slot, add to rucksack
+				// old slot, add to rucksack
 				else
 					call this.clearItemIndex(usedItem)
 					call this.clearEquipmentItem(oldSlot, true)
@@ -1364,27 +1360,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		// equip, add to rucksack, move item next, move item previous, stack items, destack item, swap items
 		private method createOrderTrigger takes nothing returns nothing
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_orderTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_orderTrigger, this.character().unit(), EVENT_UNIT_ISSUED_TARGET_ORDER)
-			set conditionFunction = Condition(function thistype.triggerConditionOrder)
-			set triggerCondition = TriggerAddCondition(this.m_orderTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOrder)
+			call TriggerRegisterUnitEvent(this.m_orderTrigger, this.character().unit(), EVENT_UNIT_ISSUED_TARGET_ORDER)
+			call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOrder))
+			call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOrder)
 			call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerConditionIsNoPowerup takes nothing returns boolean
-			local item usedItem = GetManipulatedItem()
-			local boolean result = not IsItemIdPowerup(GetItemTypeId(usedItem))
-			set usedItem = null
-			return result
+			return  not IsItemIdPowerup(GetItemTypeId(GetManipulatedItem()))
 		endmethod
 
 		private static method triggerActionPickup takes nothing returns nothing
@@ -1397,20 +1381,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private method createPickupTrigger takes nothing returns nothing
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_pickupTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_pickupTrigger, this.character().unit(), EVENT_UNIT_PICKUP_ITEM) //pawn?
-			set conditionFunction = Condition(function thistype.triggerConditionIsNoPowerup)
-			set triggerCondition = TriggerAddCondition(this.m_pickupTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_pickupTrigger, function thistype.triggerActionPickup)
+			call TriggerRegisterUnitEvent(this.m_pickupTrigger, this.character().unit(), EVENT_UNIT_PICKUP_ITEM) // pawn?
+			call TriggerAddCondition(this.m_pickupTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
+			call TriggerAddAction(this.m_pickupTrigger, function thistype.triggerActionPickup)
 			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, "this", this)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerActionDrop takes nothing returns nothing
@@ -1477,20 +1452,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		// drop, destack and drop, unequip and drop
 		private method createDropTrigger takes nothing returns nothing
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_dropTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_dropTrigger, this.character().unit(), EVENT_UNIT_DROP_ITEM)
-			set conditionFunction = Condition(function thistype.triggerConditionIsNoPowerup)
-			set triggerCondition = TriggerAddCondition(this.m_dropTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_dropTrigger, function thistype.triggerActionDrop)
+			call TriggerRegisterUnitEvent(this.m_dropTrigger, this.character().unit(), EVENT_UNIT_DROP_ITEM)
+			call TriggerAddCondition(this.m_dropTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
+			call TriggerAddAction(this.m_dropTrigger, function thistype.triggerActionDrop)
 			call AHashTable.global().setHandleInteger(this.m_dropTrigger, "this", this)
-			set triggerEvent = null
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerConditionUse takes nothing returns boolean
