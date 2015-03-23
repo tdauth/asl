@@ -125,9 +125,9 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		 * Usually calls \ref targetAction() via .execute().
 		 */
 		public stub method onTarget takes ARoutinePeriod period returns nothing
-			debug call this.print("OnTarget for unit " + GetUnitName(period.unit.evaluate()))
+			//debug call this.print("OnTarget for unit " + GetUnitName(period.unit.evaluate()))
 			if (this.targetAction() != 0) then
-				debug call this.print("OnTarget has target action, calling with execute for unit " + GetUnitName(period.unit.evaluate()))
+				//debug call this.print("OnTarget has target action, calling with execute for unit " + GetUnitName(period.unit.evaluate()))
 				call this.targetAction().execute(period)
 			endif
 		endmethod
@@ -361,7 +361,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				if (condition) then // optional condition
 					// current routine has not been disabled already
 					if (thistype.hasCurrent(this.unit()) and thistype.current(this.unit()) != this) then
-						debug call this.print("Warning: " + GetUnitName(this.unit()) + " routine period " + I2S(thistype.current(this.unit())) + " has not been disabled before starting " + I2S(this))
+						//debug call this.print("Warning: " + GetUnitName(this.unit()) + " routine period " + I2S(thistype.current(this.unit())) + " has not been disabled before starting " + I2S(this))
 						call thistype.current(this.unit()).end()
 						call thistype.clearCurrent(this.unit())
 					endif
@@ -372,7 +372,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					if (thistype.hasNext(this.unit()) and thistype.next(this.unit()) == this) then
 						call thistype.clearNext(this.unit())
 					elseif (thistype.next(this.unit()) != this) then
-						debug call this.print("Warning: " + GetUnitName(this.unit()) + " at start time " + R2S(this.startTimeOfDay()) + " overlaps with " + I2S(thistype.next(this.unit())) + " with start time " + R2S(thistype.next(this.unit()).startTimeOfDay()))
+						//debug call this.print("Warning: " + GetUnitName(this.unit()) + " at start time " + R2S(this.startTimeOfDay()) + " overlaps with " + I2S(thistype.next(this.unit())) + " with start time " + R2S(thistype.next(this.unit()).startTimeOfDay()))
 					endif
 
 					call thistype.setCurrent(this.unit(), this)
@@ -672,7 +672,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				set iterator = toEndRoutines.begin()
 				loop
 					exitwhen (not iterator.isValid())
-					debug call Print("Ending routine period " + GetUnitName(thistype(iterator.data()).unit()))
+					//debug call Print("Ending routine period " + GetUnitName(thistype(iterator.data()).unit()))
 					call thistype(iterator.data()).end()
 					call iterator.next()
 				endloop
@@ -681,7 +681,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				set iterator = toStartRoutines.begin()
 				loop
 					exitwhen (not iterator.isValid())
-					debug call Print("Starting routine period " + GetUnitName(thistype(iterator.data()).unit()))
+					//debug call Print("Starting routine period " + GetUnitName(thistype(iterator.data()).unit()))
 					call thistype(iterator.data()).start()
 					call iterator.next()
 				endloop

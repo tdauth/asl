@@ -3,7 +3,10 @@
 * Character/world systems: Replace all init() methods by dynamic members!
 * AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
 * AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
-* ATalk should work with multiple characters at the same time. Required feature from "Die Macht des Feuers". It is very annoying to use a talk for only one player at once.
+* AInventory: More public methods: showRucksackPage(integer pageNumber)
+* ALayer: Remove since deprecated and not used.
+* AJump: Remove init() and disable timer if no AJump instance exists.
+* DONE: ATalk should work with multiple characters at the same time. Required feature from "Die Macht des Feuers". It is very annoying to use a talk for only one player at once.
 * Test CreateTrackableForPlayer() (sync?, crash?)!
 * Improve merge() of A_VECTOR.
 * Fix A_MAP.
@@ -12,7 +15,7 @@
 * Implement AVolumeSet.setDefaultVolume()
 * Test EndCinematicSceneForPlayer() for desync!
 * Finish Character systems: APvp
-* Drop character systems: AFight, AFocus, AMovement (never been used, never worked)
+* DONE: Drop character systems: AFight, AFocus, AMovement (never been used, never worked)
 * No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
 * Change tests for containers, strings and time of day functions to unit tests:
 	* multiboard bar could get Unit Test too with dynamic refreshment

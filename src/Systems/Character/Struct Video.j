@@ -200,6 +200,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 	endstruct
 
+	/**
+	 * \brief Stores all visible player data which has to be hidden during a video.
+	 */
 	private struct AVideoPlayerData
 		private player m_player
 		private APlayerSelection m_selection

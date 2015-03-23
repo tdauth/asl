@@ -1,9 +1,9 @@
 library AStructSystemsCharacterBuff requires AStructCoreGeneralHashTable, AStructCoreGeneralVector
 
 	/**
-	* Provides acces to buff type which can be added as buff instance several times to one single unit.
-	* Buff id should be a custom ability id of an aura which only affects the caster himself to create real buff effect in Warcraft 3.
-	*/
+	 * Provides acces to buff type which can be added as buff instance several times to one single unit.
+	 * Buff id should be a custom ability id of an aura which only affects the caster himself to create real buff effect in Warcraft 3.
+	 */
 	struct ABuff
 		// static members
 		private static AIntegerVector m_buffs

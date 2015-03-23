@@ -43,7 +43,8 @@ library ALibraryCoreInterfaceCinematic
 		else
 			set time = bj_NOTHING_SOUND_DURATION
 		endif
-		call SetCinematicScene(unitType, playerColor, name, text, time, time)
+		// bj_TRANSMISSION_PORT_HANGTIME keeps the unit's portrait
+		call SetCinematicScene(unitType, playerColor, name, text, time + bj_TRANSMISSION_PORT_HANGTIME, time)
 		set playerColor = null
 	endfunction
 

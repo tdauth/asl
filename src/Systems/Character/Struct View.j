@@ -1,6 +1,9 @@
 /// Do not use this library, it is unfinished!
 library AStructSystemsCharacterView requires AStructCoreGeneralHashTable, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreMathsUnit, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter
 
+	/**
+	 * \brief Uses \ref AThirdPersonCamera to allow a 3D view for the character.
+	 */
 	struct AView extends AAbstractCharacterSystem
 
 		//methods
