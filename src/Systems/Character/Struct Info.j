@@ -276,7 +276,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
-				set m_dialogButtons[i] = 0
+				set this.m_dialogButtons[i] = 0
+				set this.m_hasBeenShownToCharacter[i] = false
 				set i = i + 1
 			endloop
 			set this.m_talkIndex = talk.addInfoInstance(this)

@@ -27,6 +27,7 @@
 * ASpawnPoint: Add API docs.
 * ASpawnPoint: make it widget based that destructables are also usable.
 * ASpawnPoint: Use events: call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_DEATH ) and call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_CHANGE_OWNER )
+* ShowUnitForPlayer() desync: http://www.wc3c.net/showthread.php?p=1100333 (keine shared vision und ghost-Fähigkeit!)
 * 2.0 stuff:
 	* CreepSpotCreep
 	* effect functions
@@ -50,7 +51,6 @@ but deprecated since check is done in macro itself, optional is enough AND macro
 * DEPRECATED: Revise AIndicator.
 * DONE: test ALibraryCoreInterfaceCamera functions for desync
 * DONE: Test SetUnitVertexColourForPlayer()
-* DONE: Fix ShowUnitForPlayer()'s desync
 * DONE (works, dropped life and mana extra storage): TEST BONUS MOD FUNCTIONALITY AGAIN: Maybe implement another solution.
 * DONE: Fix ARoutine revision.
 * DONE: Test ARoutine revision.

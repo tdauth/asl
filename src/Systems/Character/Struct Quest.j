@@ -252,9 +252,6 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		/// Note that if quest's state is changed quest items states will be changed automatically without checking conditions.
 		public stub method setStateWithoutCondition takes integer state returns nothing
 			local integer i
-			local player user
-			local playercolor playerColor
-			local string title = null
 			if (this.state() == state) then
 				call super.setStateWithoutCondition(state)
 				return
@@ -270,16 +267,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 				endloop
 			endif
 			if (thistype.m_useQuestLog) then
-				if (this.character() == 0) then
-					set title = this.title()
-				else
-					set user = this.character().player()
-					set playerColor = GetPlayerColor(user)
-					set title = "|cff" + PlayerColorToString(playerColor) + this.title() + "|r"
-					set user = null
-					set playerColor = null
-				endif
-				call QuestSetTitle(this.m_questLogQuest, title)
+				call QuestSetTitle(this.m_questLogQuest, this.title())
 				//call QuestSetDescription(this.questLogQuest, this.description)
 				call this.setQuestLogState(state)
 			endif

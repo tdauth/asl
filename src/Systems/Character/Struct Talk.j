@@ -453,7 +453,7 @@ endif
 
 		private static method triggerConditionOpen takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			return (GetIssuedOrderId() == this.orderId()) and (GetPlayerSlotState(GetOwningPlayer(GetTriggerUnit())) != PLAYER_SLOT_STATE_LEFT and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) and (GetOrderTargetUnit() == this.unit()) and (not this.hasMaxOrderDistance() or GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance())
+			return (GetIssuedOrderId() == this.orderId()) and (GetTriggerPlayer() == GetOwningPlayer(GetTriggerUnit()) and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) and (GetOrderTargetUnit() == this.unit()) and (not this.hasMaxOrderDistance() or GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance())
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
