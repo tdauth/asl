@@ -459,6 +459,7 @@ endif
 		private static method triggerActionOpen takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call IssueImmediateOrder(ACharacter.playerCharacter(GetTriggerPlayer()).unit(), "stop")
+			debug call Print("Ordering player: " + GetPlayerName(GetTriggerPlayer()))
 			call this.openForCharacter(ACharacter.playerCharacter(GetTriggerPlayer()))
 		endmethod
 
