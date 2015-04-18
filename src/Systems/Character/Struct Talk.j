@@ -45,6 +45,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		private boolean m_disableEffectInCinematicMode
 		private boolean m_hideUserInterface
 		private ATalkStartAction m_startAction
+		private string m_name
 		// construction members
 		private unit m_unit
 		// members
@@ -188,6 +189,19 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 
 		public method startAction takes nothing returns ATalkStartAction
 			return this.m_startAction
+		endmethod
+		
+		/**
+		 * Sets the name of the NPC to \p name. The name is shown as title in the dialog.
+		 * This can be useful if the name differs from the unit's name (for example if it is a hero).
+		 * \note By default the name is set to the unit's name.
+		 */
+		public method setName takes string name returns nothing
+			set this.m_name = name
+		endmethod
+		
+		public method name takes nothing returns string
+			return this.m_name
 		endmethod
 
 		// construction members
@@ -414,7 +428,7 @@ endif
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).enable(character.unit(), 0.0)
 			endif
 			call AGui.playerGui(character.player()).dialog().clear()
-			call AGui.playerGui(character.player()).dialog().setMessage(GetUnitName(this.m_unit))
+			call AGui.playerGui(character.player()).dialog().setMessage(this.m_name)
 			call this.showStartPage(character) // create buttons
 		endmethod
 
@@ -661,6 +675,7 @@ endif
 			set this.m_effectPath = thistype.defaultEffectPath
 			set this.m_disableEffectInCinematicMode = thistype.defaultDisableEffectInCinematicMode
 			set this.m_hideUserInterface = thistype.defaultHideUserInterface
+			set this.m_name = GetUnitName(whichUnit)
 			// construction members
 			set this.m_unit = whichUnit
 			set this.m_startAction = startAction

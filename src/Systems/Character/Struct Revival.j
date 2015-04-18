@@ -1,7 +1,7 @@
 library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreInterfaceMisc, AStructSystemsCharacterAbstractCharacterSystem
 
 	/**
-	 * ARevival allows you to specify where and when a character is being revived.
+	 * \brief ARevival allows you to specify where and when a character is being revived.
 	 * Bear in mind that revival works only for heroes not normal units.
 	 * \ref setShowDialog() allows you to enable a timer dialog for all players.
 	 * \ref setShowEffect() allows you to specify if the "eye candy" is shown on revival (\ref ReviveHero()).
@@ -24,6 +24,10 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 
 		// dynamic members
 
+		/**
+		 * Sets the time a revival takes.
+		 * \note This has no effect if the revival does already run.
+		 */
 		public method setTime takes real time returns nothing
 			set this.m_time = time
 		endmethod
@@ -85,24 +89,13 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 
 		public stub method enable takes nothing returns nothing
 			call super.enable()
-			call EnableTrigger(this.m_revivalTrigger)
-			if (this.m_runs) then
-				call PauseTimerBJ(false, this.m_timer)
-				if (this.showDialog()) then
-					call TimerDialogDisplay(this.m_timerDialog, true)
-				endif
-			endif
 		endmethod
 
+		/**
+		 * This does not disable the revival at all since the revival is too important to be disabled at any time.
+		 */
 		public stub method disable takes nothing returns nothing
 			call super.disable()
-			call DisableTrigger(this.m_revivalTrigger)
-			if (this.m_runs) then
-				call PauseTimerBJ(true, this.m_timer)
-				if (this.showDialog()) then
-					call TimerDialogDisplay(this.m_timerDialog, false)
-				endif
-			endif
 		endmethod
 		
 		/**
@@ -116,6 +109,9 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			endif
 		endmethod
 
+		/**
+		 * Revives the character immediately at the given coordinates with the given facing.
+		 */
 		private method revive takes nothing returns nothing
 			call ReviveHero(this.character().unit(), this.x(), this.y(), this.showEffect())
 			call SetUnitFacing(this.character().unit(), this.facing())
@@ -142,6 +138,11 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			set this.m_timer = CreateTimer()
 			call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
 		endmethod
+		
+		private static method triggerConditionRevival takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return GetTriggerUnit() == this.character().unit()
+		endmethod
 
 		private static method triggerActionRevival takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
@@ -157,7 +158,11 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 
 		private method createRevivalTrigger takes nothing returns nothing
 			set this.m_revivalTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_revivalTrigger, this.character().unit(), EVENT_UNIT_DEATH)
+			/*
+			 * Use a generic event to make sure that the character is always revived even if another player took over or the unit changed.
+			 */
+			call TriggerRegisterAnyUnitEventBJ(this.m_revivalTrigger, EVENT_PLAYER_UNIT_DEATH)
+			call TriggerAddCondition(this.m_revivalTrigger, Condition(function thistype.triggerConditionRevival))
 			call TriggerAddAction(this.m_revivalTrigger, function thistype.triggerActionRevival)
 			call AHashTable.global().setHandleInteger(this.m_revivalTrigger, "this", this)
 		endmethod
