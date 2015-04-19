@@ -59,6 +59,18 @@ library AStructCoreGeneralGroup requires AStructCoreGeneralVector, ALibraryCoreG
 		public method forGroup takes AUnitVectorUnaryFunction forFunction returns nothing
 			call this.m_units.forEach(forFunction)
 		endmethod
+		
+		/**
+		 * Adds all units of \p other to this group.
+		 */
+		public method addOther takes thistype other returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == other.units().size())
+				call this.units().pushBack(other.units()[i])
+				set i = i + 1
+			endloop
+		endmethod
 
 		/**
 		 * Adds all units of group \p whichGroup to the group.

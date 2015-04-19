@@ -63,6 +63,9 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AClassSelection\"")
 
+		/**
+		 * \return Returns the class selection of player \p whichPlayer.
+		 */
 		public static method playerClassSelection takes player whichPlayer returns thistype
 			return thistype.m_playerClassSelection[GetPlayerId(whichPlayer)]
 		endmethod

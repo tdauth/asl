@@ -77,7 +77,7 @@ library ALibraryCoreInterfaceTextTag
 	 * Bash has "// CriticalStrike text tag data" comment in UI/MiscData.txt but different values. Use \ref ShowCriticalStrikeTextTagForPlayer() instead.
 	 */
 	function ShowBashTextTagForPlayer takes player whichPlayer, real x, real y, integer damage returns nothing
-		call ShowFadingTextTagForPlayer(whichPlayer, I2S(damage) + "!", 0.025, x, y, 0, 0, 255, 255, 0.04, 2.0, 5.0)
+		call ShowFadingTextTagForPlayer(whichPlayer, I2S(damage) + "!", 0.025, x, y, 255, 0, 0, 255, 0.04, 2.0, 5.0)
 	endfunction
 
 	/**
