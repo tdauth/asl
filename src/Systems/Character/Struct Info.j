@@ -357,16 +357,19 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		local real duration
 		local player user = character.player()
 		local unit speaker
+		local string name
 		local unit listener
 		local player speakerOwner
 		local boolean useThirdPerson = info.talk().useThirdPerson(character)
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
 			set speaker = info.talk().unit()
+			set name = info.talk().name()
 			set listener = character.unit()
 			set speakerOwner = GetOwningPlayer(info.talk().unit())
 		else
 			set speaker =  character.unit()
+			set name = GetUnitName(speaker)
 			set listener = info.talk().unit()
 			set speakerOwner = character.player()
 		endif
