@@ -368,8 +368,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set listener = character.unit()
 			set speakerOwner = GetOwningPlayer(info.talk().unit())
 		else
-			set speaker =  character.unit()
-			set name = GetUnitName(speaker)
+			set speaker = character.unit()
+			set name = GetPlayerName(character.player())
 			set listener = info.talk().unit()
 			set speakerOwner = character.player()
 		endif
@@ -384,7 +384,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamRot()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(listener, 0.0)
 		endif
-		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, GetUnitName(speaker), text, duration, duration)
+		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration, duration)
 		if (character.talkLog() != 0) then
 			call character.talkLog().addSpeech(info, toCharacter, text, usedSound)
 		endif
