@@ -11,8 +11,8 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 	 *
 	 * The class selection creates the corresponding unit of the class and updates the camera of the player to a fixed view.
 	 * It displays a multiboard with the name and a description of the class.
-	 * The arrow keys can be used to change the currently displayed class.
-	 * The escape key can be used to select the currently displayed class.
+	 * The arrow keys can be used to change the currently displayed class. This behaviour must be enabled.
+	 * The escape key can be used to select the currently displayed class. This behaviour must be enabled.
 	 * It may rotate the shown class unit automatically.
 	 *
 	 * There is various stub methods which can be overwritten in a sub struct to change the class selection's behaviour.
@@ -224,6 +224,30 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			debug call Print("Destroy it!")
 			call this.destroy()
 		endmethod
+		
+		/**
+		 * Enables or disables changing the shown class using the left and the right arrow key.
+		 */
+		public method enableArrowKeySelection takes boolean enable returns nothing
+			if (enable) then
+				call EnableTrigger(this.m_changePreviousTrigger)
+				call EnableTrigger(this.m_changeNextTrigger)
+			else
+				call DisableTrigger(this.m_changePreviousTrigger)
+				call DisableTrigger(this.m_changeNextTrigger)
+			endif
+		endmethod
+		
+		/**
+		 * Enables or disables selecting the class using the escape key.
+		 */
+		public method enableEscapeKeySelection takes boolean enable returns nothing
+			if (enable) then
+				call EnableTrigger(this.m_selectTrigger)
+			else
+				call DisableTrigger(this.m_selectTrigger)
+			endif
+		endmethod
 
 		private method selectRandomClass takes nothing returns nothing
 			set this.m_class = GetRandomInt(thistype.m_firstClass, thistype.m_lastClass)
@@ -339,6 +363,14 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call SetUnitMoveSpeed(this.m_classUnit, 0.0) // should not be moved but be rotatable, the map Azeroth Grandprix uses a movement speed of 0.0 but a rotation rate of 0.10 for the selectable cars
 			// do not block units from other players by the unit's pathing
 			call SetUnitPathing(this.m_classUnit, false)
+			
+			/*
+			 * Make the character invisible for all other players since all class selections share the same rect.
+			 */
+			if (GetLocalPlayer() != this.player()) then
+				call SetUnitVertexColor(this.m_classUnit, 255, 255, 255, 0)
+			endif
+			
 			/// \todo Has to be set although unit is being paused?!
 			if (IsUnitType(this.m_classUnit, UNIT_TYPE_HERO)) then
 				call SuspendHeroXP(this.m_classUnit, true)
@@ -460,6 +492,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call TriggerRegisterKeyEventForPlayer(this.m_user, this.m_changePreviousTrigger, AKeyLeft, true)
 			call TriggerAddAction(this.m_changePreviousTrigger, function thistype.triggerActionChangeToPrevious)
 			call AHashTable.global().setHandleInteger(this.m_changePreviousTrigger, "this", this)
+			call DisableTrigger(this.m_changePreviousTrigger)
 		endmethod
 
 		private static method triggerActionChangeToNext takes nothing returns nothing
@@ -472,6 +505,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call TriggerRegisterKeyEventForPlayer(this.m_user, this.m_changeNextTrigger, AKeyRight, true)
 			call TriggerAddAction(this.m_changeNextTrigger, function thistype.triggerActionChangeToNext)
 			call AHashTable.global().setHandleInteger(this.m_changeNextTrigger, "this", this)
+			call DisableTrigger(this.m_changeNextTrigger)
 		endmethod
 
 		private static method triggerActionSelectClass takes nothing returns nothing
@@ -484,6 +518,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call TriggerRegisterKeyEventForPlayer(this.m_user, this.m_selectTrigger, AKeyEscape, true)
 			call TriggerAddAction(this.m_selectTrigger, function thistype.triggerActionSelectClass)
 			call AHashTable.global().setHandleInteger(this.m_selectTrigger, "this", this)
+			call DisableTrigger(this.m_selectTrigger)
 		endmethod
 
 		private method createInfoSheet takes nothing returns nothing

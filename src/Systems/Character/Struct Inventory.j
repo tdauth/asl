@@ -1,7 +1,7 @@
 library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, ALibraryCoreGeneralUnit, AStructCoreStringFormat, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter, AStructSystemsCharacterItemType
 
 	/**
-	 * This structure is used to store all item information of one slot in inventory.
+	 * \brief This structure is used to store all item information of one slot in inventory.
 	 */
 	struct AInventoryItemData
 		// dynamic members
@@ -379,6 +379,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return AHashTable.global().handleInteger(usedItem, "AInventory_index")
 		endmethod
 
+		/**
+		 * Adds one item of type \p itemType to unit \p whichUnit into slot \p slot.
+		 * \return Returns true if the item has been added to the slot successfully.
+		 */
 		private static method unitAddItemToSlotById takes unit whichUnit, integer itemType, integer slot returns boolean
 			local boolean result
 			local boolean isBeingPaused
@@ -412,6 +416,33 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 			return result
 		endmethod
+		
+		/**
+		 * Clears equipment type \p equipmentType without dropping or removing the item from the unit's inventory.
+		 */
+		private method clearEquipmentType takes integer equipmentType returns nothing
+			local unit characterUnit
+			local AItemType itemType = 0
+			if (this.m_equipmentItemData[equipmentType] != 0) then
+				set characterUnit = this.character().unit()
+				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
+				call this.m_equipmentItemData[equipmentType].destroy()
+				set this.m_equipmentItemData[equipmentType] = 0
+				call itemType.onUnequipItem.execute(characterUnit, equipmentType)
+				call this.checkEquipment.evaluate() //added
+				set characterUnit = null
+			endif
+		endmethod
+		
+		/**
+		 * Clears the rucksack slot \p index without dropping or removing the item from the unit's inventory.
+		 */
+		private method clearRucksackSlot takes integer index returns nothing
+			if (this.m_rucksackItemData[index] != 0) then
+				call this.m_rucksackItemData[index].destroy()
+				set this.m_rucksackItemData[index] = 0
+			endif
+		endmethod
 
 		private method clearRucksackItem takes integer index, boolean drop returns nothing
 			local unit characterUnit
@@ -435,8 +466,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 				set characterUnit = null
 			endif
-			call this.m_rucksackItemData[index].destroy()
-			set this.m_rucksackItemData[index] = 0
+			call this.clearRucksackSlot(index)
 		endmethod
 
 		/// \return Returns the rucksack item index by a Warcraft inventory slot number.
@@ -541,20 +571,25 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method showEquipmentItem takes integer equipmentType returns nothing
 			local unit characterUnit = this.character().unit()
 			local item slotItem
+			local boolean result = false
 			local AItemType itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 			// equipped items must always have an item type
-			//if (itemType != 0) then
-				call itemType.removePermanentAbilities(characterUnit)
-			//endif
+			call itemType.removePermanentAbilities(characterUnit)
 			call DisableTrigger(this.m_pickupTrigger)
-			call thistype.unitAddItemToSlotById(characterUnit, this.m_equipmentItemData[equipmentType].itemTypeId(), equipmentType)
+			set result = thistype.unitAddItemToSlotById(characterUnit, this.m_equipmentItemData[equipmentType].itemTypeId(), equipmentType)
 			call EnableTrigger(this.m_pickupTrigger)
-			set slotItem = UnitItemInSlot(characterUnit, equipmentType)
-			call this.m_equipmentItemData[equipmentType].assignToItem(slotItem)
-			call SetItemDropOnDeath(slotItem, false)
-			call thistype.setItemIndex(slotItem, equipmentType)
+			// successfully readded
+			if (result) then
+				set slotItem = UnitItemInSlot(characterUnit, equipmentType)
+				call this.m_equipmentItemData[equipmentType].assignToItem(slotItem)
+				call SetItemDropOnDeath(slotItem, false)
+				call thistype.setItemIndex(slotItem, equipmentType)
+				set slotItem = null
+			// Something went wrong and the item has been dropped instead. Otherwise if disabling and enabling equipment again the items will be duplicated.
+			else
+				call this.clearEquipmentType(equipmentType)
+			endif
 			set characterUnit = null
-			set slotItem = null
 		endmethod
 
 		private method enableEquipment takes nothing returns nothing
@@ -573,20 +608,27 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local unit characterUnit = this.character().unit()
 			local integer slot = this.rucksackItemSlot(index)
 			local item slotItem
+			local boolean result = false
 			local AItemType itemType = AItemType.itemTypeOfItemTypeId(this.m_rucksackItemData[index].itemTypeId())
 			call DisableTrigger(this.m_pickupTrigger)
-			call thistype.unitAddItemToSlotById(characterUnit, this.m_rucksackItemData[index].itemTypeId(), slot)
+			set result = thistype.unitAddItemToSlotById(characterUnit, this.m_rucksackItemData[index].itemTypeId(), slot)
 			call EnableTrigger(this.m_pickupTrigger)
-			set slotItem = UnitItemInSlot(characterUnit, slot)
-			call this.m_rucksackItemData[index].assignToItem(slotItem)
-			call SetItemDropOnDeath(slotItem, false)
-			// rucksack item do not need to have an item type
-			if (itemType != 0) then
-				call itemType.removePermanentAbilities(characterUnit)
+			// successfully readded
+			if (result) then
+				set slotItem = UnitItemInSlot(characterUnit, slot)
+				call this.m_rucksackItemData[index].assignToItem(slotItem)
+				call SetItemDropOnDeath(slotItem, false)
+				// rucksack item do not need to have an item type
+				if (itemType != 0) then
+					call itemType.removePermanentAbilities(characterUnit)
+				endif
+				call thistype.setItemIndex(slotItem, index)
+				set slotItem = null
+			// Something went wrong and the item has been dropped instead. Otherwise if disabling and enabling rucksack again the items will be duplicated.
+			else
+				call this.clearRucksackSlot(index)
 			endif
-			call thistype.setItemIndex(slotItem, index)
 			set characterUnit = null
-			set slotItem = null
 		endmethod
 
 		private method showRucksackPage takes integer page, boolean firstCall returns nothing
@@ -623,20 +665,35 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local unit characterUnit = this.character().unit()
 			local item leftArrowItem
 			local item rightArrowItem
+			local boolean leftResult = false
+			local boolean rightResult = false
 			set this.m_rucksackIsEnabled = true
 			call this.showRucksackPage(this.m_rucksackPage, true)
 			call DisableTrigger(this.m_pickupTrigger)
-			call thistype.unitAddItemToSlotById(characterUnit, thistype.m_leftArrowItemType, thistype.maxRucksackItemsPerPage)
-			call thistype.unitAddItemToSlotById(characterUnit, thistype.m_rightArrowItemType, thistype.maxRucksackItemsPerPage + 1)
+			set leftResult = thistype.unitAddItemToSlotById(characterUnit, thistype.m_leftArrowItemType, thistype.maxRucksackItemsPerPage)
+			set rightResult = thistype.unitAddItemToSlotById(characterUnit, thistype.m_rightArrowItemType, thistype.maxRucksackItemsPerPage + 1)
 			call EnableTrigger(this.m_pickupTrigger)
-			set leftArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage)
-			set rightArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage + 1)
-			call SetItemDroppable(leftArrowItem, true) //for moving items to next or previous pages
-			call SetItemDroppable(rightArrowItem, true)
-			call SetItemCharges(rightArrowItem, this.m_rucksackPage + 1)
+			
+			if (leftResult) then
+				set leftArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage)
+				call SetItemDroppable(leftArrowItem, true) //for moving items to next or previous pages
+				set leftArrowItem = null
+			// TODO remove the item?
+			debug else
+				debug call Print("Error on adding left arrow item.")
+			endif
+			
+			if (rightResult) then
+				set rightArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage + 1)
+				call SetItemDroppable(rightArrowItem, true)
+				call SetItemCharges(rightArrowItem, this.m_rucksackPage + 1)
+				set rightArrowItem = null
+			// TODO remove the item?
+			debug else
+				debug call Print("Error on adding right arrow item.")
+			endif
+			
 			set characterUnit = null
-			set leftArrowItem = null
-			set rightArrowItem = null
 		endmethod
 
 		/**
@@ -813,20 +870,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call EnableTrigger(this.m_dropTrigger)
 			set usedItem = null
 			call this.setEquipmentItem(equipmentType, inventoryItemData, add)
-		endmethod
-		
-		private method clearEquipmentType takes integer equipmentType returns nothing
-			local unit characterUnit
-			local AItemType itemType = 0
-			if (this.m_equipmentItemData[equipmentType] != 0) then
-				set characterUnit = this.character().unit()
-				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
-				call this.m_equipmentItemData[equipmentType].destroy()
-				set this.m_equipmentItemData[equipmentType] = 0
-				call itemType.onUnequipItem.execute(characterUnit, equipmentType)
-				call this.checkEquipment.evaluate() //added
-				set characterUnit = null
-			endif
 		endmethod
 
 		private method clearEquipmentItem takes integer equipmentType, boolean drop returns nothing
@@ -1015,9 +1058,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		/**
 		 * Adds an item to the inventory.
+		 * This tries to equip the item first. If this fails because there is already an item equipped or it is not an equipable item the item will be added to the rucksack.
+		 * \param whichItem The item which is added.
+		 * \return Returns true if the item has been equipped. Otherwise it returns false.
 		 */
-		public method addItem takes item whichItem returns nothing
-			call this.equipItem(whichItem, false, false, true) // try always equipment first!
+		public method addItem takes item whichItem returns boolean
+			return this.equipItem(whichItem, false, false, true) // try always equipment first!
 		endmethod
 
 		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage returns nothing
@@ -1067,6 +1113,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			// equip
 			if (not dontMoveToEquipment) then
 				call this.equipItem(usedItem, true, false, true)
+			// the rucksack is full and the item should not be equipped, for example when the item was added to the rucksack from the equipment
 			elseif (thistype.m_textUnableToAddRucksackItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToAddRucksackItem)
 			endif
@@ -1088,6 +1135,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 		endmethod
 
+		/**
+		 * When two item slots have been swapped this method resets them.
+		 * This can be useful if an item may not be moved in the inventory like page items or equipped items.
+		 */
 		private method resetItemSlots takes integer currentSlot, integer oldSlot returns nothing
 			local unit characterUnit = this.character().unit()
 			local item currentItem = UnitItemInSlot(characterUnit, currentSlot)
@@ -1116,24 +1167,38 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call EnableTrigger(this.m_dropTrigger)
 			call DisableTrigger(this.m_pickupTrigger)
 			if (currentItemData != 0) then
-				call thistype.unitAddItemToSlotById(characterUnit, currentItemData.itemTypeId(), oldSlot)
-				set currentItem = UnitItemInSlot(characterUnit, oldSlot)
-				call currentItemData.assignToItem(currentItem)
-				if (currentItemData.itemTypeId() != thistype.m_leftArrowItemType and currentItemData.itemTypeId() != thistype.m_rightArrowItemType) then
-					call thistype.setItemIndex(currentItem, currentItemIndex)
+				/*
+				 * Create old item into old slot.
+				 */
+				if (thistype.unitAddItemToSlotById(characterUnit, currentItemData.itemTypeId(), oldSlot)) then
+					set currentItem = UnitItemInSlot(characterUnit, oldSlot)
+					call currentItemData.assignToItem(currentItem)
+					if (currentItemData.itemTypeId() != thistype.m_leftArrowItemType and currentItemData.itemTypeId() != thistype.m_rightArrowItemType) then
+						call thistype.setItemIndex(currentItem, currentItemIndex)
+					endif
+					call currentItemData.destroy()
+					set currentItem = null
+				// TODO remove item?
+				debug else
+					debug call Print("Error on reseting current old item.")
 				endif
-				call currentItemData.destroy()
-				set currentItem = null
 			endif
 			if (otherItemData != 0) then
-				call thistype.unitAddItemToSlotById(characterUnit, otherItemData.itemTypeId(), currentSlot)
-				set otherItem = UnitItemInSlot(characterUnit, currentSlot)
-				call otherItemData.assignToItem(otherItem)
-				if (otherItemData.itemTypeId() != thistype.m_leftArrowItemType and otherItemData.itemTypeId() != thistype.m_rightArrowItemType) then
-					call thistype.setItemIndex(otherItem, otherItemIndex)
+				/*
+				 * Create old item into old slot.
+				 */
+				if (thistype.unitAddItemToSlotById(characterUnit, otherItemData.itemTypeId(), currentSlot)) then
+					set otherItem = UnitItemInSlot(characterUnit, currentSlot)
+					call otherItemData.assignToItem(otherItem)
+					if (otherItemData.itemTypeId() != thistype.m_leftArrowItemType and otherItemData.itemTypeId() != thistype.m_rightArrowItemType) then
+						call thistype.setItemIndex(otherItem, otherItemIndex)
+					endif
+					call otherItemData.destroy()
+					set otherItem = null
+				// TODO remove item?
+				debug else
+					debug call Print("Error on reseting other old item.")
 				endif
-				call otherItemData.destroy()
-				set otherItem = null
 			endif
 			call EnableTrigger(this.m_pickupTrigger)
 		endmethod
@@ -1352,7 +1417,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set usedItem = null
 		endmethod
 
-		// equip, add to rucksack, move item next, move item previous, stack items, destack item, swap items
+		/*
+		 * Moving the item in the inventory generates an order target event with the unit itself as target.
+		 * This trigger is used for the following actions:
+		 * equip, add to rucksack, move item next, move item previous, stack items, destack item, swap items
+		 */
 		private method createOrderTrigger takes nothing returns nothing
 			set this.m_orderTrigger = CreateTrigger()
 			call TriggerRegisterUnitEvent(this.m_orderTrigger, this.character().unit(), EVENT_UNIT_ISSUED_TARGET_ORDER)

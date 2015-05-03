@@ -139,6 +139,10 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			endloop
 		endmethod
 
+		/**
+		 * Adds the permanent abilities of the item type to unit \p who.
+		 * \note The abilities are added permanently. On unit transformations they are kept. One must remove them explicitely.
+		 */
 		public method addPermanentAbilities takes unit who returns nothing
 			local integer i = 0
 			loop
@@ -146,6 +150,8 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 				if (this.m_permanent[i]) then
 					//debug call this.print("Adding permanent ability " + GetObjectName(this.m_abilities[i]) + " to unit " + GetUnitName(who))
 					call UnitAddAbility(who, this.m_abilities[i])
+					// keep on unit transformation
+					call UnitMakeAbilityPermanent(who, true, this.m_abilities[i])
 				endif
 				set i = i + 1
 			endloop

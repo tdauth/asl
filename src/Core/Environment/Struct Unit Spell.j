@@ -150,12 +150,12 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 			set triggeringTrigger = null
 		endmethod
 
-		private method createCastTrigger takes nothing returns nothing
+		private method createCastTrigger takes playerunitevent castEvent returns nothing
 			local conditionfunc conditionFunction
 			local triggercondition triggerCondition
 			local triggeraction triggerAction
 			set this.m_castTrigger = CreateTrigger()
-			call TriggerRegisterAnyUnitEventBJ(this.m_castTrigger, EVENT_PLAYER_UNIT_SPELL_ENDCAST)
+			call TriggerRegisterAnyUnitEventBJ(this.m_castTrigger, castEvent)
 			set conditionFunction = Condition(function thistype.triggerConditionCast)
 			set triggerCondition = TriggerAddCondition(this.m_castTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_castTrigger, function thistype.triggerActionCast)
@@ -169,7 +169,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 		 * \param character Used character.
 		 * \param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
 		 */
-		public static method create takes integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction returns thistype
+		public static method create takes integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction, playerunitevent castEvent returns thistype
 			local thistype this = thistype.allocate()
 			// construction members
 			set this.m_ability = usedAbility
@@ -178,14 +178,14 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 			set this.m_castAction = castAction
 
 			call this.createUpgradeTrigger()
-			call this.createCastTrigger()
+			call this.createCastTrigger(castEvent)
 
 			return this
 		endmethod
 
 		/// Use this constructor if you either don't any event response functions or you overwrite the stub methods.
 		public static method createSimple takes integer whichAbility returns thistype
-			return thistype.create(whichAbility, 0, 0, 0)
+			return thistype.create(whichAbility, 0, 0, 0, EVENT_PLAYER_UNIT_SPELL_ENDCAST)
 		endmethod
 
 		public static method createRestored takes gamecache cache, string missionKey, string labelPrefix returns thistype

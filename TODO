@@ -1,9 +1,11 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
 * Character/world systems: Replace all init() methods by dynamic members!
-* AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
+* FIXED: AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
 * AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
 * AInventory: More public methods: showRucksackPage(integer pageNumber)
+* AInventory: Allow giving owned item to another character. Detect giving order!
+* FIXED: AInventory: When adding item fails the AInventoryItemData should not be set. It duplicates the items!
 * ALayer: Remove since deprecated and not used.
 * AJump: Remove init() and disable timer if no AJump instance exists.
 * DONE: ATalk should work with multiple characters at the same time. Required feature from "Die Macht des Feuers". It is very annoying to use a talk for only one player at once.
@@ -21,13 +23,14 @@
 	* multiboard bar could get Unit Test too with dynamic refreshment
 * AVideo: Add player leaves trigger which then checks m_skippingPlayers and skips the video if it is greater than the number of remaining players!!!
 * ASpell and AUnitSpell: Use one base struct or module since it is the same functionaility.
-* AClassSelection: Remove static members, make more members dynamic, add event handler methods, make it more flexible, handle player leaves who still has to select a class and for whom the class is not selected automatically since it is destroyed completely.
+* FIXED: AClassSelection: Remove static members, make more members dynamic, add event handler methods, make it more flexible, handle player leaves who still has to select a class and for whom the class is not selected automatically since it is destroyed completely.
+* AClassSelection: Completely remove static initialization parameters (make them dynamic).
 * ACharacter: Remove displayMessage() and convenience stuff.
 * ASpawnPoint: allow multiple item pools per member similar to creep spots in strategy game.
 * ASpawnPoint: Add API docs.
 * ASpawnPoint: make it widget based that destructables are also usable.
 * ASpawnPoint: Use events: call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_DEATH ) and call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_CHANGE_OWNER )
-* ShowUnitForPlayer() desync: http://www.wc3c.net/showthread.php?p=1100333 (keine shared vision und ghost-Fähigkeit!)
+* FIXED: ShowUnitForPlayer() desync: http://www.wc3c.net/showthread.php?p=1100333 (keine shared vision und ghost-Fähigkeit!)
 * 2.0 stuff:
 	* CreepSpotCreep
 	* effect functions
