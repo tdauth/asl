@@ -1520,6 +1520,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						debug call Print("Is not charged so 0")
 						call SetItemCharges(usedItem, 0)
 					endif
+					/*
+					 * When an item is dropped explicitely the owner should be set to null, so anyone can pick it up.
+					 */
+					call SetItemPlayer(usedItem, null, false)
+					debug call Print("Resetting player of item " + GetItemName(usedItem))
+					
 					call TriggerSleepAction(0.0) // wait until it has been dropped
 					call this.setRucksackItemCharges(index, this.m_rucksackItemData[index].charges() - 1)
 				// drop
@@ -1531,6 +1537,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					if (GetItemType(usedItem) != ITEM_TYPE_CHARGED) then
 						call SetItemCharges(usedItem, 0)
 					endif
+					/*
+					 * When an item is dropped explicitely the owner should be set to null, so anyone can pick it up.
+					 */
+					call SetItemPlayer(usedItem, null, false)
+					debug call Print("Resetting player of item " + GetItemName(usedItem))
 				endif
 			// unequip and drop
 			else
