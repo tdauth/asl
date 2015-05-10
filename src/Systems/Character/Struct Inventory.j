@@ -1524,17 +1524,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 					 */
 					call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), false)
-					debug call Print("Resetting player of item " + GetItemName(usedItem))
-					debug if (GetItemPlayer(usedItem) != null) then
-					debug call Print("Item player is still: " + GetPlayerName(GetItemPlayer(usedItem)))
-					debug endif
-					
 					call TriggerSleepAction(0.0) // wait until it has been dropped
 					call this.setRucksackItemCharges(index, this.m_rucksackItemData[index].charges() - 1)
-					
-					debug if (GetItemPlayer(usedItem) != null) then
-					debug call Print("Item player is after sleep: " + GetPlayerName(GetItemPlayer(usedItem)))
-					debug endif
 				// drop
 				else
 					// do not drop by this function since unit could also give the item to another character
@@ -1548,10 +1539,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 					 */
 					call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), false)
-					debug call Print("Resetting player of item " + GetItemName(usedItem))
-					debug if (GetItemPlayer(usedItem) != null) then
-					debug call Print("Item player is still: " + GetPlayerName(GetItemPlayer(usedItem)))
-					debug endif
 				endif
 			// unequip and drop
 			else
