@@ -70,6 +70,16 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 			call this.setStateWithoutConditionAndCheck.evaluate(state) // TODO JassHelper bug, shouldn't use .evaluate since we're calling from parent struct. Change order that this method is declared after setStateWithoutConditionAndCheck() again when bug is fixed.
 			call this.quest().checkQuestItemsForState.evaluate(state)
 		endmethod
+		
+		/// Friend relationship to \ref AQuest, do not use.
+		public method createQuestItem takes nothing returns nothing
+			if (AQuest.isQuestLogUsed.evaluate()) then
+				set this.m_questItem = null
+				set this.m_questItem = QuestCreateItem(this.quest().questLogQuest.evaluate())
+				call QuestItemSetDescription(this.m_questItem, this.title())
+				call QuestItemSetCompleted(this.m_questItem, this.state() == AAbstractQuest.stateCompleted)
+			endif
+		endmethod
 
 		/// \note Required by structure \ref AQuest, don't call manually.
 		public method setStateWithoutConditionAndCheck takes integer state returns nothing
@@ -77,15 +87,8 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 				call super.setStateWithoutCondition(state)
 				return
 			endif
-			if (AQuest.isQuestLogUsed.evaluate()) then
-				if (this.m_questItem == null) then
-					set this.m_questItem = QuestCreateItem(this.quest().questLogQuest.evaluate())
-					call QuestItemSetDescription(this.m_questItem, this.title())
-				endif
-				//call QuestItemSetDescription(this.questLogQuestItem, this.title())
-				call QuestItemSetCompleted(this.m_questItem, state == AAbstractQuest.stateCompleted)
-			endif
 			call super.setStateWithoutCondition(state)
+			call this.quest().reorderQuestItems.evaluate()
 		endmethod
 
 		public static method create takes AQuest whichQuest, string description returns thistype

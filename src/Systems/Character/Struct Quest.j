@@ -59,7 +59,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 
 		// members
 
-		/// Used by AQuestItem, do not use.
+		/// Used by \ref AQuestItem, do not use.
 		public method questLogQuest takes nothing returns quest
 			return this.m_questLogQuest
 		endmethod
@@ -306,13 +306,35 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		public method removeQuestItemByIndex takes integer index returns nothing
 			call this.m_questItems.erase(index)
 		endmethod
-
+		
 		private method createQuestLogQuest takes nothing returns nothing
 			if (thistype.m_useQuestLog) then
 				set this.m_questLogQuest = CreateQuest()
 				call QuestSetEnabled(this.m_questLogQuest, false)
 				//call this.setQuestLogState(this.state()) // hide quest before setting state
 				call QuestSetRequired(this.m_questLogQuest, this.character() == 0)
+			endif
+		endmethod
+		
+		/// Friend relationship to \ref AQuestItem, do not use.
+		public method reorderQuestItems takes nothing returns nothing
+			local integer i
+			if (thistype.m_useQuestLog) then
+				call DestroyQuest(this.m_questLogQuest)
+				set this.m_questLogQuest = null
+				call this.createQuestLogQuest()
+				call this.setQuestLogState(this.state())
+				call QuestSetTitle(this.m_questLogQuest, this.title())
+				call this.setIconPath(this.iconPath())
+				call this.setDescription(this.description())
+				set i = 0
+				loop
+					exitwhen (i == this.m_questItems.size())
+					if (AQuestItem(this.m_questItems[i]).state() != thistype.stateNotUsed) then
+						call AQuestItem(this.m_questItems[i]).createQuestItem()
+					endif
+					set i = i + 1
+				endloop
 			endif
 		endmethod
 

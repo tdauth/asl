@@ -30,6 +30,7 @@
 * ASpawnPoint: Add API docs.
 * ASpawnPoint: make it widget based that destructables are also usable.
 * ASpawnPoint: Use events: call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_DEATH ) and call TriggerRegisterUnitEvent( t, u, EVENT_UNIT_CHANGE_OWNER )
+* AQuestItem: Create quest item in the beginning and make it invisble if it is not used to keep the correct order of items.
 * FIXED: ShowUnitForPlayer() desync: http://www.wc3c.net/showthread.php?p=1100333 (keine shared vision und ghost-Fähigkeit!)
 * 2.0 stuff:
 	* CreepSpotCreep
