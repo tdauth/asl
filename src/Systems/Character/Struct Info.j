@@ -240,7 +240,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				else
 					if (this.condition() == 0 or this.condition().evaluate(this, character)) then
 						set result = true
-						call createDialogButton(character.player())
+						call this.createDialogButton(character.player())
 					endif
 				endif
 			endif

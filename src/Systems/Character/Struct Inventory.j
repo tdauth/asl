@@ -554,12 +554,29 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * Usually you do not have to call this method. The system handles itself.
 		 */
 		public stub method disable takes nothing returns nothing
+			local integer i
+			local AItemType itemType
 			call super.disable()
 			if (this.m_rucksackIsEnabled) then
 				call this.disableRucksack()
 			else
 				call this.disableEquipment(false)
 			endif
+			
+			/*
+			 * Remove permanent abilities to disable them as well.
+			 */
+			set i = 0
+			loop
+				exitwhen (i == AItemType.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.removePermanentAbilities(this.character().unit())
+					endif
+				endif
+				set i = i + 1
+			endloop
 
 			/// \todo wait for calling methods above?
 			call DisableTrigger(this.m_openTrigger)
@@ -909,7 +926,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.m_equipmentItemData[i].itemTypeId() == itemTypeId) then
-					call clearEquipmentItem(i, false)
+					call this.clearEquipmentItem(i, false)
 				
 					return true
 				endif

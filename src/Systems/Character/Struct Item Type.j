@@ -81,9 +81,9 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		endmethod
 
 		/**
-		* This method can be overwritten to check requirements manually.
-		* It is used by AInventory for instance.
-		*/
+		 * This method can be overwritten to check requirements manually.
+		 * It is used by AInventory for instance.
+		 */
 		public stub method checkRequirement takes ACharacter character returns boolean
 			if (GetHeroLevel(character.unit()) < this.m_requiredLevel) then
 				call character.displayMessage(ACharacter.messageTypeError, thistype.textLevel)
