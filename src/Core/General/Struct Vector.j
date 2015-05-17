@@ -60,7 +60,13 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 
 			/// Similar to C++'s ++ iterators operator.
 			public method next takes nothing returns nothing
-				if (this.m_index == -1 or not this.hasNext()) then
+				if (this.m_index == -1) then
+					return
+				endif
+				
+				if (not this.hasNext()) then
+					set this.m_index = -1
+					
 					return
 				endif
 
@@ -69,7 +75,13 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 
 			/// Similar to C++'s -- iterators operator.
 			public method previous takes nothing returns nothing
-				if (this.m_index == -1 or not this.hasPrevious()) then
+				if (this.m_index == -1) then
+					return
+				endif
+				
+				if (not this.hasPrevious()) then
+					set this.m_index = -1
+					
 					return
 				endif
 
