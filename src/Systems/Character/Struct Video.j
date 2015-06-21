@@ -734,6 +734,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		// static members
+		
+		/**
+		 * \return Returns the time from \ref play() to the actual point where \ref runningVideo() becomes the set video.
+		 */
+		public static method waitTime takes nothing returns real
+			return thistype.m_waitTime
+		endmethod
 
 		public static method runningVideo takes nothing returns thistype
 			return thistype.m_runningVideo

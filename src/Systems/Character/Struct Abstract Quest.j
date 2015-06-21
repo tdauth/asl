@@ -281,6 +281,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 					return true
 				endif
 				if (not this.onStateCondition(state)) then
+					debug call this.print("State condition is false.")
 					return false
 				endif
 				call this.setStateWithoutCondition(state)
