@@ -534,21 +534,14 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		endmethod
 
 		private method createStateTrigger takes integer state returns nothing
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_stateTrigger[state] = CreateTrigger()
-			set conditionFunction = Condition(function thistype.triggerConditionRunQuestState)
-			set triggerCondition = TriggerAddCondition(this.m_stateTrigger[state], conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_stateTrigger[state], function thistype.triggerActionRunQuestState)
+			call TriggerAddCondition(this.m_stateTrigger[state], Condition(function thistype.triggerConditionRunQuestState))
+			call TriggerAddAction(this.m_stateTrigger[state], function thistype.triggerActionRunQuestState)
 			call AHashTable.global().setHandleInteger(this.m_stateTrigger[state], "this", this)
 			call AHashTable.global().setHandleInteger(this.m_stateTrigger[state], "state", state)
 			if ((this.m_state != thistype.stateNew and state != thistype.stateNew) or (this.m_state == thistype.stateFailed or this.m_state == thistype.stateCompleted)) then /// new should be enable by default
 				call DisableTrigger(this.m_stateTrigger[state])
 			endif
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		public static method create takes ACharacter character, string title returns thistype
