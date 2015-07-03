@@ -168,6 +168,25 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	endfunction
 
 	/**
+	 * This is a list of supported languages:
+	 * <ul>
+	 * <li>German</li>
+	 * <li>English (fallback language if no other language is recognized)</li>
+	 * </ul>
+	 * \return Returns the local language of the current player.
+	 */
+	function GetLanguage takes nothing returns string
+		local unit Dummy = CreateUnit(Player(15),'hfoo', 0, 0, 0)
+		local string Name = GetUnitName(Dummy)
+		call RemoveUnit(Dummy)
+		set Dummy = null
+		if (Name == "Soldat") then
+			return "German"
+		endif
+		return "English"
+	endfunction
+
+	/**
 	 * Inserts line break escape sequence characters ('\n') into string \p whichString by separating it into sub strings of maximum length \p maxLineLength.
 	 * Useful for displaying text paragraphs (such as dialog messages).
 	 * \param whichString String which is separated into sub strings ending with a line break character.

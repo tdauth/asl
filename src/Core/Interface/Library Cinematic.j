@@ -33,6 +33,7 @@ library ALibraryCoreInterfaceCinematic
 	 * \author Tamino Dauth
 	 * \sa TransmissionFromUnitTypeWithNameBJ()
 	 * \sa TransmissionFromUnit()
+	 * \sa TransmissionFromUnitWithName()
 	 */
 	function TransmissionFromUnitType takes integer unitType, player owner, string name, string text, sound playedSound returns nothing
 		local playercolor playerColor = GetPlayerColor(owner)
@@ -47,17 +48,28 @@ library ALibraryCoreInterfaceCinematic
 		call SetCinematicScene(unitType, playerColor, name, text, time + bj_TRANSMISSION_PORT_HANGTIME, time)
 		set playerColor = null
 	endfunction
+	
+	/**
+	 * Same differences like \ref TransmissionFromUnitType() and additionally does not add unit's indicator.
+	 * Similar to \ref TransmissionFromUnit() but you can specify the unit's name. This is useful for heroes for example.
+	 * \author Tamino Dauth
+	 * \sa TransmissionFromUnitWithNameBJ()
+	 * \sa TransmissionFromUnitType()
+	 * \sa TransmissionFromUnit()
+	 */
+	function TransmissionFromUnitWithName takes unit usedUnit, string unitName, string text, sound playedSound returns nothing
+		call TransmissionFromUnitType(GetUnitTypeId(usedUnit), GetOwningPlayer(usedUnit), unitName, text, playedSound)
+	endfunction
 
 	/**
 	 * Same differences like \ref TransmissionFromUnitType() and additionally does not add unit's indicator.
 	 * \author Tamino Dauth
 	 * \sa TransmissionFromUnitWithNameBJ()
 	 * \sa TransmissionFromUnitType()
+	 * \sa TransmissionFromUnitWithName()
 	 */
 	function TransmissionFromUnit takes unit usedUnit, string text, sound playedSound returns nothing
-		local player owner = GetOwningPlayer(usedUnit)
-		call TransmissionFromUnitType(GetUnitTypeId(usedUnit), owner, GetUnitName(usedUnit), text, playedSound)
-		set owner = null
+		call TransmissionFromUnitWithName(usedUnit, GetUnitName(usedUnit), text, playedSound)
 	endfunction
 
 	/**
