@@ -321,6 +321,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private AVideoAction m_stopAction
 		private AVideoAction m_skipAction
 		private boolean m_fadeIn
+		private real m_playFilterTime
+		private real m_stopFilterTime
+		private real m_skipFilterTime
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AVideo\"")
 
@@ -385,6 +388,39 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		public method fadeIn takes nothing returns boolean
 			return this.m_fadeIn
+		endmethod
+		
+		public method checkFilterTime takes real time, string name returns nothing
+			debug if (time < bj_CINEMODE_INTERFACEFADE) then
+				debug call this.staticPrint(name + " filter time should be equal to or bigger than bj_CINEMODE_INTERFACEFADE (" + R2S(bj_CINEMODE_INTERFACEFADE) + " but it has value " + R2S(time) + ".")
+			debug endif
+		endmethod
+		
+		public method setPlayFilterTime takes real time returns nothing
+			set this.m_playFilterTime = time
+			debug call this.checkFilterTime(time, "play")
+		endmethod
+		
+		public method playFilterTime takes nothing returns real
+			return this.m_playFilterTime
+		endmethod
+		
+		public method setStopFilterTime takes real time returns nothing
+			set this.m_stopFilterTime = time
+			debug call this.checkFilterTime(time, "stop")
+		endmethod
+		
+		public method stopFilterTime takes nothing returns real
+			return this.m_stopFilterTime
+		endmethod
+		
+		public method setSkipFilterTime takes real time returns nothing
+			set this.m_skipFilterTime = time
+			debug call this.checkFilterTime(time, "skip")
+		endmethod
+		
+		public method skipFilterTime takes nothing returns real
+			return this.m_skipFilterTime
 		endmethod
 
 		// methods
@@ -478,8 +514,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_playedSound = null
 			set thistype.m_skipped = false
 			set thistype.m_skippingPlayers = 0
-			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
-			call TriggerSleepAction(thistype.m_waitTime)
+			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, this.playFilterTime(), "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			call TriggerSleepAction(this.playFilterTime())
 			/// \todo disable experience gain of all characters?
 			call thistype.savePlayerData()
 			set thistype.m_timeOfDay = GetTimeOfDay()
@@ -495,15 +531,15 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 			call SetCameraBoundsToRect(bj_mapInitialPlayableArea) // for all players
 			set playersAll = GetPlayersAll()
-			call CinematicModeBJ(true, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> m_waitTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
+			call CinematicModeBJ(true, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> m_playFilterTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
 			//call CinematicModeExBJ(true, playersAll, 0.0)
 			set playersAll = null
 			set thistype.m_runningVideo = this
 			call this.onInitAction.evaluate()
 			if (this.fadeIn()) then
-				call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+				call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, this.playFilterTime(), "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			endif
-			call TriggerSleepAction(thistype.m_waitTime)
+			call TriggerSleepAction(this.playFilterTime())
 			call EnableTrigger(thistype.m_skipTrigger)
 			//call EnableUserControl(true) //otherwise we could not catch the press event (just the escape key)
 			call this.onPlayAction.execute() // execute since we need to be able to use TriggerSleepAction calls (stop method has to be called in this method)
@@ -524,19 +560,19 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * \note You have to call this method at the end of your video play action.
 		 * \note Since there is an execution of the action, TriggerSleepAction functions will be ignored, so this method could not be called by the play method.
 		 */
-		public method stop takes nothing returns nothing
+		private method doStop takes real filterTime returns nothing
 			local force playersAll
 			debug if (thistype.m_runningVideo != this) then
 				debug call this.print("Video is not being run.")
 				debug return
 			debug endif
 			call DisableTrigger(thistype.m_skipTrigger)
-			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
-			call TriggerSleepAction(thistype.m_waitTime)
-			set playersAll = GetPlayersAll()
-			call CinematicModeBJ(false, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> m_waitTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
-			//call CinematicModeExBJ(true, playersAll, 0.0)
-			set playersAll = null
+			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			call TriggerSleepAction(filterTime)
+			
+			/*
+			 * Cleanup.
+			 */
 			call ATalk.showAllEffects()
 			call ResetToGameCamera(0.0)
 			if (thistype.m_actor != 0) then
@@ -553,10 +589,20 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call thistype.restorePlayerData()
 			call SetTimeOfDay(thistype.m_timeOfDay)
 			call this.onStopAction.evaluate()
-			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, thistype.m_waitTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
-			call TriggerSleepAction(thistype.m_waitTime)
+	
+			set playersAll = GetPlayersAll()
+			call CinematicModeBJ(false, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> filterTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
+			//call CinematicModeExBJ(true, playersAll, 0.0)
+			set playersAll = null
+			
+			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			call TriggerSleepAction(filterTime)
 			set thistype.m_runningVideo = 0
 			//No camera pan! Call it manually, please.
+		endmethod
+		
+		public method stop takes nothing returns nothing
+			call this.doStop(this.stopFilterTime())
 		endmethod
 
 		/**
@@ -581,7 +627,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call this.onSkipAction.evaluate()
 			debug call Print("After on skip action")
 			
-			call this.stop()
+			call this.doStop(this.skipFilterTime())
 		endmethod
 
 		/**
@@ -605,6 +651,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_stopAction = 0
 			set this.m_skipAction = 0
 			set this.m_fadeIn = true
+			set this.m_playFilterTime = 1.0
+			set this.m_stopFilterTime = 1.0
+			set this.m_skipFilterTime = 0.50
+			
+			debug call this.checkFilterTime(this.m_playFilterTime, "play")
+			debug call this.checkFilterTime(this.m_stopFilterTime, "stop")
+			debug call this.checkFilterTime(this.m_skipFilterTime, "skip")
 
 			return this
 		endmethod
@@ -647,6 +700,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_playedSound = playedSound
 			call TransmissionFromUnit(whichUnit, text, playedSound)
 		endmethod
+		
+		public static method transmissionFromUnitWithName takes unit whichUnit, string name, string text, sound playedSound returns nothing
+			set thistype.m_playedSound = playedSound
+			call TransmissionFromUnitWithName(whichUnit, name, text, playedSound)
+		endmethod
 
 		private static method triggerConditionSkip takes nothing returns boolean
 			return thistype.m_runningVideo != 0
@@ -673,18 +731,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		/// \param divident This value represents the divident which is used for comparing the number of skipping players with the number of requested skipping players for skipping the video.
-		public static method init takes integer divident, real filterDuration, string textPlayerSkips, string textSkip returns nothing
+		public static method init takes integer divident, string textPlayerSkips, string textSkip returns nothing
 			local integer i
 			// static construction members
 			set thistype.m_divident = divident
-			set thistype.m_filterDuration = filterDuration
 			set thistype.m_textPlayerSkips = textPlayerSkips
 			set thistype.m_textSkip = textSkip
 			// static members
-			set thistype.m_waitTime = filterDuration / 2
-			debug if (thistype.m_waitTime < bj_CINEMODE_INTERFACEFADE) then
-				debug call thistype.staticPrint("Wait time should be equal to or bigger than bj_CINEMODE_INTERFACEFADE (" + R2S(bj_CINEMODE_INTERFACEFADE) + " but it has value " + R2S(thistype.m_waitTime) + ".")
-			debug endif
 			set thistype.m_playedSound = null
 			set thistype.m_runningVideo = 0
 			set thistype.m_skipped = false
@@ -734,14 +787,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		// static members
-		
-		/**
-		 * \return Returns the time from \ref play() to the actual point where \ref runningVideo() becomes the set video.
-		 */
-		public static method waitTime takes nothing returns real
-			return thistype.m_waitTime
-		endmethod
 
+		/**
+		 * Since there can only be one video at a moment this method returns the running one.
+		 */
 		public static method runningVideo takes nothing returns thistype
 			return thistype.m_runningVideo
 		endmethod

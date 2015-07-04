@@ -159,6 +159,12 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			call this.displayStateMessage(thistype.m_updateSoundPath)
 		endmethod
 
+		/**
+		 * Displays a user defined quest update message with the corresponding title of the quest .
+		 * If this quest belongs to one character the message is shown the the character's owner only.
+		 * Otherwise it is shown to all players.
+		 * \param message The message which is displayed to all players of the quest.
+		 */
 		public method displayUpdateMessage takes string message returns nothing
 			if (this.character() != 0) then
 				if (thistype.m_textQuestUpdate != null) then

@@ -551,6 +551,13 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			set this.m_state = thistype.stateNotUsed
 			set this.m_pingWidget = null
 			set this.m_distributeRewardsOnCompletion = true
+			set this.m_pingDuration = 2.0 // This value is taken from the Bonus Campaign.
+			/*
+			 * The following values are taken from the Bonus Campaign.
+			 */
+			set this.m_pingRed = 100.0
+			set this.m_pingGreen = 50.0
+			set this.m_pingBlue = 0.0
 			// construction members
 			set this.m_character = character
 			set this.m_title = title
