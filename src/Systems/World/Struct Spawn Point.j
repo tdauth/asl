@@ -504,11 +504,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private method dropItem takes ASpawnPointMember member, real x, real y returns nothing
 			local item whichItem
 			local integer i = 0
-			debug call Print("Placing " + I2S(member.itemPoolsCount()) + " items for member " + I2S(member))
 			loop
 				exitwhen (i == member.itemPoolsCount())
 				set whichItem = member.placeItem(i, x, y)
-				debug call Print("Placed item: " + GetItemName(whichItem))
 				if (whichItem != null and this.distributeItems()) then // item can be null if member has no item types to place
 					call this.distributeDroppedItem(whichItem)
 				debug else
@@ -541,9 +539,6 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local boolean result = this.m_group.units().contains(GetTriggerUnit())
 
-			debug if (result) then
-				debug call Print("Unit " + GetUnitName(GetTriggerUnit()) + " is in spawn point group " + I2S(this))
-			debug endif
 			return result
 		endmethod
 
