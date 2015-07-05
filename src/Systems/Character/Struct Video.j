@@ -623,9 +623,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_skipped = true
 			call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
-			debug call Print("Before on skip action")
 			call this.onSkipAction.evaluate()
-			debug call Print("After on skip action")
 			
 			call this.doStop(this.skipFilterTime())
 		endmethod
@@ -853,7 +851,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 */
 		public static method unitActor takes integer index returns unit
 			// TEST
-			debug if ( AActorInterface(thistype.m_actors[index]).actor() == null) then
+			debug if (AActorInterface(thistype.m_actors[index]).actor() == null) then
 			debug call Print("Unit actor " + I2S(index) + " is null")
 			debug endif
 			return AActorInterface(thistype.m_actors[index]).actor()
@@ -917,11 +915,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	function waitForVideo takes real interval returns nothing
 		loop
 			exitwhen (AVideo.runningVideo() == 0)
-			//call TriggerSleepAction(interval)
-			debug call Print("Checking for finishing video with interval " + R2S(interval))
 			call PolledWait(interval) // synchron waiting, important for multiplayer games
 		endloop
-		debug call Print("After checking for finishing video")
 	endfunction
 
 	private function WaitCondition takes nothing returns boolean
