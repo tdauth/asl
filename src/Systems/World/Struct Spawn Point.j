@@ -1,9 +1,9 @@
-library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointInterface, optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, ALibraryCoreStringConversion, AStructCoreGeneralGroup, AStructCoreGeneralHashTable, AStructCoreGeneralVector
+library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointInterface, optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, AStructCoreStringFormat, AStructCoreGeneralGroup, AStructCoreGeneralHashTable, AStructCoreGeneralVector
 
 	private struct ASpawnPointMember
 		// dynamic members
 		private unitpool m_unitPool
-		private itempool m_itemPool
+		private AItemPoolVector m_itemPools
 		private real m_x
 		private real m_y
 		private real m_facing
@@ -17,13 +17,33 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method removeUnitType takes integer unitTypeId returns nothing
 			call UnitPoolRemoveUnitType(this.m_unitPool, unitTypeId)
 		endmethod
-
-		public method addItemType takes integer itemTypeId, real weight returns nothing
-			call ItemPoolAddItemType(this.m_itemPool, itemTypeId, weight)
+		
+		/**
+		 * \return Returns the number of item pools.
+		 */
+		public method itemPoolsCount takes nothing returns integer
+			return this.m_itemPools.size()
 		endmethod
 
-		public method removeItemType takes integer itemTypeId returns nothing
-			call ItemPoolRemoveItemType(this.m_itemPool, itemTypeId)
+		public method addItemType takes integer index, integer itemTypeId, real weight returns nothing
+			if (index >= this.itemPoolsCount()) then
+				call this.m_itemPools.pushBack(CreateItemPool())
+				call ItemPoolAddItemType(this.m_itemPools.back(), itemTypeId, weight)
+			elseif (index >= 0 and index < this.itemPoolsCount()) then
+				call ItemPoolAddItemType(this.m_itemPools[index], itemTypeId, weight)
+			debug else
+				debug call Print("Wrong index for adding item type: " + I2S(index))
+			endif
+		endmethod
+		
+		public method addNewItemType takes integer itemTypeId, real weight returns integer
+			local integer index = this.itemPoolsCount()
+			call this.addItemType(index, itemTypeId, weight)
+			return index
+		endmethod
+
+		public method removeItemType takes integer index, integer itemTypeId returns nothing
+			call ItemPoolRemoveItemType(this.m_itemPools[index], itemTypeId)
 		endmethod
 
 		public method setX takes real x returns nothing
@@ -62,9 +82,20 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return PlaceRandomUnit(this.m_unitPool, whichPlayer, this.m_x, this.m_y, facing)
 		endmethod
 
-		public method placeItem takes real x, real y returns item
-			debug call Print("Placed item!")
-			return PlaceRandomItem(this.m_itemPool, x, y)
+		public method placeItem takes integer index, real x, real y returns item
+			return PlaceRandomItem(this.m_itemPools[index], x, y)
+		endmethod
+		
+		/**
+		 * Places all items from all item pools of the member.
+		 */
+		public method placeItems takes real x, real y returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == this.itemPoolsCount())
+				call this.placeItem(i, x, y)
+				set i = i + 1
+			endloop
 		endmethod
 
 		/**
@@ -73,7 +104,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public static method create takes real x, real y, real facing returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_unitPool = CreateUnitPool()
-			set this.m_itemPool = CreateItemPool()
+			set this.m_itemPools = AItemPoolVector.create()
 			set this.m_x = x
 			set this.m_y = y
 			set this.m_facing = facing
@@ -82,10 +113,18 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
+			local integer i
 			call DestroyUnitPool(this.m_unitPool)
 			set this.m_unitPool = null
-			call DestroyItemPool(this.m_itemPool)
-			set this.m_itemPool = null
+			set i = 0
+			loop
+				exitwhen (i == this.m_itemPools.size())
+				call DestroyItemPool(this.m_itemPools[i])
+				set this.m_itemPools[i] = null
+				set i = i + 1
+			endloop
+			call this.m_itemPools.destroy()
+			set this.m_itemPools = 0
 		endmethod
 	endstruct
 
@@ -94,7 +133,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 	 * \brief ASpawnPoint provides the functionality of common creep spawn points, mostly used in RPG maps.
 	 * It offers features such as respawning of creeps in a specific interval when all units of the spawn point are dead.
 	 * Besides it can create special effects and sounds on respawning the creeps.
-	 * Item pools are supported as well and will be placed on the creeps deaths.
+	 * Item pools are supported as well and their items will be placed on the creeps deaths.
 	 * The items then could be distributed equally to players setting a player as the owner of the dropped item.
 	 * This can prevent players from collecting all items and leaving other players with no items.
 	 * 
@@ -107,7 +146,6 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private real m_time
 		private string m_effectFilePath
 		private string m_soundFilePath
-		private integer m_dropChance
 		private boolean m_distributeItems
 		private player m_owner
 		private string m_textDistributeItem
@@ -150,18 +188,6 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 	
 		public method soundFilePath takes nothing returns string
 			return this.m_soundFilePath
-		endmethod
-		
-		/**
-		 * Should be a value between 0 and 100.
-		 * \param dropChance The chance (percentaged) for dropping items.
-		 */
-		public method setDropChance takes integer dropChance returns nothing
-			set this.m_dropChance = dropChance
-		endmethod
-		
-		public method dropChance takes nothing returns integer
-			return this.m_dropChance
 		endmethod
 		
 		/**
@@ -243,13 +269,17 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method removeUnitType takes integer memberIndex, integer unitTypeId returns nothing
 			call ASpawnPointMember(this.m_members[memberIndex]).removeUnitType(unitTypeId)
 		endmethod
-
-		public method addItemType takes integer memberIndex, integer itemTypeId, real weight returns nothing
-			call ASpawnPointMember(this.m_members[memberIndex]).addItemType(itemTypeId, weight)
+		
+		public method addItemType takes integer memberIndex, integer itemPoolIndex, integer itemTypeId, real weight returns nothing
+			call ASpawnPointMember(this.m_members[memberIndex]).addItemType(itemPoolIndex, itemTypeId, weight)
 		endmethod
 
-		public method removeItemType takes integer memberIndex, integer itemTypeId returns nothing
-			call ASpawnPointMember(this.m_members[memberIndex]).removeItemType(itemTypeId)
+		public method addNewItemType takes integer memberIndex, integer itemTypeId, real weight returns nothing
+			call ASpawnPointMember(this.m_members[memberIndex]).addNewItemType(itemTypeId, weight)
+		endmethod
+
+		public method removeItemType takes integer memberIndex, integer itemPoolIndex, integer itemTypeId returns nothing
+			call ASpawnPointMember(this.m_members[memberIndex]).removeItemType(itemPoolIndex, itemTypeId)
 		endmethod
 
 		public method setX takes integer memberIndex, real x returns nothing
@@ -463,7 +493,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				exitwhen (i == bj_MAX_PLAYERS)
 				set user = Player(i)
 				if (IsPlayerPlayingUser(user) and this.textDistributeItem() != null) then
-					call DisplayTimedTextToPlayer(user, 0.0, 0.0, 6.0, StringArg(StringArg(this.textDistributeItem(), GetItemName(whichItem)), GetPlayerName(itemOwner)))
+					call DisplayTimedTextToPlayer(user, 0.0, 0.0, 6.0, Format(this.textDistributeItem()).s(GetItemName(whichItem)).s(GetPlayerName(itemOwner)).result())
 				endif
 				set user = null
 				set i = i + 1
@@ -473,15 +503,19 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 
 		private method dropItem takes ASpawnPointMember member, real x, real y returns nothing
 			local item whichItem
-			if (GetRandomInt(0, 100) <= this.dropChance()) then
-				set whichItem = member.placeItem(x, y)
+			local integer i = 0
+			debug call Print("Placing " + I2S(member.itemPoolsCount()) + " items for member " + I2S(member))
+			loop
+				exitwhen (i == member.itemPoolsCount())
+				set whichItem = member.placeItem(i, x, y)
+				debug call Print("Placed item: " + GetItemName(whichItem))
 				if (whichItem != null and this.distributeItems()) then // item can be null if member has no item types to place
 					call this.distributeDroppedItem(whichItem)
 				debug else
 					debug call this.print("Warning: Couldn't place item.")
 				endif
-					
-			endif
+				set i = i + 1
+			endloop
 		endmethod
 
 		private static method timerFunctionSpawn takes nothing returns nothing
@@ -504,12 +538,12 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		private static method triggerConditionDeath takes nothing returns boolean
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local unit triggerUnit = GetTriggerUnit()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local boolean result = this.m_group.units().contains(triggerUnit)
-			set triggeringTrigger = null
-			set triggerUnit = null
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local boolean result = this.m_group.units().contains(GetTriggerUnit())
+
+			debug if (result) then
+				debug call Print("Unit " + GetUnitName(GetTriggerUnit()) + " is in spawn point group " + I2S(this))
+			debug endif
 			return result
 		endmethod
 
@@ -530,28 +564,16 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private method createDeathTrigger takes nothing returns nothing
 			local filterfunc filterFunction
 			local integer i
-			local player user
-			local event triggerEvent
-			local conditionfunc conditionFunction
-			local triggercondition triggerCondition
-			local triggeraction triggerAction
 			set this.m_deathTrigger = CreateTrigger()
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYER_SLOTS) // register for neutral players, too!
-				set user = Player(i)
-				set triggerEvent = TriggerRegisterPlayerUnitEvent(this.m_deathTrigger, user, EVENT_PLAYER_UNIT_DEATH, null)
-				set user = null
-				set triggerEvent = null
+				call TriggerRegisterPlayerUnitEvent(this.m_deathTrigger, Player(i), EVENT_PLAYER_UNIT_DEATH, null)
 				set i = i + 1
 			endloop
-			set conditionFunction = Condition(function thistype.triggerConditionDeath)
-			set triggerCondition = TriggerAddCondition(this.m_deathTrigger, conditionFunction)
-			set triggerAction = TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
+			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionDeath))
+			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
 			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
-			set conditionFunction = null
-			set triggerCondition = null
-			set triggerAction = null
 		endmethod
 
 		public static method create takes nothing returns thistype
@@ -560,7 +582,6 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			set this.m_time = 30.0
 			set this.m_effectFilePath = null
 			set this.m_soundFilePath = null
-			set this.m_dropChance = 50
 			set this.m_distributeItems = false
 			set this.m_owner = Player(PLAYER_NEUTRAL_AGGRESSIVE)
 			set this.m_textDistributeItem = ""
