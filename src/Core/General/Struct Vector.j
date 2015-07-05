@@ -224,13 +224,9 @@ endif
 				local integer i = this.m_size - 1
 				local integer firstExitValue = position + number - 1
 				local integer secondExitValue = position + number
-				debug if (position < 0 or position >= this.m_size) then
-					debug call Print("Wrong position: " + I2S(position) + ".")
-					debug return
-				debug elseif (number <= 0 or position + number > this.m_size) then
-					debug call Print("Wrong number: " + I2S(number) + ".")
-					debug return
-				debug elseif (this.m_size + number > thistype.maxSize.evaluate()) then
+				
+				debug call this.debugCheckPositionAndNumber.evaluate("insertNumber", position, number)
+				debug if (this.m_size + number > thistype.maxSize.evaluate()) then
 					debug call Print("Size would be too high: " + I2S(this.m_size + number) + ". Maximum size is: " + I2S(thistype.maxSize.evaluate()) + ".")
 					debug return
 				debug endif
@@ -544,7 +540,7 @@ endif
 			 * The comparisons are perfomed using function \p binaryPredicate, which performs weak strict ordering (this basically means the comparison operation has to be transitive and irreflexive).
 			 */
 			public method sortNumber takes integer position, integer number, $NAME$BinaryPredicate binaryPredicate returns nothing
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("sortNumber", position, number)) then
 					debug return
 				debug endif
 				call this.quickSort(position, position + number - 1, binaryPredicate)
@@ -561,7 +557,7 @@ endif
 				local integer exitValue = position + (number / 2)
 				local $ELEMENTTYPE$ temp
 				local integer swapindex
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("reverseNumber", position, number)) then
 					debug return
 				debug endif
 				loop
@@ -590,7 +586,7 @@ endif
 			 */
 			public method copyNumber takes integer position0, integer number0, $NAME$ vector, integer position1 returns integer
 				local integer exitValue = position0 + number0
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position0, number0) or not vector.debugCheckPositionAndNumber.evaluate(position1, number0)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("copyNumber0", position0, number0) or not vector.debugCheckPositionAndNumber.evaluate("copyNumber1", position1, number0)) then
 					debug return 0
 				debug endif
 				loop
@@ -618,7 +614,7 @@ endif
 				local integer i = position
 				local integer exitValue = position + number
 				local integer result = 0
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("countIfNumber", position, number)) then
 					debug return 0
 				debug endif
 				loop
@@ -644,7 +640,7 @@ endif
 			public method findNumber takes integer position, integer number, $ELEMENTTYPE$ value returns integer
 				local integer i = position
 				local integer exitValue = position + number
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("findNumber", position, number)) then
 					debug return -1
 				debug endif
 				loop
@@ -664,7 +660,7 @@ endif
 			public method findEndNumber takes integer position, integer number, $ELEMENTTYPE$ value returns integer
 				local integer i = position + number - 1
 				local integer exitValue = position - 1
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("findEndNumber", position, number)) then
 					debug return -1
 				debug endif
 				loop
@@ -686,7 +682,7 @@ endif
 			public method findIfNumber takes integer position, integer number, $NAME$UnaryPredicate unaryPredicate returns integer
 				local integer i = position
 				local integer exitValue = position + number
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("findIfNumber", position, number)) then
 					debug return -1
 				debug endif
 				loop
@@ -704,6 +700,12 @@ endif
 			endmethod
 
 			public method contains takes $ELEMENTTYPE$ value returns boolean
+				/**
+				 * Return immediately if it is empty otherwise a debugging output will be printed from debugCheckPositionAndNumber().
+				 */
+				if (this.empty()) then
+					return false
+				endif
 				return this.find(value) != -1
 			endmethod
 
@@ -714,7 +716,7 @@ endif
 			public method forEachNumber takes integer position, integer number, $NAME$UnaryFunction unaryFunction returns nothing
 				local integer i = position
 				local integer exitValue = position + number
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("forEachNumber", position, number)) then
 					debug return
 				debug endif
 				loop
@@ -735,7 +737,7 @@ endif
 			public method generateNumber takes integer position, integer number, $NAME$Generator generator returns nothing
 				local integer i = position
 				local integer exitValue = position + number
-				debug if (not this.debugCheckPositionAndNumber.evaluate(position, number)) then
+				debug if (not this.debugCheckPositionAndNumber.evaluate("generateNumber", position, number)) then
 					debug return
 				debug endif
 				loop
@@ -891,12 +893,12 @@ endif
 				return this.m_size < vector.m_size
 			endmethod
 
-			debug private method debugCheckPositionAndNumber takes integer position, integer number returns boolean
+			debug private method debugCheckPositionAndNumber takes string name, integer position, integer number returns boolean
 				debug if (position < 0 or position >= this.m_size) then
-					debug call Print("Wrong position: " + I2S(position) + ".")
+					debug call Print(name + ": Wrong position: " + I2S(position) + ".")
 					debug return false
 				debug elseif (number <= 0 or position + number > this.m_size) then
-					debug call Print("Wrong number: " + I2S(number) + ".")
+					debug call Print(name + ": Wrong number: " + I2S(number) + ".")
 					debug return false
 				debug endif
 				debug return true
@@ -966,4 +968,5 @@ endif
 	//! runtextmacro A_VECTOR("", "ARectVector", "rect", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AWeatherEffectVector", "weathereffect", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "APlayerVector", "player", "null", "100", "150000", "8192")
+	//! runtextmacro A_VECTOR("", "AItemPoolVector", "itempool", "null", "100", "150000", "8192")
 endlibrary
