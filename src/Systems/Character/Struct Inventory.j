@@ -948,6 +948,23 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			return false
 		endmethod
+		
+		/**
+		 * Removes item by type \p itemTypeId \p count times from the inventory.
+		 */
+		public method removeItemTypeCount takes integer itemTypeId, integer count returns boolean
+			local boolean result = true
+			local integer i = 0
+			loop
+				exitwhen (i == count)
+				if (not this.removeItemType(itemTypeId)) then
+					set result = false
+				endif
+				set i = i + 1
+			endloop
+			
+			return result
+		endmethod
 
 		/**
 		 * Checks requirements of all equipped items. If some requirements aren't met the checked item is dropped.
