@@ -251,6 +251,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		// methods
+		
+		public method countMembers takes nothing returns integer
+			return this.m_members.size()
+		endmethod
 
 		public method addMember takes real x, real y, real facing returns integer
 			local ASpawnPointMember member = ASpawnPointMember.create(x, y, facing)
@@ -364,7 +368,18 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endloop
 			return null
 		endmethod
+		
+		public method kill takes nothing returns nothing
+			loop
+				exitwhen (this.m_group.units().isEmpty())
+				call KillUnit(this.m_group.units().front())
+			endloop
+		endmethod
 
+		public method contains takes unit whichUnit returns boolean
+			return this.m_group.units().contains(whichUnit)
+		endmethod
+		
 		/**
 		 * Note that after unit \p whichUnit has died there will be spawned a new RANDOM unit from unit pool.
 		 * \param weight Weight of added unit type. This value has no effects if \p addType is false.
