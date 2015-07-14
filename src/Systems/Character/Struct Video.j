@@ -87,6 +87,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call SelectUnit(this.m_actor, false)
 			call SetUnitInvulnerable(this.m_actor, true)
 			call IssueImmediateOrder(this.m_actor, "stop") // cancel orders.
+			call IssueImmediateOrder(this.m_actor, "halt") // make sure it runs not away
 		endmethod
 
 		public static method create takes unit oldUnit returns thistype
@@ -174,6 +175,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_actor = CreateUnit(this.owner(), this.unitTypeId(), this.x(), this.y(), this.face())
 			call SetUnitInvulnerable(this.m_actor, true)
 			call IssueImmediateOrder(this.m_actor, "stop") // cancel orders.
+			call IssueImmediateOrder(this.m_actor, "halt") // make sure it runs not away
 		endmethod
 
 		public static method create takes player owner, integer unitTypeId, real x, real y, real face returns thistype
@@ -299,11 +301,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	struct AVideo
 		// static construction members
 		private static integer m_divident
-		private static real m_filterDuration
 		private static string m_textPlayerSkips
 		private static string m_textSkip
 		// static members
-		private static real m_waitTime
 		private static thistype m_runningVideo /// Do not access.
 		private static sound m_playedSound
 		private static boolean m_skipped
@@ -573,9 +573,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			/*
 			 * Cleanup.
 			 */
-			call ATalk.showAllEffects()
+			 // start with new OpLimit
+			call ForForce(bj_FORCE_PLAYER[0], function ATalk.showAllEffects)
 			call ResetToGameCamera(0.0)
 			if (thistype.m_actor != 0) then
+				debug call Print("Restoring actor")
 				call thistype.m_actor.restore()
 				call thistype.m_actor.destroy()
 				set thistype.m_actor = 0
@@ -874,6 +876,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * This method is called automatically when the video is being stopped.
 		 */
 		public static method restoreUnitActors takes nothing returns nothing
+			debug call Print("Restoring " + I2S(thistype.m_actors.size()) + " unit actors.")
 			loop
 				exitwhen (thistype.m_actors.empty())
 				call thistype.restoreUnitActor(thistype.m_actors.backIndex())
