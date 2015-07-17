@@ -93,6 +93,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.m_itemType
 		endmethod
 
+		/**
+		 * Creates an item based on the item inventory data at a given position.
+		 * \param x The X coordinate of the position.
+		 * \param y The Y coordinate of the position.
+		 * \return Returns a newly created item.
+		 */
 		public method createItem takes real x, real y returns item
 			local item result = CreateItem(this.m_itemTypeId, x, y)
 			call SetItemCharges(result, this.m_charges)
@@ -116,7 +122,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.charges()
 		endmethod
 
+		/**
+		 * Assigns all stored data to another item except the item type ID since it cannot be changed dynamically.
+		 * \param usedItem The item which the data is assigned to.
+		 */
 		public method assignToItem takes item usedItem returns nothing
+			debug if (this.m_itemTypeId != GetItemTypeId(usedItem)) then
+			debug call Print("Item type " + GetObjectName(this.m_itemTypeId) + " does not equal " + GetObjectName(GetItemTypeId(usedItem)))
+			debug endif
 			call SetItemCharges(usedItem, this.m_charges)
 			call SetItemDropID(usedItem, this.m_dropId)
 			call SetItemInvulnerable(usedItem, this.m_invulnerable)
@@ -151,6 +164,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_visible = GetStoredBoolean(cache, missionKey, labelPrefix + "Visible")
 		endmethod
 
+		/**
+		 * Creates a inventory item data based on item \p usedItem and carrying unit \p usedUnit.
+		 */
 		public static method create takes item usedItem, unit usedUnit returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
@@ -198,10 +214,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	 */
 	struct AInventory extends AAbstractCharacterSystem
 		// static constant members, useful for GUIs
+		/**
+		 * Leave one slot empty that the character can always pick up an item.
+		 */
 		public static constant integer maxEquipmentTypes = 5 /// \todo \ref AItemType.maxEuqipmentTypes, vJass bug
-		public static constant integer maxRucksackItems = 128
-		public static constant integer maxRucksackPages = 32 //maxRucksackItems / maxRucksackItemsPerPage
-		public static constant integer maxRucksackItemsPerPage = 4
+		public static constant integer maxRucksackItems = 90
+		public static constant integer maxRucksackPages = 30 //maxRucksackItems / maxRucksackItemsPerPage
+		/**
+		 * Leave one slot empty that the character can always pick up an item.
+		 */
+		public static constant integer maxRucksackItemsPerPage = 3
 		// static construction members
 		private static integer m_leftArrowItemType
 		private static integer m_rightArrowItemType
@@ -363,9 +385,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			debug endif
 			return index - this.m_rucksackPage * thistype.maxRucksackItemsPerPage
 		endmethod
+		
+		/// Just required for the move order and for item dropping.
+		private static method hasItemIndex takes item usedItem returns boolean
+			return AHashTable.global().hasHandleInteger(usedItem, "AInventory_index")
+		endmethod
 
 		/// Just required for the move order and for item dropping.
 		private static method clearItemIndex takes item usedItem returns nothing
+			debug if (not thistype.hasItemIndex(usedItem)) then
+			debug call Print("Item " + GetItemName(usedItem) + " has no item index on removal.")
+			debug endif
 			call AHashTable.global().removeHandleInteger(usedItem, "AInventory_index")
 		endmethod
 
@@ -376,6 +406,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		/// Just required for the move order and for item dropping.
 		private static method itemIndex takes item usedItem returns integer
+			debug if (not thistype.hasItemIndex(usedItem)) then
+			debug call Print("Item " + GetItemName(usedItem) + " has no item index on getting it.")
+			debug endif
 			return AHashTable.global().handleInteger(usedItem, "AInventory_index")
 		endmethod
 
@@ -478,25 +511,33 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.m_rucksackPage * thistype.maxRucksackItemsPerPage + slot
 		endmethod
 
+		// FIXME Sometimes the headdress does not disappear in the game, error on removing items properly??
 		private method hideEquipmentItem takes integer equipmentType, boolean addPermanentAbilities returns nothing
-			local unit characterUnit = this.character().unit()
-			local item slotItem = UnitItemInSlot(characterUnit, equipmentType)
-			local AItemType itemType = AItemType.itemTypeOfItem(slotItem)
-			call thistype.clearItemIndex(slotItem)
-			call DisableTrigger(this.m_dropTrigger)
-			debug call Print("Removing slot item: " + GetItemName(slotItem))
-			call RemoveItem(slotItem)
-			call EnableTrigger(this.m_dropTrigger)
-			// equipped items must always have an item type
-			//if (itemType != 0) then
-			if (addPermanentAbilities) then
-				call itemType.addPermanentAbilities(characterUnit)
+			local item slotItem = UnitItemInSlot(this.character().unit(), equipmentType)
+			local AItemType itemType = 0
+			if (slotItem != null) then
+				set itemType = AItemType.itemTypeOfItem(slotItem)
+				call thistype.clearItemIndex(slotItem)
+				call DisableTrigger(this.m_dropTrigger)
+				debug call Print("Removing slot item: " + GetItemName(slotItem))
+				call RemoveItem(slotItem)
+				call EnableTrigger(this.m_dropTrigger)
+				// equipped items must always have an item type, otherwise something went wrong
+				if (itemType != 0 and addPermanentAbilities) then
+					call itemType.addPermanentAbilities(this.character().unit())
+				debug elseif (itemType == 0) then
+					debug call this.print("Equipped item of equipment type " + I2S(equipmentType) + " has no custom item type which should not be possible.")
+				endif
+			debug elseif (this.equipmentItemData(equipmentType) != 0) then
+				debug call this.print("Equipment type " + I2S(equipmentType) + " is not 0 but has no slot item.")
 			endif
-			//endif
-			set characterUnit = null
 			set slotItem = null
 		endmethod
 
+		/**
+		 * Hides the equipment.
+		 * \param addPermanentAbilities If this value is true the permanent abilities of all equipped item types will be added to the character's unit. Otherwise they disappear with the items.
+		 */
 		private method disableEquipment takes boolean addPermanentAbilities returns nothing
 			local integer i
 			set i = 0
@@ -534,20 +575,23 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private method disableRucksack takes nothing returns nothing
-			local unit characterUnit = this.character().unit()
 			local item leftArrowItem
 			local item rightArrowItem
-			set this.m_rucksackIsEnabled = false
-			set leftArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage)
-			set rightArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage + 1)
-			call DisableTrigger(this.m_dropTrigger)
-			call RemoveItem(leftArrowItem)
-			call RemoveItem(rightArrowItem)
-			call EnableTrigger(this.m_dropTrigger)
-			call this.hideCurrentRucksackPage()
-			set characterUnit = null
-			set leftArrowItem = null
-			set rightArrowItem = null
+			
+			if (this.m_rucksackIsEnabled) then
+				set this.m_rucksackIsEnabled = false
+				set leftArrowItem = UnitItemInSlot(this.character().unit(), thistype.maxRucksackItemsPerPage)
+				set rightArrowItem = UnitItemInSlot(this.character().unit(), thistype.maxRucksackItemsPerPage + 1)
+				call DisableTrigger(this.m_dropTrigger)
+				call RemoveItem(leftArrowItem)
+				call RemoveItem(rightArrowItem)
+				call EnableTrigger(this.m_dropTrigger)
+				call this.hideCurrentRucksackPage()
+				set leftArrowItem = null
+				set rightArrowItem = null
+			debug else
+				debug call this.print("Disabling rucksack although it is not even enabled.")
+			endif
 		endmethod
 
 		/**
@@ -621,31 +665,44 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 		endmethod
 
+		/**
+		 * \note Call this method only if being sure that there is some item data at \p index in the rucksack.
+		 */
 		private method showRucksackItem takes integer index returns nothing
-			local unit characterUnit = this.character().unit()
 			local integer slot = this.rucksackItemSlot(index)
 			local item slotItem
 			local boolean result = false
-			local AItemType itemType = AItemType.itemTypeOfItemTypeId(this.m_rucksackItemData[index].itemTypeId())
-			call DisableTrigger(this.m_pickupTrigger)
-			set result = thistype.unitAddItemToSlotById(characterUnit, this.m_rucksackItemData[index].itemTypeId(), slot)
-			call EnableTrigger(this.m_pickupTrigger)
-			// successfully readded
-			if (result) then
-				set slotItem = UnitItemInSlot(characterUnit, slot)
-				call this.m_rucksackItemData[index].assignToItem(slotItem)
-				call SetItemDropOnDeath(slotItem, false)
-				// rucksack item do not need to have an item type
-				if (itemType != 0) then
-					call itemType.removePermanentAbilities(characterUnit)
+			local AItemType itemType = 0
+			
+			if (this.m_rucksackItemData[index] != 0) then
+				call DisableTrigger(this.m_pickupTrigger)
+				set result = thistype.unitAddItemToSlotById(this.character().unit(), this.m_rucksackItemData[index].itemTypeId(), slot)
+				call EnableTrigger(this.m_pickupTrigger)
+				// successfully readded
+				if (result) then
+					set slotItem = UnitItemInSlot(this.character().unit(), slot)
+					
+					if (slotItem != null) then
+						call this.m_rucksackItemData[index].assignToItem(slotItem)
+						call SetItemDropOnDeath(slotItem, false)
+						set itemType = AItemType.itemTypeOfItemTypeId(this.m_rucksackItemData[index].itemTypeId())
+						// rucksack item do not need to have an item type
+						if (itemType != 0) then
+							call itemType.removePermanentAbilities(this.character().unit())
+						endif
+						call thistype.setItemIndex(slotItem, index)
+						set slotItem = null
+					debug else
+						debug call this.print("Rucksack item from slot " + I2S(slot) + " is null.")
+					endif
+				// Something went wrong and the item has been dropped instead. Otherwise if disabling and enabling rucksack again the items will be duplicated.
+				else
+					debug call this.print("Error: Adding rucksack item with index " + I2S(index) + " failed for unknown reasons.")
+					call this.clearRucksackSlot(index)
 				endif
-				call thistype.setItemIndex(slotItem, index)
-				set slotItem = null
-			// Something went wrong and the item has been dropped instead. Otherwise if disabling and enabling rucksack again the items will be duplicated.
-			else
-				call this.clearRucksackSlot(index)
+			debug else
+				debug call this.print("Showing rucksack item of index " + I2S(index) + " which has no item data.")
 			endif
-			set characterUnit = null
 		endmethod
 
 		private method showRucksackPage takes integer page, boolean firstCall returns nothing
@@ -662,7 +719,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 
 			set this.m_rucksackPage = page
-			//add inventory items
+			// add inventory items
 			set i = page * thistype.maxRucksackItemsPerPage
 			set exitValue = i + thistype.maxRucksackItemsPerPage
 			loop
@@ -673,44 +730,55 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set i = i + 1
 			endloop
 
-			set rightArrowItem = UnitItemInSlot(this.character().unit(), thistype.maxRucksackItemsPerPage + 1)
-			call SetItemCharges(rightArrowItem, page + 1)
-			set rightArrowItem = null
+			/*
+			 * If this is not a call from  enableRucksack() the rucksack page number has to be updated. Otherwise not.
+			 */
+			if (not firstCall) then
+				set rightArrowItem = UnitItemInSlot(this.character().unit(), thistype.maxRucksackItemsPerPage + 1)
+				if (rightArrowItem != null) then
+					call SetItemCharges(rightArrowItem, page + 1)
+					set rightArrowItem = null
+				debug else
+					debug call this.print("Missing slot item for right page item at slot " + I2S(thistype.maxRucksackItemsPerPage + 1))
+				endif
+			endif
 		endmethod
 
 		private method enableRucksack takes nothing returns nothing
-			local unit characterUnit = this.character().unit()
 			local item leftArrowItem
 			local item rightArrowItem
 			local boolean leftResult = false
 			local boolean rightResult = false
-			set this.m_rucksackIsEnabled = true
-			call this.showRucksackPage(this.m_rucksackPage, true)
-			call DisableTrigger(this.m_pickupTrigger)
-			set leftResult = thistype.unitAddItemToSlotById(characterUnit, thistype.m_leftArrowItemType, thistype.maxRucksackItemsPerPage)
-			set rightResult = thistype.unitAddItemToSlotById(characterUnit, thistype.m_rightArrowItemType, thistype.maxRucksackItemsPerPage + 1)
-			call EnableTrigger(this.m_pickupTrigger)
 			
-			if (leftResult) then
-				set leftArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage)
-				call SetItemDroppable(leftArrowItem, true) //for moving items to next or previous pages
-				set leftArrowItem = null
-			// TODO remove the item?
+			if (not this.m_rucksackIsEnabled) then
+				set this.m_rucksackIsEnabled = true
+				call this.showRucksackPage(this.m_rucksackPage, true)
+				call DisableTrigger(this.m_pickupTrigger)
+				set leftResult = thistype.unitAddItemToSlotById(this.character().unit(), thistype.m_leftArrowItemType, thistype.maxRucksackItemsPerPage)
+				set rightResult = thistype.unitAddItemToSlotById(this.character().unit(), thistype.m_rightArrowItemType, thistype.maxRucksackItemsPerPage + 1)
+				call EnableTrigger(this.m_pickupTrigger)
+				
+				if (leftResult) then
+					set leftArrowItem = UnitItemInSlot(this.character().unit(), thistype.maxRucksackItemsPerPage)
+					call SetItemDroppable(leftArrowItem, true) // for moving items to next or previous pages
+					set leftArrowItem = null
+				// TODO remove the item?
+				debug else
+					debug call Print("Error on adding left arrow item.")
+				endif
+				
+				if (rightResult) then
+					set rightArrowItem = UnitItemInSlot(this.character().unit(), thistype.maxRucksackItemsPerPage + 1)
+					call SetItemDroppable(rightArrowItem, true) // for moving items to next or previous pages
+					call SetItemCharges(rightArrowItem, this.m_rucksackPage + 1)
+					set rightArrowItem = null
+				// TODO remove the item?
+				debug else
+					debug call Print("Error on adding right arrow item.")
+				endif
 			debug else
-				debug call Print("Error on adding left arrow item.")
-			endif
-			
-			if (rightResult) then
-				set rightArrowItem = UnitItemInSlot(characterUnit, thistype.maxRucksackItemsPerPage + 1)
-				call SetItemDroppable(rightArrowItem, true)
-				call SetItemCharges(rightArrowItem, this.m_rucksackPage + 1)
-				set rightArrowItem = null
-			// TODO remove the item?
-			debug else
-				debug call Print("Error on adding right arrow item.")
-			endif
-			
-			set characterUnit = null
+				debug call this.print("Enabling rucksack although it is already enabled.")
+			debug endif
 		endmethod
 
 		/**
@@ -880,6 +948,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call itemType.onEquipItem.execute(this.character().unit(), equipmentType)
 		endmethod
 
+		/**
+		 * Sets equipment item of type \p equipmentType to item \p usedItem and removes \p usedItem after that.
+		 */
 		private method setEquipmentItemByItem takes integer equipmentType, item usedItem, boolean add returns nothing
 			local AInventoryItemData inventoryItemData = AInventoryItemData.create(usedItem, this.character().unit())
 			call DisableTrigger(this.m_dropTrigger)
@@ -890,31 +961,35 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private method clearEquipmentItem takes integer equipmentType, boolean drop returns nothing
-			local unit characterUnit = this.character().unit()
-			local item slotItem
-			local AItemType itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
+			local item slotItem = null
+			local AItemType itemType = 0
 
 			if (not this.m_rucksackIsEnabled) then
-				set slotItem = UnitItemInSlot(characterUnit, equipmentType)
+				set slotItem = UnitItemInSlot(this.character().unit(), equipmentType)
 				if (slotItem != null) then
 					call thistype.clearItemIndex(slotItem)
 					call DisableTrigger(this.m_dropTrigger)
 					if (drop) then
-						call thistype.unitDropItemPoint(characterUnit, slotItem, GetUnitX(characterUnit), GetUnitY(characterUnit))
+						call thistype.unitDropItemPoint(this.character().unit(), slotItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))
 					else
 						call RemoveItem(slotItem)
 					endif
 					call EnableTrigger(this.m_dropTrigger)
 					set slotItem = null
+				debug else
+					debug call this.print("Missing equipment type slot item although equipment is enabled. Slot: " + I2S(equipmentType) + ".")
 				endif
 			else
+				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 				// equipped items must always have an item type
-				//if (itemType != 0) then
-					call itemType.removePermanentAbilities(characterUnit)
-				//endif
+				if (itemType != 0) then
+					call itemType.removePermanentAbilities(this.character().unit())
+				debug else
+					debug call this.print("Equipment type " + I2S(equipmentType) + " has no item type which should not be possible.")
+				endif
 			endif
+			
 			call this.clearEquipmentType(equipmentType)
-			set characterUnit = null
 		endmethod
 		
 		/**
@@ -1029,7 +1104,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local AItemType itemType
 			local integer equipmentType
 			local player itemPlayer
-			local unit characterUnit
 			local item equippedItem
 			local string itemName
 
@@ -1038,17 +1112,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				return false
 			endif
 
-			set itemType = AItemType.itemTypeOfItem(usedItem)
-			set equipmentType = itemType.equipmentType()
-			set itemPlayer = GetItemPlayer(usedItem)
-			set characterUnit = this.character().unit()
-
-			if (not this.m_rucksackIsEnabled and UnitHasItem(characterUnit, usedItem)) then // already picked up
+			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
 				call DisableTrigger(this.m_dropTrigger)
-				call thistype.unitDropItemPoint(characterUnit, usedItem, GetUnitX(characterUnit), GetUnitY(characterUnit))
+				if (not thistype.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
+					debug call this.print("Error on dropping item " + GetItemName(usedItem))
+				endif
 				call EnableTrigger(this.m_dropTrigger)
 			endif
 
+			set itemPlayer = GetItemPlayer(usedItem)
+			
 			if (not thistype.m_allowPickingUpFromOthers and itemPlayer != this.character().player() and IsPlayerPlayingUser(itemPlayer)) then
 				if (thistype.m_textOwnedByOther != null) then
 					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
@@ -1058,11 +1131,28 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 			set itemPlayer = null
 
+			set itemType = AItemType.itemTypeOfItem(usedItem)
+			set equipmentType = itemType.equipmentType()
+			
 			if (itemType != 0 and equipmentType != -1) then
+				/*
+				 * Can be equipped to the equipment type since either no equipment is there or it will be swapped.
+				 */
 				if (swapWithAlreadyEquipped or this.m_equipmentItemData[equipmentType] == 0) then
+					/*
+					 * The user specified requirement for the item type must be checked first.
+					 */
 					if (itemType.checkRequirement(this.character())) then
+						/*
+						 * Equipment item must be swapped.
+						 */
 						if (swapWithAlreadyEquipped and this.m_equipmentItemData[equipmentType] != 0) then
-							set equippedItem = this.m_equipmentItemData[equipmentType].createItem(GetUnitX(characterUnit), GetUnitY(characterUnit))
+							/*
+							 * Drop the equipped item and add it to the rucksack.
+							 * TODO Do not create a new item but drop the existing item instead.
+							 * TODO maybe add to rucksack AFTER equipping the new item? Not really necessary.
+							 */
+							set equippedItem = this.m_equipmentItemData[equipmentType].createItem(GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))
 							call this.addItemToRucksack.evaluate(equippedItem, true, false)
 							call this.clearEquipmentItem(equipmentType, false)
 							set equippedItem = null
@@ -1072,20 +1162,20 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						if (showEquipMessage and thistype.m_textEquipItem != null) then
 							call this.character().displayMessage(ACharacter.messageTypeInfo, Format(thistype.m_textEquipItem).s(itemName).result())
 						endif
-						set characterUnit = null
+
 						return true
 					endif
 				endif
 			debug elseif (itemType == 0) then
 				debug call this.print("Warning: Item \"" + GetItemName(usedItem) + "\" has no custom type.")
 			endif
+			
 			// move to rucksack
 			if (not dontMoveToRucksack) then
 				call this.addItemToRucksack.evaluate(usedItem, true, true) //if item type is 0 it will be placed in rucksack, too
 			elseif (thistype.m_textUnableToEquipItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
 			endif
-			set characterUnit = null
 			
 			return false
 		endmethod
@@ -1100,36 +1190,49 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.equipItem(whichItem, false, false, true) // try always equipment first!
 		endmethod
 
-		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage returns nothing
+		/**
+		 * Adds item \p usedItem to the rucksack.
+		 * \param dontMoveToEquipment If this value is true the item won't be moved to the equipment if the rucksack is full.
+		 * \param showAddMessage If this value is true a message will be shown.
+		 * \return Returns true if the item has been added to the rucksack successfully.
+		 */
+		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage returns boolean
 			local integer i
 			local player itemPlayer
-			local unit characterUnit
 			local string itemName
 
 			// sometimes null items will be added for example when an item is added which is removed at the same moment
 			if (usedItem == null) then
-				return
+				return false
 			endif
-
-			set itemPlayer = GetItemPlayer(usedItem)
-			set characterUnit = this.character().unit()
-
-			if (this.m_rucksackIsEnabled and UnitHasItem(characterUnit, usedItem)) then // already picked up
+			
+			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
 				call DisableTrigger(this.m_dropTrigger)
-				call thistype.unitDropItemPoint(characterUnit, usedItem, GetUnitX(characterUnit), GetUnitY(characterUnit))
+				if (not thistype.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
+					debug call this.print("Error on dropping item " + GetItemName(usedItem))
+				endif
 				call EnableTrigger(this.m_dropTrigger)
 			endif
-			set characterUnit = null
 
+			/*
+			 * If configured that way characters must not pickup items which are owned by other players.
+			 * In this case the item stays dropped.
+			 */
+			set itemPlayer = GetItemPlayer(usedItem)
+			
 			if (not thistype.m_allowPickingUpFromOthers and itemPlayer != this.character().player() and IsPlayerPlayingUser(itemPlayer)) then
 				if (thistype.m_textOwnedByOther != null) then
 					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
 				endif
 				set itemPlayer = null
-				return
+				return false
 			endif
 			set itemPlayer = null
 
+			/*
+			 * Now check for a free slot in the rucksack.
+			 * Besides slots with the same item type are checked since the items are stackable.
+			 */
 			set i = 0
 			loop
 				exitwhen (i == thistype.maxRucksackItems)
@@ -1139,7 +1242,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					if (showAddMessage and thistype.m_textAddItemToRucksack != null) then
 						call this.character().displayMessage(ACharacter.messageTypeInfo, Format(thistype.m_textAddItemToRucksack).s(itemName).result())
 					endif
-					return
+					return true
 				endif
 				set i = i + 1
 			endloop
@@ -1151,6 +1254,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			elseif (thistype.m_textUnableToAddRucksackItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToAddRucksackItem)
 			endif
+			
+			return false
 		endmethod
 
 		private method showNextRucksackPage takes nothing returns nothing
@@ -1375,18 +1480,21 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			if (this.m_rucksackIsEnabled) then
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			
+			if (this.rucksackIsEnabled()) then
 				call this.disableRucksack()
 				call this.enableEquipment()
 			else
 				call this.disableEquipment(true)
 				call this.enableRucksack()
 			endif
-			set triggeringTrigger = null
 		endmethod
 
+		/**
+		 * The open trigger registers that the \ref thistype.m_openRucksackAbilityId is being cast and changes to the rucksack if the equipment is shown or to the equipment
+		 * if the rucksack is shown.
+		 */
 		private method createOpenTrigger takes nothing returns nothing
 			set this.m_openTrigger = CreateTrigger()
 			call TriggerRegisterUnitEvent(this.m_openTrigger, this.character().unit(), EVENT_UNIT_SPELL_CAST)
@@ -1469,12 +1577,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionPickup takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local item usedItem = GetManipulatedItem()
-			call this.addItem(usedItem)
-			set triggeringTrigger = null
-			set usedItem = null
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			call this.addItem(GetManipulatedItem())
 		endmethod
 
 		private method createPickupTrigger takes nothing returns nothing
@@ -1528,36 +1632,33 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionDrop takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local item usedItem = GetManipulatedItem()
-			local integer index = this.itemIndex(usedItem)
-			local unit triggerUnit = GetTriggerUnit()
-			debug call this.print("Dropping item " + GetItemName(usedItem) + " in trigger " + I2S(GetHandleId(triggeringTrigger)))
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local integer index = this.itemIndex(GetManipulatedItem())
+			debug call this.print("Dropping item " + GetItemName(GetManipulatedItem()) + " in trigger " + I2S(GetHandleId(GetTriggeringTrigger())))
 			if (this.rucksackIsEnabled()) then
 				// page items
-				if (GetItemTypeId(usedItem) == thistype.m_leftArrowItemType) then
-					call SetItemPawnable(usedItem, false) // make sure nobody picks it up again
+				if (GetItemTypeId(GetManipulatedItem()) == thistype.m_leftArrowItemType) then
+					call SetItemPawnable(GetManipulatedItem(), false) // make sure nobody picks it up again
 					call TriggerSleepAction(0.0) // wait until it has been dropped
-					call this.resetPageItem(usedItem)
-				elseif (GetItemTypeId(usedItem) == thistype.m_rightArrowItemType) then
-					call SetItemPawnable(usedItem, false) // make sure nobody picks it up again
+					call this.resetPageItem(GetManipulatedItem())
+				elseif (GetItemTypeId(GetManipulatedItem()) == thistype.m_rightArrowItemType) then
+					call SetItemPawnable(GetManipulatedItem(), false) // make sure nobody picks it up again
 					call TriggerSleepAction(0.0) // wait until it has been dropped
-					call this.resetPageItem(usedItem)
+					call this.resetPageItem(GetManipulatedItem())
 				// destack and drop
 				elseif (this.m_rucksackItemData[index].charges() > 1) then
-					debug call Print("Destacking and dropping item " + GetItemName(usedItem))
-					if (GetItemType(usedItem) == ITEM_TYPE_CHARGED) then
+					debug call Print("Destacking and dropping item " + GetItemName(GetManipulatedItem()))
+					if (GetItemType(GetManipulatedItem()) == ITEM_TYPE_CHARGED) then
 						debug call Print("Is charged so 1")
-						call SetItemCharges(usedItem, 1)
+						call SetItemCharges(GetManipulatedItem(), 1)
 					else
 						debug call Print("Is not charged so 0")
-						call SetItemCharges(usedItem, 0)
+						call SetItemCharges(GetManipulatedItem(), 0)
 					endif
 					/*
 					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 					 */
-					call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), false)
+					call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), false)
 					call TriggerSleepAction(0.0) // wait until it has been dropped
 					call this.setRucksackItemCharges(index, this.m_rucksackItemData[index].charges() - 1)
 				// drop
@@ -1566,21 +1667,18 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call this.m_rucksackItemData[index].destroy()
 					set this.m_rucksackItemData[index] = 0
 
-					if (GetItemType(usedItem) != ITEM_TYPE_CHARGED) then
-						call SetItemCharges(usedItem, 0)
+					if (GetItemType(GetManipulatedItem()) != ITEM_TYPE_CHARGED) then
+						call SetItemCharges(GetManipulatedItem(), 0)
 					endif
 					/*
 					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 					 */
-					call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), false)
+					call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), false)
 				endif
 			// unequip and drop
 			else
 				call this.clearEquipmentType(index)
 			endif
-			set triggeringTrigger = null
-			set usedItem = null
-			set triggerUnit = null
 		endmethod
 
 		// drop, destack and drop, unequip and drop
@@ -1598,10 +1696,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionUse takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local item usedItem = GetManipulatedItem()
-			local integer itemTypeId = GetItemTypeId(usedItem)
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local integer itemTypeId = GetItemTypeId(GetManipulatedItem())
 			local integer index
 
 			// show next page
@@ -1612,9 +1708,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.showPreviousRucksackPage()
 			// usual item
 			else
-				set index = thistype.itemIndex(usedItem)
+				set index = thistype.itemIndex(GetManipulatedItem())
 				// usable items have to be charged!
-				if (GetItemType(usedItem) == ITEM_TYPE_CHARGED) then
+				if (GetItemType(GetManipulatedItem()) == ITEM_TYPE_CHARGED) then
 					debug call this.print("Used usable item!")
 					// if an item is used by decreasing its number of charges (not to 0!) we have to decrease our number, too
 					call this.m_rucksackItemData[index].setCharges(this.m_rucksackItemData[index].charges() - 1)
@@ -1625,8 +1721,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				// if an item is used but the character is being stopped since the spell condition doesn't work, the charges become 0! this refresh prevents this error
 				call this.refreshRucksackItemCharges(index)
 			endif
-			set usedItem = null
-			set triggeringTrigger = null
 		endmethod
 
 		private method createUseTrigger takes nothing returns nothing
@@ -1643,6 +1737,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_rucksackPage = 0
 			set this.m_rucksackIsEnabled = false
 
+			/*
+			 * Make sure that the character's unit has the rucksack ability. Otherwise it cannot change to the rucksack.
+			 */
 			if (GetUnitAbilityLevel(this.character().unit(), thistype.m_openRucksackAbilityId) == 0) then
 				call UnitAddAbility(this.character().unit(), thistype.m_openRucksackAbilityId)
 			endif
@@ -1711,6 +1808,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		/**
 		 * \param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in rucksack.
+		 * \param rightArrowItemType The item type ID for the item which must be usable and is used as item to change to the right page in the rucksack.
 		 * \param openRucksackAbilityId This ability is added to the character's unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
 		 * \param allowPickingUpFromOthers If this value is true characters are allowed to pick up items which are owned by other playing users (human controlled).
 		 */
