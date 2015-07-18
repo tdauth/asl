@@ -300,7 +300,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	 */
 	struct AVideo
 		// static construction members
-		private static integer m_divident
 		private static string m_textPlayerSkips
 		private static string m_textSkip
 		// static members
@@ -316,6 +315,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private static AIntegerVector m_actors
 		private static real m_timeOfDay
 		// dynamic members
+		private boolean m_hasCharacterActor
 		private AVideoAction m_initAction
 		private AVideoAction m_playAction
 		private AVideoAction m_stopAction
@@ -328,6 +328,14 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AVideo\"")
 
 		// dynamic members
+		
+		public method setHasCharacterActor takes boolean hasCharacterActor returns nothing
+			set this.m_hasCharacterActor = hasCharacterActor
+		endmethod
+		
+		public method hasCharacterActor takes nothing returns boolean
+			return this.m_hasCharacterActor
+		endmethod
 
 		/**
 		 * The init action is called using .evaluate() in \ref onInitAction() by default
@@ -526,7 +534,14 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			debug call Print("Before pausing all units.")
 			call PauseAllUnits(true)
 			debug call Print("After pausing all units.")
-			if (thistype.m_actor != 0) then
+			/*
+			 * Refresh the character's actor if the video requires one.
+			 */
+			if (this.hasCharacterActor()) then
+				if (thistype.m_actor == 0) then
+					set thistype.m_actor = AActorData.create(ACharacter.getFirstCharacter().unit())
+				endif
+				
 				call thistype.m_actor.refresh()
 			endif
 			call SetCameraBoundsToRect(bj_mapInitialPlayableArea) // for all players
@@ -576,11 +591,15 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			 // start with new OpLimit
 			call ForForce(bj_FORCE_PLAYER[0], function ATalk.showAllEffects)
 			call ResetToGameCamera(0.0)
-			if (thistype.m_actor != 0) then
-				debug call Print("Restoring actor")
-				call thistype.m_actor.restore()
-				call thistype.m_actor.destroy()
-				set thistype.m_actor = 0
+			if (this.hasCharacterActor()) then
+				if (thistype.m_actor != 0) then
+					debug call Print("Restoring actor")
+					call thistype.m_actor.restore()
+					call thistype.m_actor.destroy()
+					set thistype.m_actor = 0
+				debug else
+					debug call this.print("Missing character actor.")
+				endif
 			endif
 			// make sure all actors are restored before unpausing and restoring player selection
 			call thistype.restoreUnitActors.evaluate()
@@ -613,15 +632,19 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * Besides it displays a message that the video has been skipped (useful in multiplayer games).
 		 */
 		public method skip takes nothing returns nothing
-			debug if (thistype.m_runningVideo != this) then
+			if (thistype.m_runningVideo != this) then
 				debug call this.print("Video is not being run.")
-				debug return
-			debug endif
+				return
+			endif
 			if (thistype.m_playedSound != null) then
 				call StopSound(thistype.m_playedSound, false, false)
 				set thistype.m_playedSound = null
 			endif
 			call EndCinematicScene()
+			/*
+			 * Reset the number of skipping players.
+			 */
+			set thistype.m_skippingPlayers = 0
 			set thistype.m_skipped = true
 			call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
@@ -640,12 +663,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * \todo If a player leaves the game who should have skipped the video or all players leave the game who did not skip what happens? Store the number of skips!
 		 */
 		public stub method onSkipCondition takes integer skipablePlayers returns boolean
-			return thistype.m_skippingPlayers >= skipablePlayers / thistype.m_divident
+			return thistype.m_skippingPlayers >= skipablePlayers / 2 + ModuloInteger(skipablePlayers, 2)
 		endmethod
 
-		public static method create takes nothing returns thistype
+		public static method create takes boolean hasCharacterActor returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
+			set this.m_hasCharacterActor = hasCharacterActor
 			set this.m_initAction = 0
 			set this.m_playAction = 0
 			set this.m_stopAction = 0
@@ -662,6 +686,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			return this
 		endmethod
 
+		/**
+		 * Increases the number of skips and calls \ref onSkipCondition() with the number of skipable players (all playing humans).
+		 * If the method returns true the video is being skipped.
+		 * \return Returns true if the video is skipped. Otherwise it returns false.
+		 */
 		public static method playerSkips takes player whichPlayer returns boolean
 			local integer i
 			local integer skipablePlayers = 0
@@ -730,11 +759,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call TriggerAddAction(thistype.m_skipTrigger, function thistype.triggerActionSkip)
 		endmethod
 
-		/// \param divident This value represents the divident which is used for comparing the number of skipping players with the number of requested skipping players for skipping the video.
-		public static method init takes integer divident, string textPlayerSkips, string textSkip returns nothing
+		public static method init takes string textPlayerSkips, string textSkip returns nothing
 			local integer i
 			// static construction members
-			set thistype.m_divident = divident
 			set thistype.m_textPlayerSkips = textPlayerSkips
 			set thistype.m_textSkip = textSkip
 			// static members
@@ -764,6 +791,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public static method cleanUp takes nothing returns nothing
 			local integer i
 			// static members
+			if (thistype.m_actor != 0) then
+				call thistype.m_actor.destroy()
+				set thistype.m_actor = 0
+			endif
+			
 			loop
 				exitwhen (thistype.m_actors.empty())
 				call AActorInterface(thistype.m_actors.back()).destroy()
@@ -805,13 +837,15 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			return thistype.m_runningVideo != 0
 		endmethod
 
+		/**
+		 * \return Returns the first character's actor.
+		 * \note \ref hasCharacterActor() must return true for the current video if you use this method.
+		 */
 		public static method actor takes nothing returns unit
 			debug if (thistype.m_runningVideo == 0) then
 				debug call thistype.staticPrint("Running video is 0.")
 			debug endif
-			if (thistype.m_actor == 0) then
-				set thistype.m_actor = AActorData.create(ACharacter.getFirstCharacter().unit())
-			endif
+
 			return thistype.m_actor.actor()
 		endmethod
 
