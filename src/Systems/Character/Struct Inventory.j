@@ -1639,6 +1639,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionPickup takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			call TriggerSleepAction(0.0) // make sure the item is picked up since addItem() will drop it automatically before doing anything
 			call this.addItem(GetManipulatedItem())
 		endmethod
 
