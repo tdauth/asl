@@ -815,7 +815,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 			debug else
 				debug call this.print("Enabling rucksack although it is already enabled.")
-			debug endif
+			endif
 		endmethod
 
 		/**
@@ -1737,14 +1737,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), false)
 					endif
 				debug else
-					call this.print("Item has no index. Doing nothing.")
+					debug call this.print("Item has no index. Doing nothing.")
 				endif
 			// unequip and drop
 			else
 				if (index != -1) then
 					call this.clearEquipmentType(index)
 				debug else
-					call this.print("Item has no index. Doing nothing.")
+					debug call this.print("Item has no index. Doing nothing.")
 				endif
 			endif
 		endmethod
