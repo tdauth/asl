@@ -339,6 +339,23 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		call TriggerAddCondition(skipTrigger, Condition(function triggerConditionSkip))
 		call TriggerAddAction(skipTrigger, function triggerActionSkip)
 	endfunction
+	
+	private function SetSpeechVolumeGroupsImmediateForPlayer takes player whichPlayer returns nothing
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_UNITMOVEMENT,  bj_SPEECH_VOLUME_UNITMOVEMENT)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_UNITSOUNDS,    bj_SPEECH_VOLUME_UNITSOUNDS)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_COMBAT,        bj_SPEECH_VOLUME_COMBAT)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_SPELLS,        bj_SPEECH_VOLUME_SPELLS)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_UI,            bj_SPEECH_VOLUME_UI)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_MUSIC,         bj_SPEECH_VOLUME_MUSIC)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_AMBIENTSOUNDS, bj_SPEECH_VOLUME_AMBIENTSOUNDS)
+		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_FIRE,          bj_SPEECH_VOLUME_FIRE)
+	endfunction
+	
+	private function VolumeGroupResetForPlayer takes player whichPlayer returns nothing
+		if (whichPlayer == GetLocalPlayer()) then
+			call VolumeGroupReset()
+		endif
+	endfunction
 
 	/**
 	 * Shows a single speech from whether the character's unit or the talk's unit (NPC).
@@ -374,6 +391,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set speakerOwner = character.player()
 		endif
 		if (usedSound != null) then
+			call SetSpeechVolumeGroupsImmediateForPlayer(user)
 			set duration = GetSoundDurationBJ(usedSound)
 			call PlaySoundForPlayer(user, usedSound)
 		else
@@ -395,11 +413,11 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			loop
 				exitwhen (duration <= 0.0)
 				if (playerHasSkipped[GetPlayerId(user)]) then
-					//if (AInfo.skipKey != KEY_ESCAPE) then
-						//call ClearScreenMessagesForPlayer(user) /// \todo Does not do anything.
-					//endif
 					set playerHasSkipped[GetPlayerId(user)] = false
-					call StopSound(usedSound, false, false) // stop sound since speech could have been skipped by player
+					// TODO stop sound for player only
+					if (usedSound != null) then
+						call StopSound(usedSound, false, false) // stop sound since speech could have been skipped by player
+					endif
 					call EndCinematicSceneForPlayer(user)
 					exitwhen (true)
 				endif
@@ -408,6 +426,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			endloop
 		endif
 		call waitForVideo(1.0) // do not show any speeches during video
+		call VolumeGroupResetForPlayer(user)
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
 		endif
