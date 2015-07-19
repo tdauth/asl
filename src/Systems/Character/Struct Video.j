@@ -37,7 +37,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		// methods
 
 		public method restore takes nothing returns nothing
-			call RemoveUnit(this.m_actor)
+			call AHashTable.global().destroyUnit(this.m_actor)
 			set this.m_actor = null
 			call ShowUnit(this.m_unit, true)
 		endmethod
@@ -54,10 +54,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			local integer i
 			local item whichItem
 			if (this.m_actor != null) then
-				call RemoveUnit(this.m_actor)
+				call AHashTable.global().destroyUnit(this.m_actor)
 				set this.m_actor = null
 			endif
 			set this.m_actor = CopyUnit(this.unit(), GetUnitX(this.unit()), GetUnitY(this.unit()), GetUnitFacing(this.unit()), bj_UNIT_STATE_METHOD_MAXIMUM)
+			call AHashTable.global().setHandleInteger(this.m_actor, "actor", this)
 			call PauseUnit(this.m_actor, false) // unpause before adding items!
 			// remove copied items of rucksack and add equipment
 			// TODO would be better performance when not copying items in CopyUnit in case rucksack is displayed
@@ -107,7 +108,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_unit = null
 			// members
 			if (this.m_actor != null) then
-				call RemoveUnit(this.m_actor)
+				call AHashTable.global().destroyUnit(this.m_actor)
 				set this.m_actor = null
 			endif
 		endmethod
@@ -159,7 +160,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		// methods
 
 		public method restore takes nothing returns nothing
-			call RemoveUnit(this.m_actor)
+			call AHashTable.global().destroyUnit(this.m_actor)
 			set this.m_actor = null
 		endmethod
 
@@ -169,10 +170,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		public method refresh takes nothing returns nothing
 			if (this.m_actor != null) then
-				call RemoveUnit(this.actor())
+				call AHashTable.global().destroyUnit(this.m_actor)
 				set this.m_actor = null
 			endif
 			set this.m_actor = CreateUnit(this.owner(), this.unitTypeId(), this.x(), this.y(), this.face())
+			call AHashTable.global().setHandleInteger(this.m_actor, "actor", this)
 			call SetUnitInvulnerable(this.m_actor, true)
 			call IssueImmediateOrder(this.m_actor, "stop") // cancel orders.
 			call IssueImmediateOrder(this.m_actor, "halt") // make sure it runs not away
@@ -196,7 +198,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_owner = null
 			// members
 			if (this.m_actor != null) then
-				call RemoveUnit(this.m_actor)
+				call AHashTable.global().destroyUnit(this.m_actor)
 				set this.m_actor = null
 			endif
 		endmethod
@@ -538,8 +540,14 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			 * Refresh the character's actor if the video requires one.
 			 */
 			if (this.hasCharacterActor()) then
+				debug call this.print("Has character actor")
 				if (thistype.m_actor == 0) then
-					set thistype.m_actor = AActorData.create(ACharacter.getFirstCharacter().unit())
+					debug call this.print("is 0 so create one")
+					if (ACharacter.getFirstCharacter() != 0) then
+						set thistype.m_actor = AActorData.create(ACharacter.getFirstCharacter().unit())
+					debug else
+						debug call this.print("There is no character for the video.")
+					endif
 				endif
 				
 				call thistype.m_actor.refresh()
@@ -917,6 +925,14 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			debug call Print("Unit actor " + I2S(index) + " is null")
 			debug endif
 			return AActorInterface(thistype.m_actors[index]).actor()
+		endmethod
+		
+		public static method unitIsActor takes unit whichUnit returns boolean
+			return AHashTable.global().hasHandleInteger(whichUnit, "actor")
+		endmethod
+		
+		public static method actorByUnit takes unit whichUnit returns AActorInterface
+			return AActorInterface(AHashTable.global().handleInteger(whichUnit, "actor"))
 		endmethod
 
 		public static method restoreUnitActor takes integer index returns nothing
