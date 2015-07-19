@@ -572,17 +572,22 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * <li>restores player data (selection, leaderboard and dialog visibility)</li>
 		 * <li>calls \ref onStopAction() with .evaluate()</li>
 		 * </ul>
+		 * \param fadeOut If this value is true this method is called without any fade out before.
 		 * \note You have to call this method at the end of your video play action.
 		 * \note Since there is an execution of the action, TriggerSleepAction functions will be ignored, so this method could not be called by the play method.
 		 */
-		private method doStop takes real filterTime returns nothing
+		private method doStop takes real filterTime, boolean fadeOut returns nothing
 			local force playersAll
 			debug if (thistype.m_runningVideo != this) then
 				debug call this.print("Video is not being run.")
 				debug return
 			debug endif
 			call DisableTrigger(thistype.m_skipTrigger)
-			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			
+			if (fadeOut) then
+				call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+			endif
+			
 			call TriggerSleepAction(filterTime)
 			
 			/*
@@ -623,7 +628,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 		
 		public method stop takes nothing returns nothing
-			call this.doStop(this.stopFilterTime())
+			call this.doStop(this.stopFilterTime(), true)
 		endmethod
 
 		/**
@@ -632,25 +637,33 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * Besides it displays a message that the video has been skipped (useful in multiplayer games).
 		 */
 		public method skip takes nothing returns nothing
+			local boolean firstStop = not thistype.m_skipped
 			if (thistype.m_runningVideo != this) then
 				debug call this.print("Video is not being run.")
 				return
 			endif
+			debug if (firstStop) then
+				debug call this.print("Warning: Video is skipped manually and not by players.")
+			debug endif
 			if (thistype.m_playedSound != null) then
 				call StopSound(thistype.m_playedSound, false, false)
 				set thistype.m_playedSound = null
 			endif
-			call EndCinematicScene()
+			if (firstStop) then
+				call EndCinematicScene()
+			endif
 			/*
 			 * Reset the number of skipping players.
 			 */
 			set thistype.m_skippingPlayers = 0
 			set thistype.m_skipped = true
-			call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
+			if (firstStop) then
+				call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
+			endif
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
 			call this.onSkipAction.evaluate()
 			
-			call this.doStop(this.skipFilterTime())
+			call this.doStop(this.skipFilterTime(), firstStop)
 		endmethod
 
 		/**
@@ -694,6 +707,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public static method playerSkips takes player whichPlayer returns boolean
 			local integer i
 			local integer skipablePlayers = 0
+			local thistype this = thistype.m_runningVideo
 
 			if (thistype.m_runningVideo == 0 or thistype.m_skipped) then
 				return false
@@ -712,9 +726,21 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set i = i + 1
 			endloop
 
-			if (thistype.m_runningVideo.onSkipCondition.evaluate(skipablePlayers)) then
-				debug call Print("Skipping video: " + I2S(thistype.m_runningVideo))
-				call thistype.m_runningVideo.skip()
+			if (this.onSkipCondition.evaluate(skipablePlayers)) then
+				debug call Print("Skipping video: " + I2S(this))
+				/*
+				 * skip() must be called in any wait action or in the action of the video itself.
+				 * If you skip the video immediately here it might run further since it did not recognize itself that it has been skipped.
+				 */
+				set thistype.m_skippingPlayers = 0
+				set thistype.m_skipped = true
+				
+				/*
+				 * These things must be done immediately.
+				 */
+				call EndCinematicScene()
+				call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, this.skipFilterTime(), "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
+				
 				return true
 			endif
 			return false
@@ -961,13 +987,18 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	endfunction
 
 	/**
-	* Waits \p seconds game-time seconds. Cancels if video is skipped during this time.
+	* Waits \p seconds game-time seconds. Cancels if video is skipped during this time and calls \ref AVideo.skip().
 	* Note that this function is like \ref PolledWait since it has to be synchronos.
 	* \return Returns true if video was skipped during the wait phase. Otherwise it returns false (if wait time has expired normally).
 	* \see PolledWait
 	*/
 	function wait takes real seconds returns boolean
-		return WaitCheckingCondition(seconds, function WaitCondition, 0)
+		if (WaitCheckingCondition(seconds, function WaitCondition, 0)) then
+			call AVideo.runningVideo().skip()
+			
+			return true
+		endif
+		return false
 	endfunction
 
 	/**
@@ -978,7 +1009,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 	/**
 	* Advanced conditional video wait function.
-	* Checks every \p interval seconds for condition \p condition. If video is being skipped during this time it returns true.
+	* Checks every \p interval seconds for condition \p condition. If video is being skipped during this time it returns true amd calls \ref AVideo.skip().
 	* Otherwise it returns false when condition is true.
 	* \param interval Interval in seconds in which the condition will be checked.
 	* \param condition Condition which will be checked. Use \ref AVideoCondition to create and pass a correct function.
@@ -989,6 +1020,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		loop
 			exitwhen (condition.evaluate(AVideo.runningVideo()))
 			if (WaitCondition()) then
+				call AVideo.runningVideo().skip()
+			
 				return true
 			endif
 			call PolledWait(interval)
