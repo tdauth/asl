@@ -420,6 +420,30 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 		
 		/**
+		 * Removes item from unit \p whichUnit even if it is paused and disables the drop event during the removal.
+		 */
+		private method unitRemoveItem takes unit whichUnit, item whichItem returns nothing
+			local boolean isBeingPaused
+			// Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
+			if (IsUnitPaused(whichUnit)) then
+				set isBeingPaused = true
+				call PauseUnit(whichUnit, false)
+			else
+				set isBeingPaused = false
+			endif
+			
+			call DisableTrigger(this.m_dropTrigger)
+			
+			call RemoveItem(whichItem)
+			
+			if (isBeingPaused) then
+				call PauseUnit(whichUnit, true)
+			endif
+			
+			call EnableTrigger(this.m_dropTrigger)
+		endmethod
+		
+		/**
 		 * Drops item without firing the drop event for the system and even if the character's unit is paused.
 		 * TODO It seems that the event is fired anyway.
 		 */
@@ -462,6 +486,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set isBeingPaused = false
 			endif
 			
+			debug call Print("Disable pickup trigger in unitAddItemToSlotById()")
 			call DisableTrigger(this.m_pickupTrigger)
 			
 			if (UnitItemInSlot(whichUnit, slot) != null) then
@@ -702,11 +727,53 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set i = i + 1
 			endloop
 		endmethod
+		
+		/**
+		 * Shows either left or right page item in the rucksack.
+		 */
+		private method showPageItem takes boolean left returns boolean
+			local boolean result = false
+			local integer itemTypeId = 0
+			local integer slot
+			local item slotItem
+			
+			if (left) then
+				set itemTypeId = thistype.m_leftArrowItemType
+				set slot = thistype.previousPageItemSlot
+			else
+				set itemTypeId = thistype.m_rightArrowItemType
+				set slot = thistype.nextPageItemSlot
+			endif
+			
+			if (UnitItemInSlot(this.character().unit(), slot) != null) then
+				debug call this.print("Item slot " + I2S(slot) + " for page item is already in use.")
+				return false
+			endif
+			
+			debug call Print("Before adding item.")
+			
+			if (not this.unitAddItemToSlotById(this.character().unit(), itemTypeId, slot)) then
+				debug call Print("Something went wrong when readding item " + GetObjectName(itemTypeId) + " to slot " + I2S(slot))
+			else
+				set result = true
+			endif
+			
+			set slotItem = UnitItemInSlot(this.character().unit(), slot)
+			call SetItemDroppable(slotItem, true) // for moving items to next or previous pages
+			
+			if (not left) then
+				call SetItemCharges(slotItem, this.m_rucksackPage + 1)
+			endif
+			
+			set slotItem = null
+			
+			return result
+		endmethod
 
 		/**
 		 * \note Call this method only if being sure that there is some item data at \p index in the rucksack.
 		 */
-		private method showRucksackItem takes integer index returns nothing
+		private method showRucksackItem takes integer index returns boolean
 			local integer slot = this.rucksackItemSlot(index)
 			local item slotItem
 			local boolean result = false
@@ -741,16 +808,19 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			debug else
 				debug call this.print("Showing rucksack item of index " + I2S(index) + " which has no item data.")
 			endif
+			
+			return result
 		endmethod
 
 		private method showRucksackPage takes integer page, boolean firstCall returns nothing
 			local integer i
 			local integer exitValue
 			local item rightArrowItem
-			debug if (page > thistype.maxRucksackPages) then
+			
+			if (page > thistype.maxRucksackPages) then
 				debug call this.print("Page value is too big.")
-				debug return
-			debug endif
+				return
+			endif
 
 			if (not firstCall) then
 				call this.hideCurrentRucksackPage()
@@ -776,43 +846,35 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				if (rightArrowItem != null) then
 					call SetItemCharges(rightArrowItem, page + 1)
 					set rightArrowItem = null
-				debug else
+				else
 					debug call this.print("Missing slot item for right page item at slot " + I2S(thistype.nextPageItemSlot))
+					if (not this.showPageItem(false)) then
+						debug call this.print("Error on adding right page item.")
+					endif
 				endif
 			endif
 		endmethod
 
 		private method enableRucksack takes nothing returns nothing
-			local item leftArrowItem
-			local item rightArrowItem
 			local boolean leftResult = false
 			local boolean rightResult = false
 			
 			if (not this.m_rucksackIsEnabled) then
 				set this.m_rucksackIsEnabled = true
+				
+				/*
+				 * Make sure the page items are already there when showing the rucksack page for the first time.
+				 */
+				
+				if (not this.showPageItem(true)) then
+					debug call this.print("Error on adding left page item.")
+				endif
+				
+				if (not this.showPageItem(false)) then
+					debug call this.print("Error on adding right page item.")
+				endif
+				
 				call this.showRucksackPage(this.m_rucksackPage, true)
-		
-				set leftResult = this.unitAddItemToSlotById(this.character().unit(), thistype.m_leftArrowItemType, thistype.previousPageItemSlot)
-				set rightResult = this.unitAddItemToSlotById(this.character().unit(), thistype.m_rightArrowItemType, thistype.nextPageItemSlot)
-				
-				if (leftResult) then
-					set leftArrowItem = UnitItemInSlot(this.character().unit(), thistype.previousPageItemSlot)
-					call SetItemDroppable(leftArrowItem, true) // for moving items to next or previous pages
-					set leftArrowItem = null
-				// TODO remove the item?
-				debug else
-					debug call Print("Error on adding left arrow item.")
-				endif
-				
-				if (rightResult) then
-					set rightArrowItem = UnitItemInSlot(this.character().unit(), thistype.nextPageItemSlot)
-					call SetItemDroppable(rightArrowItem, true) // for moving items to next or previous pages
-					call SetItemCharges(rightArrowItem, this.m_rucksackPage + 1)
-					set rightArrowItem = null
-				// TODO remove the item?
-				debug else
-					debug call Print("Error on adding right arrow item.")
-				endif
 			debug else
 				debug call this.print("Enabling rucksack although it is already enabled.")
 			endif
@@ -1541,16 +1603,18 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method triggerConditionOrder takes nothing returns boolean
 			return GetIssuedOrderId() >= A_ORDER_ID_MOVE_SLOT_0 and GetIssuedOrderId() <= A_ORDER_ID_MOVE_SLOT_5
 		endmethod
-
-		private static method triggerActionOrder takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			local integer newSlot = GetIssuedOrderId() - A_ORDER_ID_MOVE_SLOT_0
-			local item usedItem = GetOrderTargetItem()
+		
+		/**
+		 * All orders are recognized after they are done so this method is called by a 0 seconds timer.
+		 */
+		private static method timerFunctionOrder takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
+			local item usedItem = AHashTable.global().handleItem(GetExpiredTimer(), "item")
+			local integer newSlot = AHashTable.global().handleInteger(GetExpiredTimer(), "slot")
 			local integer oldSlot
 			local integer index = -1
 			local integer charges = 0
-			debug call Print("move item " + GetItemName(usedItem))
-			call TriggerSleepAction(0.0) // wait until order is done, important!
+
 			if (this.rucksackIsEnabled()) then
 				//debug call this.print("Rucksack is enabled.")
 				if (GetItemTypeId(usedItem) == thistype.m_leftArrowItemType and newSlot != thistype.previousPageItemSlot) then
@@ -1618,6 +1682,20 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 			endif
 			set usedItem = null
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
+		endmethod
+
+		private static method triggerActionOrder takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local integer newSlot = GetIssuedOrderId() - A_ORDER_ID_MOVE_SLOT_0
+			local item usedItem = GetOrderTargetItem()
+			local timer whichTimer = CreateTimer()
+			debug call Print("move item " + GetItemName(usedItem))
+			call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+			call AHashTable.global().setHandleItem(whichTimer, "item", usedItem)
+			call AHashTable.global().setHandleInteger(whichTimer, "slot", newSlot)
+			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionOrder)
 		endmethod
 
 		/*
@@ -1639,7 +1717,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionPickup takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			call TriggerSleepAction(0.0) // make sure the item is picked up since addItem() will drop it automatically before doing anything
+			/*
+			 * Tests have shown the the unit has the item without any trigger sleep.
+			 */
+			debug if (not UnitHasItem(GetTriggerUnit(), GetManipulatedItem())) then
+			debug call this.print("Unit has no item yet on pickup of " + GetItemName(GetManipulatedItem()))
+			debug endif
 			call this.addItem(GetManipulatedItem())
 		endmethod
 
@@ -1651,61 +1734,61 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, "this", this)
 		endmethod
 		
-		/**
-		 * Resets the a page item when it is being dropped by the character.
-		 * \param droppedItem This is expected to be the dropped page item. It will be removed and an item will be readded to the character of the same item type in the correct slot (\ref thistype.previousPageItemSlot or \ref thistype.nextPageItemSlot).
-		 * \return Returns true if the page item has been readded successfully. Otherwise or if the item has not the item type id of a page item it returns false.
-		 */
-		private method resetPageItem takes item droppedItem returns boolean
-			local boolean result = false
-			local integer itemTypeId = GetItemTypeId(droppedItem)
-			local integer slot
-			debug call this.print("Removing item " + GetItemName(droppedItem))
-			if (itemTypeId == thistype.m_leftArrowItemType) then
-				set slot = thistype.previousPageItemSlot
-			elseif (itemTypeId == thistype.m_rightArrowItemType) then
-				set slot = thistype.nextPageItemSlot
-			else
-				debug call this.print("Unknown page item type id: " + GetObjectName(itemTypeId))
-			
-				return false
-			endif
-			call RemoveItem(droppedItem)
-			set droppedItem = null
-
-			if (not this.unitAddItemToSlotById(this.character().unit(), itemTypeId, slot)) then
-				debug call Print("Something went wrong when readding item " + GetObjectName(itemTypeId) + " to slot " + I2S(slot))
-			else
-				set result = true
-			endif
-			
-			if (thistype.m_textDropPageItem != null) then
-				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textDropPageItem)
-			endif
-			if (itemTypeId == thistype.m_rightArrowItemType) then
-				set droppedItem = UnitItemInSlot(this.character().unit(), thistype.nextPageItemSlot)
-				call SetItemCharges(droppedItem, this.m_rucksackPage + 1)
-				set droppedItem = null
-			endif
-			
-			return result
+		private static method timerFunctionShowPageItem takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
+			local boolean left = AHashTable.global().handleBoolean(GetExpiredTimer(), "left")
+			call this.showPageItem(left)
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
+		endmethod
+		
+		private static method timerFunctionRemoveOneCharge takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			call this.setRucksackItemCharges(index, this.m_rucksackItemData[index].charges() - 1)
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
 
 		private static method triggerActionDrop takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local integer index = this.itemIndex(GetManipulatedItem())
+			local boolean left
+			local timer whichTimer
 			debug call this.print("Dropping item " + GetItemName(GetManipulatedItem()) + " in trigger " + I2S(GetHandleId(GetTriggeringTrigger())))
+			debug if (not UnitHasItem(GetTriggerUnit(), GetManipulatedItem())) then
+			debug call this.print("Unit has dropped item successfully.")
+			debug else
+			debug call this.print("Unit still has item")
+			debug endif
+			/*
+			 * Tests detected that the unit still has the item when it is dropped.
+			 * Without any TriggerSleepAction() call it is still in the inventory.
+			 *
+			 * Removing the dropped item should work without TriggerSleepAction() BUT will cause a recursion, so this trigger should be disabled.
+			 *
+			 * Adding an item immediately to the unit after removing the item GetManipulatedItem() does NOT work.
+			 *
+			 * One solution is to start a 0 timer, not TriggerSleepAction() since it has a low resolution and after the 0 timer has expired to reset the page item.
+			 */
 			
 			if (this.rucksackIsEnabled()) then
 				// page items
-				if (GetItemTypeId(GetManipulatedItem()) == thistype.m_leftArrowItemType) then
-					call SetItemPawnable(GetManipulatedItem(), false) // make sure nobody picks it up again
-					call TriggerSleepAction(0.0) // wait until it has been dropped
-					call this.resetPageItem(GetManipulatedItem())
-				elseif (GetItemTypeId(GetManipulatedItem()) == thistype.m_rightArrowItemType) then
-					call SetItemPawnable(GetManipulatedItem(), false) // make sure nobody picks it up again
-					call TriggerSleepAction(0.0) // wait until it has been dropped
-					call this.resetPageItem(GetManipulatedItem())
+				if (GetItemTypeId(GetManipulatedItem()) == thistype.m_leftArrowItemType or GetItemTypeId(GetManipulatedItem()) == thistype.m_rightArrowItemType) then
+					debug call Print("Reset page item")
+					set left = GetItemTypeId(GetManipulatedItem()) == thistype.m_leftArrowItemType
+					call this.unitRemoveItem(GetTriggerUnit(), GetManipulatedItem())
+					if (thistype.m_textDropPageItem != null) then
+						call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textDropPageItem)
+					endif
+					/*
+					 * Wait 0 seconds to add a new item to the inventory.
+					 * Adding a new item immediately does not work.
+					 */
+					set whichTimer = CreateTimer()
+					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+					call AHashTable.global().setHandleBoolean(whichTimer, "left", left)
+					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionShowPageItem)
 				elseif (index != -1) then
 					// destack and drop
 					if (this.m_rucksackItemData[index].charges() > 1) then
@@ -1721,8 +1804,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						* When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 						*/
 						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), false)
-						call TriggerSleepAction(0.0) // wait until it has been dropped
-						call this.setRucksackItemCharges(index, this.m_rucksackItemData[index].charges() - 1)
+						
+						/*
+						 * Wait 0 seconds until the item is actually dropped and show the old item with minus one charge.
+						 */
+						set whichTimer = CreateTimer()
+						call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+						call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+						call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionRemoveOneCharge)
 					// drop
 					else
 						// do not drop by this function since unit could also give the item to another character
@@ -1763,11 +1852,21 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			return this.m_rucksackIsEnabled
 		endmethod
+		
+		private static method timerFunctionRefreshCharges takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			// if an item is used but the character is being stopped since the spell condition doesn't work, the charges become 0! this refresh prevents this error
+			call this.refreshRucksackItemCharges(index)
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
+		endmethod
 
 		private static method triggerActionUse takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local integer itemTypeId = GetItemTypeId(GetManipulatedItem())
 			local integer index
+			local timer whichTimer
 
 			// show next page
 			if (itemTypeId == thistype.m_rightArrowItemType) then
@@ -1786,9 +1885,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					// use == drop
 					/// Drop action is called when last charge is used!!!
 				endif
-				call TriggerSleepAction(0.0) // Event isn't fired otherwise!!!
 				// if an item is used but the character is being stopped since the spell condition doesn't work, the charges become 0! this refresh prevents this error
-				call this.refreshRucksackItemCharges(index)
+				// wait until the item is actually used and the charges change
+				set whichTimer = CreateTimer()
+				call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+				call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+				call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionRefreshCharges)
 			endif
 		endmethod
 

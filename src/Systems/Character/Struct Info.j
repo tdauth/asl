@@ -425,7 +425,9 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				set duration = duration - skipCheckInterval
 			endloop
 		endif
+		debug call Print("Before video check")
 		call waitForVideo(1.0) // do not show any speeches during video
+		debug call Print("After video check")
 		call VolumeGroupResetForPlayer(user)
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
