@@ -679,11 +679,12 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * It returns whether the video is actually being skipped or not.
 		 * You can overwrite this method in your custom derived structure to avoid this default behaviour.
 		 * Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
+		 * \param skippingPlayer The player who skips.
 		 * \param skipablePlayers The number of players controlled by humans.
 		 * \return Returns true if the video actually will be skipped.
 		 * \todo If a player leaves the game who should have skipped the video or all players leave the game who did not skip what happens? Store the number of skips!
 		 */
-		public stub method onSkipCondition takes integer skipablePlayers returns boolean
+		public stub method onSkipCondition takes player skippingPlayer, integer skipablePlayers returns boolean
 			return thistype.m_skippingPlayers >= skipablePlayers / 2 + ModuloInteger(skipablePlayers, 2)
 		endmethod
 
@@ -734,7 +735,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set i = i + 1
 			endloop
 
-			if (this.onSkipCondition.evaluate(skipablePlayers)) then
+			if (this.onSkipCondition.evaluate(whichPlayer, skipablePlayers)) then
 				debug call Print("Skipping video: " + I2S(this))
 				/*
 				 * skip() must be called in any wait action or in the action of the video itself.
