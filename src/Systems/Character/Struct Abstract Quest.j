@@ -613,10 +613,10 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 					endif
 					if (abstractQuest.m_character != 0) then
 						set user = abstractQuest.m_character.player()
-						call PingMinimapExForPlayer(user, x, y, abstractQuest.m_pingDuration, abstractQuest.m_pingRed, abstractQuest.m_pingGreen, abstractQuest.m_pingBlue, true)
+						call PingMinimapExForPlayer(user, x, y, abstractQuest.m_pingDuration, abstractQuest.m_pingRed, abstractQuest.m_pingGreen, abstractQuest.m_pingBlue, false)
 						set user = null
 					else
-						call PingMinimapEx(x, y, abstractQuest.m_pingDuration, PercentTo255(abstractQuest.m_pingRed), PercentTo255(abstractQuest.m_pingGreen), PercentTo255(abstractQuest.m_pingBlue), true)
+						call PingMinimapEx(x, y, abstractQuest.m_pingDuration, PercentTo255(abstractQuest.m_pingRed), PercentTo255(abstractQuest.m_pingGreen), PercentTo255(abstractQuest.m_pingBlue), false)
 					endif
 				endif
 				set i = i - 1
