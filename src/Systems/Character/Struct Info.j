@@ -371,13 +371,14 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	 * \sa ATalkLog
 	 */
 	function speech takes AInfo info, ACharacter character, boolean toCharacter, string text, sound usedSound returns nothing
-		local real duration
+		local real duration = 0.0
 		local player user = character.player()
-		local unit speaker
+		local unit speaker = null
 		local string name
-		local unit listener
-		local player speakerOwner
+		local unit listener = null
+		local player speakerOwner = null
 		local boolean useThirdPerson = info.talk().useThirdPerson(character)
+		local timer whichTimer = null
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
 			set speaker = info.talk().unit()
@@ -402,15 +403,20 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamRot()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(listener, 0.0)
 		endif
-		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration, duration)
-		if (character.talkLog() != 0) then
-			call character.talkLog().addSpeech(info, toCharacter, text, usedSound)
-		endif
+		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
 		if (skipTrigger == null) then
-			call TriggerSleepAction(duration)
+			call PolledWait(duration)
 		else
+			/*
+			 * Using polled wait synchronizes the waits with the game.
+			 * Otherwise there might be delays.
+			 * WaitForSoundBJ() cannot be used since if the sound would be stopped it must be stopped for the player only.
+			 */
 			set playerHasSkipped[GetPlayerId(user)] = false
+			set whichTimer = CreateTimer()
+			call TimerStart(whichTimer, duration, false, null)
 			loop
+				set duration = TimerGetRemaining(whichTimer)
 				exitwhen (duration <= 0.0)
 				if (playerHasSkipped[GetPlayerId(user)]) then
 					set playerHasSkipped[GetPlayerId(user)] = false
@@ -421,16 +427,32 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 					call EndCinematicSceneForPlayer(user)
 					exitwhen (true)
 				endif
-				call TriggerSleepAction(skipCheckInterval)
-				set duration = duration - skipCheckInterval
+				
+				// If we have a bit of time left, skip past 10% of the remaining
+				// duration instead of checking every interval, to minimize the
+				// polling on long waits.
+				if (duration > bj_POLLED_WAIT_SKIP_THRESHOLD) then
+					call TriggerSleepAction(0.1 * duration)
+				else
+					call TriggerSleepAction(bj_POLLED_WAIT_INTERVAL)
+				endif
 			endloop
+			call PauseTimer(whichTimer)
+			call DestroyTimer(whichTimer)
+			set whichTimer = null
 		endif
+		
+		debug call Print("FINISH")
+		
 		debug call Print("Before video check")
 		call waitForVideo(1.0) // do not show any speeches during video
 		debug call Print("After video check")
 		call VolumeGroupResetForPlayer(user)
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
+		endif
+		if (character.talkLog() != 0) then
+			call character.talkLog().addSpeech(info, toCharacter, text, usedSound)
 		endif
 		set user = null
 		set speaker = null
