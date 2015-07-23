@@ -239,6 +239,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static string m_textDropPageItem
 		private static string m_textMovePageItem
 		private static string m_textOwnedByOther
+		private static string m_textPreviousPageIsFull
+		private static string m_textNextPageIsFull
 		// members
 		private AInventoryItemData array m_equipmentItemData[thistype.maxEquipmentTypes]
 		private AInventoryItemData array m_rucksackItemData[thistype.maxRucksackItems]
@@ -1375,142 +1377,145 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		/**
 		 * When two item slots have been swapped this method resets them.
 		 * This can be useful if an item may not be moved in the inventory like page items or equipped items.
+		 * \note Both items must be visible and in the inventory. This method assumes that only the items have been swapped recently and not their index data.
 		 */
-		private method resetItemSlots takes integer currentSlot, integer oldSlot returns nothing
-			local unit characterUnit = this.character().unit()
-			local item currentItem = UnitItemInSlot(characterUnit, currentSlot)
-			local AInventoryItemData currentItemData = 0
-			local integer currentItemIndex
-			local item otherItem = UnitItemInSlot(characterUnit, oldSlot)
-			local AInventoryItemData otherItemData = 0
-			local integer otherItemIndex
-			call DisableTrigger(this.m_dropTrigger)
+		private method resetItemSlots takes integer currentSlot, integer oldSlot returns boolean
+			local item currentItem = UnitItemInSlot(this.character().unit(), currentSlot)
+			local item oldItem = UnitItemInSlot(this.character().unit(), oldSlot)
+			local boolean paused = IsUnitPaused(this.character().unit())
+			local boolean result = true
+			
+			if (paused) then
+				call PauseUnit(this.character().unit(), false)
+			endif
+			
+			debug call this.print("Reset current item " + GetItemName(currentItem) + " with current slot " + I2S(currentSlot) + " and old item " + GetItemName(oldItem) + " with old slot " + I2S(oldSlot))
+			
+			call DisableTrigger(this.m_orderTrigger)
 			if (currentItem != null) then
-				set currentItemData = AInventoryItemData.create(currentItem, this.character().unit())
-				if (currentItemData.itemTypeId() != thistype.m_leftArrowItemType and currentItemData.itemTypeId() != thistype.m_rightArrowItemType) then
-					set currentItemIndex = thistype.itemIndex(currentItem)
+				if (not IssueTargetOrderById(this.character().unit(), A_ORDER_ID_MOVE_SLOT_0 + oldSlot, currentItem)) then
+					debug call this.print("Unknown error on resetting item slots.")
+					set result = false
 				endif
-				call RemoveItem(currentItem)
-				set currentItem = null
-			endif
-			if (otherItem != null) then
-				set otherItemData = AInventoryItemData.create(otherItem, this.character().unit())
-				if (otherItemData.itemTypeId() != thistype.m_leftArrowItemType and otherItemData.itemTypeId() != thistype.m_rightArrowItemType) then
-					set otherItemIndex = thistype.itemIndex(otherItem)
+			elseif (oldItem != null) then
+				if (not IssueTargetOrderById(this.character().unit(), A_ORDER_ID_MOVE_SLOT_0 + currentSlot, oldItem)) then
+					debug call this.print("Unknown error on resetting item slots.")
+					set result = false
 				endif
-				call RemoveItem(otherItem)
-				set otherItem = null
+			else
+				debug call this.print("Error on resetting item slots: Both slots are empty.")
+				set result = false
 			endif
-			call EnableTrigger(this.m_dropTrigger)
-
-			if (currentItemData != 0) then
-				/*
-				 * Create old item into old slot.
-				 */
-				if (this.unitAddItemToSlotById(characterUnit, currentItemData.itemTypeId(), oldSlot)) then
-					set currentItem = UnitItemInSlot(characterUnit, oldSlot)
-					call currentItemData.assignToItem(currentItem)
-					if (currentItemData.itemTypeId() != thistype.m_leftArrowItemType and currentItemData.itemTypeId() != thistype.m_rightArrowItemType) then
-						call thistype.setItemIndex(currentItem, currentItemIndex)
-					endif
-					call currentItemData.destroy()
-					set currentItem = null
-				// TODO remove item?
-				debug else
-					debug call Print("Error on reseting current old item.")
-				endif
+			call EnableTrigger(this.m_orderTrigger)
+			
+			if (paused) then
+				call PauseUnit(this.character().unit(), true)
 			endif
-			if (otherItemData != 0) then
-				/*
-				 * Create old item into old slot.
-				 */
-				if (this.unitAddItemToSlotById(characterUnit, otherItemData.itemTypeId(), currentSlot)) then
-					set otherItem = UnitItemInSlot(characterUnit, currentSlot)
-					call otherItemData.assignToItem(otherItem)
-					if (otherItemData.itemTypeId() != thistype.m_leftArrowItemType and otherItemData.itemTypeId() != thistype.m_rightArrowItemType) then
-						call thistype.setItemIndex(otherItem, otherItemIndex)
-					endif
-					call otherItemData.destroy()
-					set otherItem = null
-				// TODO remove item?
-				debug else
-					debug call Print("Error on reseting other old item.")
-				endif
-			endif
+			
+			set currentItem = null
+			set oldItem = null
+			
+			return result
 		endmethod
 
 		/**
-		 * Moves item \p slotItem to the previous or the next rucksack pages which means it will be moved as long as there is a free slot or a slot to which it can be stacked.
-		 * If no free slot or stackable item is found the item should be moved to its old position again since if it reaches the last slot it starts at the beginning etc.
-		 * \todo Instead of clearing the old slot and moving the whole item only one charge should be moved.
+		 * Moves item \p slotItem with all of its charges to the previous or the next rucksack page which means it will only be moved if the previous or next page has a free slot or a lot where the item can be stacked.
+		 * If no free slot or stackable item is found the item will remain as it is at its current slot.
+		 * \param slotItem The item which will be moved and must be be part of the rucksack.
+		 * \param next If this value is true the item will be moved to the next page. Otherwise it will be moved to the previous page.
+		 * \return Returns true if the item has been moved successfully. Otherwise if the item stays at its current slot it returns false.
 		 */
-		private method moveRucksackItemToPage takes item slotItem, boolean next returns nothing
-			local unit characterUnit = this.character().unit()
+		private method moveRucksackItemToPage takes item slotItem, boolean next returns boolean
 			local integer oldIndex = thistype.itemIndex(slotItem)
-			local integer oldSlot = this.rucksackItemSlot(oldIndex)
-			local integer i
-			local integer exitValue
+			local integer oldPage = this.itemRucksackPage(oldIndex)
+			local integer i = 0
+			local integer exitValue = 0
+			local boolean result = false
 
-			//debug call this.print("Moving item " + GetItemName(slotItem))
-
-			//reset page item (items were swapped) and drop moved item
-			call thistype.clearItemIndex(slotItem)
-			call DisableTrigger(this.m_dropTrigger)
-			call RemoveItem(slotItem)
-			call EnableTrigger(this.m_dropTrigger)
-			set slotItem = null
+			debug call this.print("Moving item " + GetItemName(slotItem))
+			debug call this.print("Old index " + I2S(oldIndex))
+			debug call this.print("Old page " + I2S(oldPage))
 
 			if (next) then
-				call this.resetItemSlots(oldSlot, thistype.nextPageItemSlot)
-				set i = oldIndex + thistype.maxRucksackItemsPerPage - oldSlot
-				set exitValue = thistype.maxRucksackItems
-
-				if (i == thistype.maxRucksackItems) then
+				/*
+				 * If it is the last page start with the first.
+				 */
+				if (oldPage == thistype.maxRucksackPages - 1) then
+					debug call this.print("Is last page")
 					set i = 0
+					set exitValue = thistype.maxRucksackItemsPerPage
+				else
+					set i = (oldPage + 1) * thistype.maxRucksackItemsPerPage
+					set exitValue = i + thistype.maxRucksackItemsPerPage
 				endif
 			else
-				call this.resetItemSlots(oldSlot, thistype.previousPageItemSlot)
-				set i = oldIndex - thistype.maxRucksackItemsPerPage + thistype.maxRucksackItemsPerPage - oldSlot - 1 //test - 1
-				set exitValue = 0
-
-				if (i < 0) then
+				/*
+				 * If it is the first page start with the last.
+				 */
+				if (oldPage == 0) then
+					debug call this.print("Is first page")
 					set i = thistype.maxRucksackItems - 1
+					set exitValue = thistype.maxRucksackItems - thistype.maxRucksackItemsPerPage
+				else
+					set i = oldPage * thistype.maxRucksackItemsPerPage - 1
+					set exitValue = i - thistype.maxRucksackItemsPerPage
 				endif
 			endif
+			
+			debug call this.print("Start value: " + I2S(i) + " and exit value: " + I2S(exitValue))
 
 			loop
-				// reached old index, remove dropped slot item and show it again. show error message.
-				if (i == oldIndex) then
-					//call RemoveItem(slotItem) //do not disable drop triggers, item is dropped
-					call this.showRucksackItem(oldIndex)
-					if (thistype.m_textUnableToMoveRucksackItem != null) then
-						call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToMoveRucksackItem)
-					endif
-					exitwhen (true)
+				exitwhen (result or i == exitValue)
+				
 				// found stack place
-				elseif (this.m_rucksackItemData[i].itemTypeId() == this.m_rucksackItemData[oldIndex].itemTypeId()) then
+				if (this.m_rucksackItemData[i].itemTypeId() == this.m_rucksackItemData[oldIndex].itemTypeId()) then
 					call this.m_rucksackItemData[i].setCharges(this.m_rucksackItemData[i].charges() + this.m_rucksackItemData[oldIndex].charges())
-					call this.clearRucksackItem(oldIndex, false)
-					exitwhen (true)
+					
+					/*
+					 * Delete old inventory item data since it is not used anymore.
+					 */
+					call this.clearRucksackSlot(oldIndex)
+					
+					set result = true
 				// found a free place
 				elseif (this.m_rucksackItemData[i] == 0) then
+					/*
+					 * This assigns the item data to a free slot. Therefore it should not be deleted.
+					 */
 					call this.setRucksackItem(i, this.m_rucksackItemData[oldIndex], this.m_rucksackIsEnabled and this.itemRucksackPage(i) == this.m_rucksackPage)
-					set this.m_rucksackItemData[oldIndex] = 0
-					exitwhen (true)
+					
+					/*
+					 * Clear the old inventory item data entry but do not delete it since it was assigned to the new index.
+					 */
+					 set this.m_rucksackItemData[oldIndex] = 0
+					
+					set result = true
 				endif
+				
 				if (next) then
 					set i = i + 1
-					if (i == exitValue) then
-						set i = 0
-					endif
 				else
 					set i = i - 1
-					if (i == exitValue) then
-						set i = thistype.maxRucksackItems - 1
-					endif
 				endif
 			endloop
-			set characterUnit = null
+			
+			/**
+			 * Since all charges are moved at once the whole item must be cleared if it has been moved successfully to another page.
+			 */
+			if (result) then
+				debug call this.print("Removing item " + GetItemName(slotItem))
+				debug call this.print("Clearing index " + I2S(oldIndex))
+				debug call this.print("After clearing index")
+				call thistype.clearItemIndex(slotItem)
+				call DisableTrigger(this.m_dropTrigger)
+				call RemoveItem(slotItem)
+				debug call this.print("After removing item")
+				call EnableTrigger(this.m_dropTrigger)
+			endif
+			
+			set slotItem = null
+			
+			return result
 		endmethod
 
 		private method swapRucksackItemData takes item firstItem, item secondItem returns nothing
@@ -1614,9 +1619,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local integer oldSlot
 			local integer index = -1
 			local integer charges = 0
+			
+			debug call this.print("Moving item " + GetItemName(usedItem) + " to slot " + I2S(newSlot))
 
 			if (this.rucksackIsEnabled()) then
 				//debug call this.print("Rucksack is enabled.")
+				/*
+				 * If a page item is moved it will be reset immediately.
+				 */
 				if (GetItemTypeId(usedItem) == thistype.m_leftArrowItemType and newSlot != thistype.previousPageItemSlot) then
 					debug call Print("Moving left item to slot " + I2S(newSlot))
 					call this.resetItemSlots(newSlot, thistype.previousPageItemSlot)
@@ -1631,10 +1641,22 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					endif
 				// move item previous - player drops an item on the previous page item
 				elseif (GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and newSlot == thistype.previousPageItemSlot) then
-					call this.moveRucksackItemToPage(usedItem, false)
+					set index = thistype.itemIndex(usedItem)
+					set oldSlot = this.rucksackItemSlot(index)
+					if (this.resetItemSlots(newSlot, oldSlot)) then
+						if (not this.moveRucksackItemToPage(usedItem, false)) then
+							call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textPreviousPageIsFull)
+						endif
+					endif
 				// move item next - player drops an item on the next page item
 				elseif (GetItemTypeId(usedItem) != thistype.m_rightArrowItemType and newSlot == thistype.nextPageItemSlot) then
-					call this.moveRucksackItemToPage(usedItem, true)
+					set index = thistype.itemIndex(usedItem)
+					set oldSlot = this.rucksackItemSlot(index)
+					if (this.resetItemSlots(newSlot, oldSlot)) then
+						if (not this.moveRucksackItemToPage(usedItem, true)) then
+							call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textNextPageIsFull)
+						endif
+					endif
 				// drop with all charges instead of one - moves the item to a free slot in rucksack which is not used by the rucksack
 				elseif (newSlot >= thistype.maxRucksackItemsPerPage) then
 					debug call Print("Drop with all charges.")
@@ -1983,7 +2005,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * \param openRucksackAbilityId This ability is added to the character's unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
 		 * \param allowPickingUpFromOthers If this value is true characters are allowed to pick up items which are owned by other playing users (human controlled).
 		 */
-		public static method init takes integer leftArrowItemType, integer rightArrowItemType, integer openRucksackAbilityId, boolean allowPickingUpFromOthers, string textUnableToEquipItem, string textEquipItem, string textUnableToAddRucksackItem, string textAddItemToRucksack, string textUnableToMoveRucksackItem, string textDropPageItem, string textMovePageItem, string textOwnedByOther returns nothing
+		public static method init takes integer leftArrowItemType, integer rightArrowItemType, integer openRucksackAbilityId, boolean allowPickingUpFromOthers, string textUnableToEquipItem, string textEquipItem, string textUnableToAddRucksackItem, string textAddItemToRucksack, string textUnableToMoveRucksackItem, string textDropPageItem, string textMovePageItem, string textOwnedByOther, string textPreviousPageIsFull, string textNextPageIsFull returns nothing
 			// static construction members
 			set thistype.m_leftArrowItemType = leftArrowItemType
 			set thistype.m_rightArrowItemType = rightArrowItemType
@@ -1997,6 +2019,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set thistype.m_textDropPageItem = textDropPageItem
 			set thistype.m_textMovePageItem = textMovePageItem
 			set thistype.m_textOwnedByOther = textOwnedByOther
+			
+			set thistype.m_textPreviousPageIsFull = textPreviousPageIsFull
+			set thistype.m_textNextPageIsFull = textNextPageIsFull
 		endmethod
 	endstruct
 
