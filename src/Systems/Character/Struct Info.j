@@ -341,14 +341,9 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	endfunction
 	
 	private function SetSpeechVolumeGroupsImmediateForPlayer takes player whichPlayer returns nothing
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_UNITMOVEMENT,  bj_SPEECH_VOLUME_UNITMOVEMENT)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_UNITSOUNDS,    bj_SPEECH_VOLUME_UNITSOUNDS)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_COMBAT,        bj_SPEECH_VOLUME_COMBAT)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_SPELLS,        bj_SPEECH_VOLUME_SPELLS)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_UI,            bj_SPEECH_VOLUME_UI)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_MUSIC,         bj_SPEECH_VOLUME_MUSIC)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_AMBIENTSOUNDS, bj_SPEECH_VOLUME_AMBIENTSOUNDS)
-		call VolumeGroupSetVolume(SOUND_VOLUMEGROUP_FIRE,          bj_SPEECH_VOLUME_FIRE)
+		if (whichPlayer == GetLocalPlayer()) then
+			call SetSpeechVolumeGroupsImmediateBJ()
+		endif
 	endfunction
 	
 	private function VolumeGroupResetForPlayer takes player whichPlayer returns nothing
