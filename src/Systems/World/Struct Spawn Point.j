@@ -278,8 +278,8 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			call ASpawnPointMember(this.m_members[memberIndex]).addItemType(itemPoolIndex, itemTypeId, weight)
 		endmethod
 
-		public method addNewItemType takes integer memberIndex, integer itemTypeId, real weight returns nothing
-			call ASpawnPointMember(this.m_members[memberIndex]).addNewItemType(itemTypeId, weight)
+		public method addNewItemType takes integer memberIndex, integer itemTypeId, real weight returns integer
+			return ASpawnPointMember(this.m_members[memberIndex]).addNewItemType(itemTypeId, weight)
 		endmethod
 
 		public method removeItemType takes integer memberIndex, integer itemPoolIndex, integer itemTypeId returns nothing
