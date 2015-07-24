@@ -463,6 +463,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call DisableTrigger(this.m_dropTrigger)
 			
 			set result = UnitDropItemPoint(whichUnit, whichItem, x, y)
+			debug call this.print("Dropping item " + GetItemName(whichItem))
+			
+			debug if (result and UnitHasItem(whichUnit, whichItem)) then
+			debug call this.print("Unit " + GetUnitName(whichUnit) + " still has item " + GetItemName(whichItem) + " although dropped.")
+			debug endif
+			
 			if (isBeingPaused) then
 				call PauseUnit(whichUnit, true)
 			endif
@@ -1213,13 +1219,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			// sometimes null items will be equipped for example when an item is added which is removed at the same moment
 			if (usedItem == null) then
+				debug call this.print("Error: Used item is null when equipping it.")
 				return false
 			endif
 
 			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
+				debug call this.print("Unit has item: " + GetItemName(usedItem))
 				if (not this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
 					debug call this.print("Error on dropping item " + GetItemName(usedItem))
 				endif
+			debug else
+				debug call this.print("Unit has no item.")
 			endif
 
 			set itemPlayer = GetItemPlayer(usedItem)
@@ -1229,6 +1239,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
 				endif
 				set itemPlayer = null
+				debug call this.print("Owned by another player.")
 				return false
 			endif
 			set itemPlayer = null
@@ -1274,7 +1285,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			// move to rucksack
 			if (not dontMoveToRucksack) then
-				call this.addItemToRucksack.evaluate(usedItem, true, true) //if item type is 0 it will be placed in rucksack, too
+				debug call this.print("Now add item to rucksack")
+				return this.addItemToRucksack.evaluate(usedItem, true, true) //if item type is 0 it will be placed in rucksack, too
 			elseif (thistype.m_textUnableToEquipItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
 			endif
@@ -1305,6 +1317,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			// sometimes null items will be added for example when an item is added which is removed at the same moment
 			if (usedItem == null) then
+				debug call this.print("Error: Used item is null when adding item to rucksack.")
 				return false
 			endif
 			
@@ -1349,7 +1362,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			// equip
 			if (not dontMoveToEquipment) then
-				call this.equipItem(usedItem, true, false, true)
+				return this.equipItem(usedItem, true, false, true)
 			// the rucksack is full and the item should not be equipped, for example when the item was added to the rucksack from the equipment
 			elseif (thistype.m_textUnableToAddRucksackItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToAddRucksackItem)
@@ -1739,13 +1752,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionPickup takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			debug call this.print("------------------- PICKUP -------------------")
 			/*
 			 * Tests have shown the the unit has the item without any trigger sleep.
 			 */
 			debug if (not UnitHasItem(GetTriggerUnit(), GetManipulatedItem())) then
 			debug call this.print("Unit has no item yet on pickup of " + GetItemName(GetManipulatedItem()))
 			debug endif
-			call this.addItem(GetManipulatedItem())
+			if (not this.addItem(GetManipulatedItem())) then
+				debug call this.print("Adding item failed.")
+			endif
 		endmethod
 
 		private method createPickupTrigger takes nothing returns nothing
