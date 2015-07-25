@@ -32,6 +32,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private static real m_rotationAngle
 		private static AClass m_firstClass
 		private static AClass m_lastClass
+		private static real m_maxTime
 		private static string m_strengthIconPath
 		private static string m_agilityIconPath
 		private static string m_intelligenceIconPath
@@ -49,6 +50,8 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private boolean m_showAttributes
 		private AClassSelectionSelectClassAction m_selectClassAction
 		private AClassSelectionCharacterCreationAction m_characterCreationAction
+		private static timer m_selectionTimer
+		private static timerdialog m_selectionTimerDialog
 		// construction members
 		private player m_user
 		// members
@@ -600,6 +603,38 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call this.destroyInfoSheet()
 			call this.removeClassUnit()
 		endmethod
+		
+		private static method timerFunctionAutoSelectClasses takes nothing returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				if (thistype.m_playerClassSelection[i] != 0) then
+					call thistype.m_playerClassSelection[i].selectClass()
+				endif
+				set i = i + 1
+			endloop
+			call PauseTimer(GetExpiredTimer())
+			call DestroyTimer(GetExpiredTimer())
+			set thistype.m_selectionTimer = null
+			call DestroyTimerDialog(thistype.m_selectionTimerDialog)
+			set thistype.m_selectionTimerDialog = null
+		endmethod
+		
+		/**
+		 * Starts a timer which auto selects classes for all players who have not already selected a class.
+		 * This helps to start games with players who are afk. Otherwise the players would have to be kicked out of the game.
+		 */
+		public static method startTimer takes string text, real maxTime returns nothing
+			if (thistype.m_selectionTimer == null) then
+				set thistype.m_selectionTimer = CreateTimer()
+			endif
+			call TimerStart(thistype.m_selectionTimer, maxTime, false, function thistype.timerFunctionAutoSelectClasses)
+			if (thistype.m_selectionTimerDialog == null) then
+				set thistype.m_selectionTimerDialog = CreateTimerDialog(thistype.m_selectionTimer)
+			endif
+			call TimerDialogSetTitle(thistype.m_selectionTimerDialog, text)
+			call TimerDialogDisplay(thistype.m_selectionTimerDialog, true)
+		endmethod
 
 		public static method init takes camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence returns nothing
 			local integer i
@@ -621,6 +656,8 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			set thistype.m_textAgility = textAgility
 			set thistype.m_textIntelligence = textIntelligence
 			//static members
+			set thistype.m_selectionTimer = null
+			set thistype.m_selectionTimerDialog = null
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
