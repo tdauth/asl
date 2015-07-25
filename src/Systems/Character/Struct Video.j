@@ -309,6 +309,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private static sound m_playedSound
 		private static boolean m_skipped
 		private static integer m_skippingPlayers
+		private static boolean array m_playerHasSkipped[12] /// \todo \ref bj_MAX_PLAYERS
 		private static trigger m_skipTrigger
 		private static AActorData m_actor //copy of first character
 		private static AVideoPlayerData array m_playerData[12] /// \todo \ref bj_MAX_PLAYERS
@@ -504,6 +505,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				call this.m_skipAction.evaluate(this) // evaluate since it is called before stop action
 			endif
 		endmethod
+		
+		private static method resetSkippingPlayers takes nothing returns nothing
+			local integer i
+			set thistype.m_skippingPlayers = 0
+			set i = 0
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				set thistype.m_playerHasSkipped[i] = false
+				set i = i + 1
+			endloop
+		endmethod
 
 		/**
 		 * In addition to the usual game properties which are stored and restored by function CinematicModeExBJ the following things will be stored by this method and restored by AVideo.stop:
@@ -523,7 +535,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			debug endif
 			set thistype.m_playedSound = null
 			set thistype.m_skipped = false
-			set thistype.m_skippingPlayers = 0
+			call thistype.resetSkippingPlayers()
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, this.playFilterTime(), "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			call TriggerSleepAction(this.playFilterTime())
 			/// \todo disable experience gain of all characters?
@@ -663,8 +675,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			/*
 			 * Reset the number of skipping players.
 			 */
-			set thistype.m_skippingPlayers = 0
 			set thistype.m_skipped = true
+			call thistype.resetSkippingPlayers()
 			if (firstStop) then
 				call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
 			endif
@@ -712,6 +724,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * Increases the number of skips and calls \ref onSkipCondition() with the number of skipable players (all playing humans).
 		 * If the method returns true the video is being skipped.
 		 * \return Returns true if the video is skipped. Otherwise it returns false.
+		 * \note This method can only be called once during a video for each player. Called a second time it won't have any effect and simply return false.
 		 */
 		public static method playerSkips takes player whichPlayer returns boolean
 			local integer i
@@ -721,7 +734,12 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			if (thistype.m_runningVideo == 0 or thistype.m_skipped) then
 				return false
 			endif
+			
+			if (thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)]) then
+				return false
+			endif
 
+			set thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)] = true
 			set thistype.m_skippingPlayers = thistype.m_skippingPlayers + 1
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, StringArg(thistype.m_textPlayerSkips, GetPlayerName(whichPlayer)))
 
@@ -741,7 +759,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				 * skip() must be called in any wait action or in the action of the video itself.
 				 * If you skip the video immediately here it might run further since it did not recognize itself that it has been skipped.
 				 */
-				set thistype.m_skippingPlayers = 0
+				call thistype.resetSkippingPlayers()
 				set thistype.m_skipped = true
 				
 				/*
@@ -811,6 +829,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				exitwhen (i == bj_MAX_PLAYERS)
 				set thistype.m_playerData[i] = 0
 				set thistype.m_playerCharacterData[i] = 0
+				set thistype.m_playerHasSkipped[i] = false
+	
 				set i = i + 1
 			endloop
 			set thistype.m_timeOfDay = 0.0
