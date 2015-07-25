@@ -447,7 +447,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		/**
 		 * Drops item without firing the drop event for the system and even if the character's unit is paused.
-		 * TODO It seems that the event is fired anyway.
+		 * TODO It seems that the drop event is fired anyway.
+		 * TODO UnitDropItemPoint() does not always succeed but it always returns true.
 		 */
 		private method unitDropItemPoint takes unit whichUnit, item whichItem, real x, real y returns boolean
 			local boolean result
@@ -462,8 +463,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			call DisableTrigger(this.m_dropTrigger)
 			
-			set result = UnitDropItemPoint(whichUnit, whichItem, x, y)
-			debug call this.print("Dropping item " + GetItemName(whichItem))
+			/*
+			 * Tests showed that UnitDropItemPoint() does not always succeed but always returns true.
+			 * It is safer to call UnitRemoveItem() instead.
+			 * Old code: set result = UnitDropItemPoint(whichUnit, whichItem, x, y)
+			*/
+			call UnitRemoveItem(whichUnit, whichItem)
+			set result = true
 			
 			debug if (result and UnitHasItem(whichUnit, whichItem)) then
 			debug call this.print("Unit " + GetUnitName(whichUnit) + " still has item " + GetItemName(whichItem) + " although dropped.")
@@ -1224,7 +1230,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endif
 
 			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
-				debug call this.print("Unit has item: " + GetItemName(usedItem))
 				if (not this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
 					debug call this.print("Error on dropping item " + GetItemName(usedItem))
 				endif
@@ -1239,7 +1244,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
 				endif
 				set itemPlayer = null
-				debug call this.print("Owned by another player.")
+
 				return false
 			endif
 			set itemPlayer = null
@@ -1285,7 +1290,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			// move to rucksack
 			if (not dontMoveToRucksack) then
-				debug call this.print("Now add item to rucksack")
 				return this.addItemToRucksack.evaluate(usedItem, true, true) //if item type is 0 it will be placed in rucksack, too
 			elseif (thistype.m_textUnableToEquipItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
@@ -1752,16 +1756,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionPickup takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			debug call this.print("------------------- PICKUP -------------------")
 			/*
 			 * Tests have shown the the unit has the item without any trigger sleep.
+			 * UnitHasItem() returns always true. There is no need of a 0 timer here.
 			 */
-			debug if (not UnitHasItem(GetTriggerUnit(), GetManipulatedItem())) then
-			debug call this.print("Unit has no item yet on pickup of " + GetItemName(GetManipulatedItem()))
-			debug endif
-			if (not this.addItem(GetManipulatedItem())) then
-				debug call this.print("Adding item failed.")
-			endif
+			call this.addItem(GetManipulatedItem())
 		endmethod
 
 		private method createPickupTrigger takes nothing returns nothing
@@ -1995,6 +1994,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.m_equipmentItemData[i] != 0) then
 					call this.m_equipmentItemData[i].destroy()
+					set this.m_equipmentItemData[i] = 0
 				endif
 				set i = i + 1
 			endloop
@@ -2003,6 +2003,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				exitwhen (i == thistype.maxRucksackItems)
 				if (this.m_rucksackItemData[i] != 0) then
 					call this.m_rucksackItemData[i].destroy()
+					set this.m_rucksackItemData[i] = 0
 				endif
 				set i = i + 1
 			endloop
