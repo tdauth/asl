@@ -17,7 +17,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 	 * \todo Make player rows more dynamic (add struct like ACharactersSchemeRow) that they can be moved and hidden.
 	 */
 	struct ACharactersScheme
-		// static start members
+		// static construction members
 		private static real m_refreshRate
 		private static boolean m_showPlayerName
 		private static boolean m_showUnitName
@@ -26,9 +26,11 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		private static ACharactersSchemeMaxExperience m_experienceFormula
 		private static integer m_hitPointsLength
 		private static integer m_manaLength
+		private static boolean m_showGold
 		private static string m_textTitle
 		private static string m_textLevel
 		private static string m_textLeftGame
+		private static string m_iconGold
 		// static members
 		private static trigger m_refreshTrigger
 		private static multiboard m_multiboard
@@ -37,6 +39,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		private static AMultiboardBar array m_manaBar[12] /// \todo \ref bj_MAX_PLAYERS
 		private static boolean array m_destroyed[12] /// \todo \ref bj_MAX_PLAYERS
 		private static integer m_maxPlayers
+		private static integer m_goldColumn
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ACharactersScheme\"")
 
@@ -84,6 +87,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 						set multiboardItem = MultiboardGetItem(thistype.m_multiboard, i, 0)
 						set columnString = thistype.firstColumnString(ACharacter.playerCharacter(user))
 						call MultiboardSetItemValue(multiboardItem, columnString)
+						// TODO get the maximum length of all column Strings
 						call MultiboardSetItemWidth(multiboardItem, StringLength(columnString) * 0.003)
 						call MultiboardReleaseItem(multiboardItem)
 						set multiboardItem = null
@@ -121,6 +125,16 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 							call thistype.m_manaBar[i].setMaxValue(1)
 							call thistype.m_manaBar[i].refresh()
 						endif
+					endif
+					
+					if (thistype.m_showGold) then
+						set multiboardItem = MultiboardGetItem(thistype.m_multiboard, i, thistype.m_goldColumn)
+						set columnString = I2S(GetPlayerState(user, PLAYER_STATE_RESOURCE_GOLD))
+						call MultiboardSetItemValue(multiboardItem, columnString)
+						// TODO get the maximum length of all column Strings
+						call MultiboardSetItemWidth(multiboardItem, StringLength(columnString) * 0.003)
+						call MultiboardReleaseItem(multiboardItem)
+						set multiboardItem = null
 					endif
 				elseif (not thistype.m_destroyed[i]) then
 					if (thistype.firstColumnExists()) then
@@ -176,6 +190,9 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			if (thistype.firstColumnExists()) then
 				set column = column + 1
 			endif
+			if (thistype.m_showGold) then
+				set column = column + 1
+			endif
 			call MultiboardSetColumnCount(thistype.m_multiboard, column)
 			set i = 0
 			loop
@@ -223,7 +240,28 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 							set column = 0
 						endif
 
-						set thistype.m_manaBar[i] = AMultiboardBar.create(thistype.m_multiboard, column, i, 10, 0.0, true)
+						set thistype.m_manaBar[i] = AMultiboardBar.create(thistype.m_multiboard, column, i, thistype.m_manaLength, 0.0, true)
+					endif
+					
+					if (thistype.m_showGold) then
+						if (thistype.m_hitPointsLength > 0) then
+							set column = thistype.m_hitPointsBar[i].firstFreeField()
+						elseif (thistype.m_experienceLength > 0) then
+							set column = thistype.m_experienceBar[i].firstFreeField()
+						elseif (thistype.m_manaLength > 0) then
+							set column = thistype.m_manaBar[i].firstFreeField()
+						elseif (thistype.firstColumnExists()) then
+							set column = 1
+						else
+							set column = 0
+						endif
+
+						set thistype.m_goldColumn = column
+						set multiboardItem = MultiboardGetItem(thistype.m_multiboard, i, column)
+						call MultiboardSetItemStyle(multiboardItem, true, true)
+						call MultiboardSetItemIcon(multiboardItem, thistype.m_iconGold)
+						call MultiboardReleaseItem(multiboardItem)
+						set multiboardItem = null
 					endif
 
 					set thistype.m_maxPlayers = i + 1
@@ -241,7 +279,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		 * \param refreshRate Should be bigger than 0.0.
 		 * \param experienceFormula Function which returns the maximum experience of a hero.
 		 */
-		public static method init takes real refreshRate, boolean showPlayerName, boolean showUnitName, boolean showLevel, integer experienceLength, ACharactersSchemeMaxExperience experienceFormula, integer hitPointsLength, integer manaLength, string textTitle, string textLevel, string textLeftGame returns nothing
+		public static method init takes real refreshRate, boolean showPlayerName, boolean showUnitName, boolean showLevel, integer experienceLength, ACharactersSchemeMaxExperience experienceFormula, integer hitPointsLength, integer manaLength, boolean showGold, string textTitle, string textLevel, string textLeftGame, string iconGold returns nothing
 			//static start members
 			set thistype.m_refreshRate = refreshRate
 			debug if (refreshRate <= 0) then
@@ -254,9 +292,11 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			set thistype.m_experienceFormula = experienceFormula
 			set thistype.m_hitPointsLength = hitPointsLength
 			set thistype.m_manaLength = manaLength
+			set thistype.m_showGold = showGold
 			set thistype.m_textTitle = textTitle
 			set thistype.m_textLevel = textLevel
 			set thistype.m_textLeftGame = textLeftGame
+			set thistype.m_iconGold = iconGold
 			//static members
 			call thistype.createRefreshTrigger()
 			call thistype.createMultiboard()
