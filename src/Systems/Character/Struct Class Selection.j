@@ -635,6 +635,21 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call TimerDialogSetTitle(thistype.m_selectionTimerDialog, text)
 			call TimerDialogDisplay(thistype.m_selectionTimerDialog, true)
 		endmethod
+		
+		/**
+		 * Ends the limitation timer.
+		 */
+		public static method endTimer takes nothing returns nothing
+			if (thistype.m_selectionTimer != null) then
+				call PauseTimer(thistype.m_selectionTimer)
+				call DestroyTimer(thistype.m_selectionTimer)
+				set thistype.m_selectionTimer = null
+			endif
+			if (thistype.m_selectionTimerDialog != null) then
+				call DestroyTimerDialog(thistype.m_selectionTimerDialog)
+				set thistype.m_selectionTimerDialog = null
+			endif
+		endmethod
 
 		public static method init takes camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence returns nothing
 			local integer i
