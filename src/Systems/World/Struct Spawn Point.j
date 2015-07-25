@@ -376,6 +376,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endloop
 		endmethod
 
+		/**
+		 * \return Returns true if \p whichUnit is a unit of the spawn point.
+		 */
 		public method contains takes unit whichUnit returns boolean
 			return this.m_group.units().contains(whichUnit)
 		endmethod
