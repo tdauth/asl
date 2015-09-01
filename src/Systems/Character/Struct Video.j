@@ -235,9 +235,12 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			if (this.m_selection != 0) then
 				call this.m_selection.restore()
 			endif
+			/*
+			FIXME The player's leaderboard is never null even when it has been hidden and destroyed!
 			if (this.m_leaderboard != null) then
 				call ShowLeaderboardForPlayer(this.m_player, this.m_leaderboard, true)
 			endif
+			*/
 			if (this.m_hadDialog) then
 				call AGui.playerGui(this.m_player).dialog().show()
 			endif
