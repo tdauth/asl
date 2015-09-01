@@ -670,7 +670,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set thistype.m_playedSound = null
 			endif
 			if (firstStop) then
-				call EndCinematicScene()
+				call CancelCineSceneBJ()
 			endif
 			/*
 			 * Reset the number of skipping players.
