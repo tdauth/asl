@@ -673,6 +673,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set thistype.m_playedSound = null
 			endif
 			if (firstStop) then
+				debug call Print("Cancel sound " + I2S(GetHandleId(bj_cineSceneLastSound)))
 				call CancelCineSceneBJ()
 			endif
 			/*
@@ -768,7 +769,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				/*
 				 * These things must be done immediately.
 				 */
-				call EndCinematicScene()
+				call CancelCineSceneBJ()
 				call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, this.skipFilterTime(), "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 				
 				return true
