@@ -38,6 +38,10 @@ library ALibraryCoreInterfaceCinematic
 	function TransmissionFromUnitType takes integer unitType, player owner, string name, string text, sound playedSound returns nothing
 		local playercolor playerColor = GetPlayerColor(owner)
 		local real time
+		/*
+		 * This has to be set for skipping a cinematic sound properly with CancelCineSceneBJ().
+		 */
+		set bj_cineSceneLastSound = playedSound
 		if (playedSound != null) then
 			set time = GetSoundDurationBJ(playedSound)
 			call StartSound(playedSound)
@@ -82,6 +86,10 @@ library ALibraryCoreInterfaceCinematic
 		local player owner = GetOwningPlayer(usedUnit)
 		local playercolor playerColor = GetPlayerColor(owner)
 		local real time
+		/*
+		 * This has to be set for skipping a cinematic sound properly with CancelCineSceneBJ().
+		 */
+		set bj_cineSceneLastSound = playedSound
 		if (playedSound != null) then
 			set time = GetSoundDurationBJ(playedSound)
 		else
