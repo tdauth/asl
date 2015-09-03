@@ -443,6 +443,12 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				set i = i + 1
 			endloop
 		endmethod
+		
+		/**
+		 * This method is called with .evaluate() by \ref ARevival.
+		 */
+		public stub method onRevival takes nothing returns nothing
+		endmethod
 
 		/// Friend relation to \ref ASpell, don't use.
 		public method addSpell takes ASpell spell returns nothing

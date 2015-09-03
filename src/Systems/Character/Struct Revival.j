@@ -115,6 +115,7 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 		private method revive takes nothing returns nothing
 			call ReviveHero(this.character().unit(), this.x(), this.y(), this.showEffect())
 			call SetUnitFacing(this.character().unit(), this.facing())
+			call this.character().onRevival.evaluate()
 		endmethod
 
 		private static method timerFunctionRevival takes nothing returns nothing
