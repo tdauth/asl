@@ -119,24 +119,11 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		 */
 		public stub method onUnequipItem takes unit whichUnit, integer slot returns nothing
 		endmethod
-
-		public method addAllAbilities takes unit who returns nothing
-			local integer i = 0
-			loop
-				exitwhen (i == this.m_abilities.size())
-				call UnitAddAbility(who, this.m_abilities[i])
-				//call UnitMakeAbilityPermanent(who, this.m_permanent[i], this.m_abilities[i]) //stay when unit morphs
-				set i = i + 1
-			endloop
-		endmethod
-
-		public method removeAllAbilities takes unit who returns nothing
-			local integer i = 0
-			loop
-				exitwhen (i == this.m_abilities.size())
-				call UnitRemoveAbility(who, this.m_abilities[i])
-				set i = i + 1
-			endloop
+		
+		/**
+		 * This method is called automatically by .evaluate() whenever the permanent abilities are being added to a unit.
+		 */
+		public stub method onAddPermanentAbilities takes unit who returns nothing
 		endmethod
 
 		/**
@@ -148,13 +135,20 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			loop
 				exitwhen (i == this.m_abilities.size())
 				if (this.m_permanent[i]) then
-					//debug call this.print("Adding permanent ability " + GetObjectName(this.m_abilities[i]) + " to unit " + GetUnitName(who))
+					debug call this.print("Adding permanent ability " + GetObjectName(this.m_abilities[i]) + " to unit " + GetUnitName(who))
 					call UnitAddAbility(who, this.m_abilities[i])
 					// keep on unit transformation
 					call UnitMakeAbilityPermanent(who, true, this.m_abilities[i])
 				endif
 				set i = i + 1
 			endloop
+			call this.onAddPermanentAbilities.evaluate(who)
+		endmethod
+		
+		/**
+		 * This method is called automatically by .evaluate() whenever the permanent abilities are removed from to a unit.
+		 */
+		public stub method onRemovePermanentAbilities takes unit who returns nothing
 		endmethod
 
 		public method removePermanentAbilities takes unit who returns nothing
@@ -162,11 +156,12 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			loop
 				exitwhen (i == this.m_abilities.size())
 				if (this.m_permanent[i]) then
-					//debug call this.print("Removing permanent ability " + GetObjectName(this.m_abilities[i]) + " from unit " + GetUnitName(who))
+					debug call this.print("Removing permanent ability " + GetObjectName(this.m_abilities[i]) + " from unit " + GetUnitName(who))
 					call UnitRemoveAbility(who, this.m_abilities[i])
 				endif
 				set i = i + 1
 			endloop
+			call this.onRemovePermanentAbilities.evaluate(who)
 		endmethod
 
 		public method addUsableAbilities takes unit who returns nothing
