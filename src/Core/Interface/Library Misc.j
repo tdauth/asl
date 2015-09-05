@@ -94,18 +94,19 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		endif
 		return null
 	endfunction
+	
+	function GetColoredPlayerName takes player whichPlayer returns string
+		return "|c00" + PlayerColorToString(GetPlayerColor(whichPlayer)) + GetPlayerName(whichPlayer) + "|r"
+	endfunction
 
 	function GetModifiedPlayerName takes player whichPlayer returns string
-		local playercolor playerColor = GetPlayerColor(whichPlayer)
-		local string modifiedPlayerName = "|c00" + PlayerColorToString(playerColor) + GetPlayerName(whichPlayer) + "|r |c00ffffff[" + I2S(GetPlayerId(whichPlayer) + 1) + "]|r"
-		set playerColor = null
-		return modifiedPlayerName
+		return GetColoredPlayerName(whichPlayer) + " |c00ffffff[" + I2S(GetPlayerId(whichPlayer) + 1) + "]|r"
 	endfunction
 
 	/**
-	* Returns RGB value of player color \p playerColor.
-	* \sa StringToPlayerColor, PlayerColorToString, GetPlayerColorRed, GetPlayerColorGreen, GetPlayerColorBlue
-	*/
+	 * Returns RGB value of player color \p playerColor.
+	 * \sa StringToPlayerColor, PlayerColorToString, GetPlayerColorRed, GetPlayerColorGreen, GetPlayerColorBlue
+	 */
 	function GetPlayerColorValue takes playercolor playerColor returns integer
 		if (playerColor == PLAYER_COLOR_RED) then
 			return 0xFF0000
