@@ -3,6 +3,7 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 	private struct AMultiboardBarItem
 		private string m_valueIcon
 		private string m_emptyIcon
+		private real m_width
 
 		public method setValueIcon takes string valueIcon returns nothing
 			set this.m_valueIcon = valueIcon
@@ -19,11 +20,20 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		public method emptyIcon takes nothing returns string
 			return this.m_emptyIcon
 		endmethod
+		
+		public method setWidth takes real width returns nothing
+			set this.m_width = width
+		endmethod
+		
+		public method width takes nothing returns real
+			return this.m_width
+		endmethod
 
 		public static method create takes nothing returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_valueIcon = ""
 			set this.m_emptyIcon = ""
+			set this.m_width = 0.01
 			return this
 		endmethod
 	endstruct
@@ -111,6 +121,20 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 			debug endif
 			return AMultiboardBarItem(this.m_items[length]).emptyIcon()
 		endmethod
+		
+		public method setWidth takes integer length, real width returns nothing
+			debug if (this.checkLength(length)) then
+				debug return
+			debug endif
+			call AMultiboardBarItem(this.m_items[length]).setWidth(width)
+		endmethod
+
+		public method width takes integer length returns real
+			debug if (this.checkLength(length)) then
+				debug return 0.0
+			debug endif
+			return AMultiboardBarItem(this.m_items[length]).width()
+		endmethod
 
 		/**
 		 * Sets the function which should return the value of the multiboard bar when it is being refreshed.
@@ -194,15 +218,14 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 
 		/**
 		 * Refreshes multiboard bar.
-		 * AMultiboardBar.onRefresh will be called before evaluating the coloured part.
+		 * \ref AMultiboardBar.onRefresh will be called before evaluating the coloured part.
 		 */
 		public method refresh takes nothing returns nothing
 			local integer i
 			local multiboarditem multiboardItem
 			call this.onRefresh()
 			if (this.m_maxValue != 0) then
-				// is rounded, + 0.50
-				set this.m_colouredPart = R2I(this.m_value * I2R(this.length()) / this.m_maxValue + 0.50)
+				set this.m_colouredPart = R2I(this.m_value / this.m_maxValue * I2R(this.length()) + 0.5) // round
 			else
 				set this.m_colouredPart = 0
 			endif
@@ -221,7 +244,8 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 				else
 					call MultiboardSetItemIcon(multiboardItem, AMultiboardBarItem(this.m_items[i]).emptyIcon())
 				endif
-				call MultiboardReleaseItem(multiboardItem) // TEST
+				call MultiboardSetItemWidth(multiboardItem,  AMultiboardBarItem(this.m_items[i]).width()) // set each item to prevent changing the whole multiboard
+				call MultiboardReleaseItem(multiboardItem)
 				set multiboardItem = null
 				set i = i + 1
 			endloop
@@ -253,6 +277,28 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 
 		public method setAllIcons takes string icon, boolean valueIcon returns nothing
 			call this.setIcons(0, this.length() - 1, icon, valueIcon)
+		endmethod
+		
+		public method setWidths takes integer start, integer end, real width returns nothing
+			local integer i
+			debug if ((start >= 0) and (start < this.length())) then
+				debug if ((end > 0) and (end < this.length())) then
+					set i = start
+					loop
+						exitwhen(i == end + 1)
+						call AMultiboardBarItem(this.m_items[i]).setWidth(width)
+						set i = i + 1
+					endloop
+				debug else
+					debug call this.print("The value 'end' has an invalid size: " + I2S(end) + ".")
+				debug endif
+			debug else
+				debug call this.print("The value 'start' has an invalid size: " + I2S(start) + ".")
+			debug endif
+		endmethod
+
+		public method setAllWidths takes real width returns nothing
+			call this.setWidths(0, this.length() - 1, width)
 		endmethod
 
 		/// \return The index of the first field (column or row) which is not used by the bar (alignment is left to right and up to bottom).
@@ -294,7 +340,7 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 					set multiboardItem = MultiboardGetItem(this.m_multiboard, this.m_row + i, this.m_column)
 				endif
 				call MultiboardSetItemStyle(multiboardItem, false, true)
-				call MultiboardSetItemWidth(multiboardItem, 0.01) // set each item to prevent changing the whole multiboard
+				call MultiboardSetItemWidth(multiboardItem, AMultiboardBarItem(this.m_items[i]).width()) // set each item to prevent changing the whole multiboard
 				call MultiboardReleaseItem(multiboardItem)
 				set multiboardItem = null
 				set i = i + 1
