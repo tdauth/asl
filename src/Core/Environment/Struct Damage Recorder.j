@@ -21,6 +21,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		// static members
 		private static trigger m_globalDamageDetectionEnterTrigger
 		private static trigger m_globalDamageDetectionLeaveTrigger
+		private static trigger m_globalDamageDetectionDeathTrigger
 		// dynamic members
 		private ADamageRecorderOnDamageAction m_onDamageAction
 		private boolean m_saveData
@@ -227,6 +228,12 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		private static method triggerActionLeave takes nothing returns nothing
 			call thistype.unregisterGlobalUnit.evaluate(GetTriggerUnit())
 		endmethod
+		
+		private static method triggerActionDeath takes nothing returns nothing
+			if (not IsUnitType(GetTriggerUnit(), UNIT_TYPE_HERO)) then
+				call thistype.unregisterGlobalUnit.evaluate(GetTriggerUnit())
+			endif
+		endmethod
 
 		/**
 		 * \param useGlobalDamageDetection If this value is true there will be a global damage detection system which allows you acessing a damage recorder of every unit in map.
@@ -248,8 +255,10 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 				call TriggerAddAction(thistype.m_globalDamageDetectionEnterTrigger, function thistype.triggerActionEnter)
 				set thistype.m_globalDamageDetectionLeaveTrigger = CreateTrigger()
 				call TriggerRegisterLeaveRectSimple(thistype.m_globalDamageDetectionLeaveTrigger, bj_mapInitialPlayableArea) /// \todo Leak
-				call TriggerRegisterAnyUnitEventBJ(thistype.m_globalDamageDetectionLeaveTrigger, EVENT_PLAYER_UNIT_DEATH)
-				call TriggerAddAction(thistype.m_globalDamageDetectionLeaveTrigger, function thistype.triggerActionLeave)
+				
+				set thistype.m_globalDamageDetectionDeathTrigger = CreateTrigger()
+				call TriggerRegisterAnyUnitEventBJ(thistype.m_globalDamageDetectionDeathTrigger, EVENT_PLAYER_UNIT_DEATH)
+				call TriggerAddAction(thistype.m_globalDamageDetectionDeathTrigger, function thistype.triggerActionDeath)
 			endif
 		endmethod
 
