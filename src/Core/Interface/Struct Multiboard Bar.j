@@ -225,7 +225,7 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 			local multiboarditem multiboardItem
 			call this.onRefresh()
 			if (this.m_maxValue != 0) then
-				set this.m_colouredPart = R2I(this.m_value / this.m_maxValue * I2R(this.length()) + 0.5) // round
+				set this.m_colouredPart = R2I(this.m_value / this.m_maxValue * I2R(this.length()))
 			else
 				set this.m_colouredPart = 0
 			endif
