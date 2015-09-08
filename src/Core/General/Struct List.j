@@ -601,5 +601,6 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 
 	//! runtextmacro A_LIST("", "APlayerList", "player", "null", "150000", "150000", "150000")
 	//! runtextmacro A_LIST("", "ARegionList", "region", "null", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "AUnitList", "unit", "null", "150000", "150000", "150000")
 
 endlibrary
