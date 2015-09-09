@@ -1699,7 +1699,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						/*
 						 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 						 */
-						call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), false)
+						call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), true)
 					debug else
 						debug call this.print("Unknown error on dropping item.")
 					endif
@@ -1840,7 +1840,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						/*
 						* When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 						*/
-						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), false)
+						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), true)
 						
 						/*
 						 * Wait 0 seconds until the item is actually dropped and show the old item with minus one charge.
@@ -1861,7 +1861,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						/*
 						* When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
 						*/
-						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), false)
+						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), true)
 					endif
 				debug else
 					debug call this.print("Item has no index. Doing nothing.")
