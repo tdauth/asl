@@ -291,5 +291,9 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		//call StartSound( error ) //apparently the bug in which you play a sound for the first time
         //and it doesn't work is not there anymore in patch 1.22
 	endfunction
+	
+	function QuestMessageForPlayer takes player whichPlayer, integer messageType, string message returns nothing
+		call QuestMessageBJ(bj_FORCE_PLAYER[GetPlayerId(whichPlayer)], messageType, message)
+	endfunction
 
 endlibrary
