@@ -261,7 +261,8 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 					else
 						set column = 0
 					endif
-					set thistype.m_experienceBar[row] = AMultiboardBar.create(thistype.m_multiboard, column, row, thistype.m_experienceLength, 0.0, true)
+					// renew OpLimit with .evaluate() since the method call is quite long.
+					set thistype.m_experienceBar[row] = AMultiboardBar.create.evaluate(thistype.m_multiboard, column, row, thistype.m_experienceLength, 0.0, true)
 				endif
 
 				if (thistype.m_hitPointsLength > 0) then
@@ -272,8 +273,8 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 					else
 						set column = 0
 					endif
-
-					set thistype.m_hitPointsBar[row] = AMultiboardBar.create(thistype.m_multiboard, column, row, thistype.m_hitPointsLength, 0.0, true)
+					// renew OpLimit with .evaluate() since the method call is quite long.
+					set thistype.m_hitPointsBar[row] = AMultiboardBar.create.evaluate(thistype.m_multiboard, column, row, thistype.m_hitPointsLength, 0.0, true)
 				endif
 
 				if (thistype.m_manaLength > 0) then
@@ -286,8 +287,8 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 					else
 						set column = 0
 					endif
-
-					set thistype.m_manaBar[row] = AMultiboardBar.create(thistype.m_multiboard, column, row, thistype.m_manaLength, 0.0, true)
+					// renew OpLimit with .evaluate() since the method call is quite long.
+					set thistype.m_manaBar[row] = AMultiboardBar.create.evaluate(thistype.m_multiboard, column, row, thistype.m_manaLength, 0.0, true)
 				endif
 				
 				if (thistype.m_showGold) then
