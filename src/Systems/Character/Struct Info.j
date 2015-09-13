@@ -1,4 +1,4 @@
-library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk, AStructSystemsCharacterVideo
+library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, ALibraryCoreInterfaceTextTag, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk, AStructSystemsCharacterVideo
 
 	/**
 	 * The interface for functions whiche are used as conditions for infos.
@@ -398,7 +398,9 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamRot()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(listener, 0.0)
 		endif
+
 		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
+		
 		if (skipTrigger == null) then
 			call PolledWait(duration)
 		else
@@ -437,11 +439,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set whichTimer = null
 		endif
 		
-		debug call Print("FINISH")
-		
-		debug call Print("Before video check")
 		call waitForVideo(1.0) // do not show any speeches during video
-		debug call Print("After video check")
+
 		call VolumeGroupResetForPlayer(user)
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
