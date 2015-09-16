@@ -61,8 +61,11 @@ library ALibraryCoreInterfaceCinematic
 	 * \sa TransmissionFromUnitType()
 	 * \sa TransmissionFromUnit()
 	 */
-	function TransmissionFromUnitWithName takes unit usedUnit, string unitName, string text, sound playedSound returns nothing
-		call TransmissionFromUnitType(GetUnitTypeId(usedUnit), GetOwningPlayer(usedUnit), unitName, text, playedSound)
+	function TransmissionFromUnitWithName takes unit whichUnit, string unitName, string text, sound playedSound returns nothing
+		call TransmissionFromUnitType(GetUnitTypeId(whichUnit), GetOwningPlayer(whichUnit), unitName, text, playedSound)
+		if (not IsUnitHidden(whichUnit)) then
+			call UnitAddIndicator(whichUnit, bj_TRANSMISSION_IND_RED, bj_TRANSMISSION_IND_BLUE, bj_TRANSMISSION_IND_GREEN, bj_TRANSMISSION_IND_ALPHA)
+		endif
 	endfunction
 
 	/**
@@ -81,9 +84,9 @@ library ALibraryCoreInterfaceCinematic
 	 * \param playedSound If this value is null sound duration will be \ref bj_NOTHING_SOUND_DURATION.
 	 * \author Tamino Dauth
 	 */
-	function TransmissionFromUnitForPlayer takes player usedPlayer, unit usedUnit, string text, sound playedSound returns nothing
+	function TransmissionFromUnitForPlayer takes player usedPlayer, unit whichUnit, string text, sound playedSound returns nothing
 		local player localPlayer = GetLocalPlayer()
-		local player owner = GetOwningPlayer(usedUnit)
+		local player owner = GetOwningPlayer(whichUnit)
 		local playercolor playerColor = GetPlayerColor(owner)
 		local real time
 		/*
@@ -99,7 +102,10 @@ library ALibraryCoreInterfaceCinematic
 			if (playedSound != null) then
 				call StartSound(playedSound)
 			endif
-			call SetCinematicScene(GetUnitTypeId(usedUnit), playerColor, GetUnitName(usedUnit), text, time, time)
+			call SetCinematicScene(GetUnitTypeId(whichUnit), playerColor, GetUnitName(whichUnit), text, time, time)
+			if (not IsUnitHidden(whichUnit)) then
+				call UnitAddIndicator(whichUnit, bj_TRANSMISSION_IND_RED, bj_TRANSMISSION_IND_BLUE, bj_TRANSMISSION_IND_GREEN, bj_TRANSMISSION_IND_ALPHA)
+			endif
 		endif
 		set localPlayer = null
 		set owner = null
@@ -109,9 +115,9 @@ library ALibraryCoreInterfaceCinematic
 	/**
 	 * \sa GetTransmissionDuration()
 	 */
-	function GetSimpleTransmissionDuration takes sound playedSound returns real
-		if (playedSound != null) then
-			return GetSoundDurationBJ(playedSound)
+	function GetSimpleTransmissionDuration takes sound whichSound returns real
+		if (whichSound != null) then
+			return GetSoundDurationBJ(whichSound)
 		endif
 		return bj_NOTHING_SOUND_DURATION
 	endfunction
@@ -121,12 +127,10 @@ library ALibraryCoreInterfaceCinematic
 	 * \sa ClearTextMessagesBJ()
 	 * \sa ClearTextMessages()
 	 */
-	function ClearScreenMessagesForPlayer takes player user returns nothing
-		local player localPlayer = GetLocalPlayer()
-		if (user == localPlayer) then
+	function ClearScreenMessagesForPlayer takes player whichPlayer returns nothing
+		if (whichPlayer == GetLocalPlayer()) then
 			call ClearTextMessages()
 		endif
-		set localPlayer = null
 	endfunction
 
 	/**
@@ -162,13 +166,11 @@ library ALibraryCoreInterfaceCinematic
 	 * \sa ShowInterface()
 	 * \sa EnableUserControl()
 	*/
-	function SetUserInterfaceForPlayer takes player user, boolean show, boolean enableControl returns nothing
-		local player localPlayer = GetLocalPlayer()
-		if (user == localPlayer) then
-			call ShowInterface(show, 1.0) // never use 0.0!
+	function SetUserInterfaceForPlayer takes player whichPlayer, boolean show, boolean enableControl returns nothing
+		if (whichPlayer == GetLocalPlayer()) then
+			call ShowInterface(show, 1.0) // never use 0.0! Otherwise the unit portraits won't work anymore.
 			call EnableUserControl(enableControl)
 		endif
-		set localPlayer = null
 	endfunction
 
 endlibrary
