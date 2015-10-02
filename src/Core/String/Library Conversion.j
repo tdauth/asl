@@ -1,4 +1,4 @@
-library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryCoreStringMisc
+library ALibraryCoreStringConversion initializer Init requires AStructCoreStringFormat, ALibraryCoreStringMisc
 
 	/**
 	 * Converts an ASCII value \p i to its corresponding character.
@@ -166,6 +166,21 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	function sc takes string source returns integer
 		return GetLocalizedHotkey(source)
 	endfunction
+	
+	globals
+		private string Language = "English"
+	endglobals
+	
+	private function Init takes nothing returns nothing
+		local unit Dummy = CreateUnit(Player(15),'hfoo', 0, 0, 0)
+		local string Name = GetUnitName(Dummy)
+		set Dummy = null
+		if (Name == "Soldat") then
+			set Language = "German"
+		endif
+		call TriggerSleepAction(0.0)
+		call RemoveUnit(Dummy)
+	endfunction
 
 	/**
 	 * This is a list of supported languages:
@@ -176,14 +191,7 @@ library ALibraryCoreStringConversion requires AStructCoreStringFormat, ALibraryC
 	 * \return Returns the local language of the current player.
 	 */
 	function GetLanguage takes nothing returns string
-		local unit Dummy = CreateUnit(Player(15),'hfoo', 0, 0, 0)
-		local string Name = GetUnitName(Dummy)
-		call RemoveUnit(Dummy)
-		set Dummy = null
-		if (Name == "Soldat") then
-			return "German"
-		endif
-		return "English"
+		return Language
 	endfunction
 
 	/**

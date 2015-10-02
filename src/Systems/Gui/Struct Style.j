@@ -25,17 +25,33 @@ library AStructSystemsGuiStyle requires ALibraryCoreDebugMisc
 		private string m_arrowRightImageFilePath
 
 		//! runtextmacro A_STRUCT_DEBUG("\"AStyle\"")
+		
+		public method setFrameTopImageFilePath takes string frameTopImageFilePath returns nothing
+			set this.m_frameTopImageFilePath = frameTopImageFilePath
+		endmethod
 
 		public method frameTopImageFilePath takes nothing returns string
 			return this.m_frameTopImageFilePath
+		endmethod
+		
+		public method setFrameBottomImageFilePath takes string frameBottomImageFilePath returns nothing
+			set this.m_frameBottomImageFilePath = frameBottomImageFilePath
 		endmethod
 
 		public method frameBottomImageFilePath takes nothing returns string
 			return this.m_frameBottomImageFilePath
 		endmethod
+		
+		public method setFrameLeftImageFilePath takes string frameLeftImageFilePath returns nothing
+			set this.m_frameLeftImageFilePath = frameLeftImageFilePath
+		endmethod
 
 		public method frameLeftImageFilePath takes nothing returns string
 			return this.m_frameLeftImageFilePath
+		endmethod
+		
+		public method setFrameRightImageFilePath takes string frameRightImageFilePath returns nothing
+			set this.m_frameRightImageFilePath = frameRightImageFilePath
 		endmethod
 
 		public method frameRightImageFilePath takes nothing returns string
@@ -58,7 +74,7 @@ library AStructSystemsGuiStyle requires ALibraryCoreDebugMisc
 			return this.m_arrowRightImageFilePath
 		endmethod
 
-		private static method create takes nothing returns thistype
+		public static method create takes nothing returns thistype
 			return 0
 		endmethod
 
