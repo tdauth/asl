@@ -65,6 +65,42 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		endmethod
 
 		// methods
+		
+		public method latestPingX takes nothing returns real
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_questItems.size())
+				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew) then
+					return AQuestItem(this.m_questItems[i]).pingX()
+				endif
+				set i = i + 1
+			endloop
+			return 0.0
+		endmethod
+		
+		public method latestPingY takes nothing returns real
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_questItems.size())
+				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew) then
+					return AQuestItem(this.m_questItems[i]).pingY()
+				endif
+				set i = i + 1
+			endloop
+			return 0.0
+		endmethod
+		
+		public method latestPingWidget takes nothing returns widget
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_questItems.size())
+				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew) then
+					return AQuestItem(this.m_questItems[i]).pingWidget()
+				endif
+				set i = i + 1
+			endloop
+			return null
+		endmethod
 
 		private method displayStateMessage takes string soundPath returns nothing
 			local integer i
