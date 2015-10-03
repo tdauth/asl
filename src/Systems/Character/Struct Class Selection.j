@@ -44,6 +44,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private static thistype array m_playerClassSelection[12] /// \todo \ref bj_MAX_PLAYERS, JassHelper bug
 		private static integer m_stack //required for the start game action
 		// dynamic members
+		private real m_infoSheetWidth
 		private real m_startX
 		private real m_startY
 		private real m_startFacing
@@ -74,6 +75,17 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 		
 		// dynamic members
+		
+		public method setInfoSheetWidth takes real width returns nothing
+			set this.m_infoSheetWidth = width
+			if (this.m_infoSheet != null) then
+				call MultiboardSetItemsWidth(this.m_infoSheet, this.m_infoSheetWidth)
+			endif
+		endmethod
+		
+		public method infoSheetWidth takes nothing returns real
+			return this.m_infoSheetWidth
+		endmethod
 		
 		/**
 		 * Sets the X coordinate of the start position for the created character.
@@ -279,7 +291,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			local string strengthText
 			local string agilityText
 			local string intelligenceText
-			local AStringVector strings = AStringVector.create()
 			local integer index = 0
 
 			if (this.showAttributes()) then
@@ -287,25 +298,14 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				set strengthText = RWArg(thistype.m_textStrength, this.class().strPerLevel(), 0, 2)
 				set agilityText = RWArg(thistype.m_textAgility, this.class().agiPerLevel(), 0, 2)
 				set intelligenceText = RWArg(thistype.m_textIntelligence, this.class().intPerLevel(), 0, 2)
-				call strings.pushBack(strengthText)
-				call strings.pushBack(agilityText)
-				call strings.pushBack(intelligenceText)
 			endif
-
-			set i = 0
-			loop
-				exitwhen(i == this.m_class.descriptionLines())
-				call strings.pushBack(this.m_class.descriptionLine(i))
-				set i = i + 1
-			endloop
 
 			//call MultiboardClear(this.m_infoSheet) // clears not everything?!
 			call DestroyMultiboard(this.m_infoSheet)
 			set this.m_infoSheet = null
 			set this.m_infoSheet = CreateMultiboard()
-			call MultiboardSetItemsWidth(this.m_infoSheet, this.mostLineCharacters(strings) * 0.005)
+			call MultiboardSetItemsWidth(this.m_infoSheet, this.m_infoSheetWidth)
 			call MultiboardSetColumnCount(this.m_infoSheet, 1)
-			call strings.destroy()
 
 			if (this.m_class.descriptionLines() > 0) then
 				set count = count + this.m_class.descriptionLines()
@@ -531,6 +531,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public static method create takes player user returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
+			set this.m_infoSheetWidth = 0.35
 			set this.m_startFacing = 0.0
 			set this.m_startX = 0.0
 			set this.m_startY = 0.0
