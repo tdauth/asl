@@ -174,12 +174,12 @@ library ALibraryCoreStringConversion initializer Init requires AStructCoreString
 	private function Init takes nothing returns nothing
 		local unit Dummy = CreateUnit(Player(15),'hfoo', 0, 0, 0)
 		local string Name = GetUnitName(Dummy)
-		set Dummy = null
 		if (Name == "Soldat") then
 			set Language = "German"
 		endif
 		call TriggerSleepAction(0.0)
 		call RemoveUnit(Dummy)
+		set Dummy = null
 	endfunction
 
 	/**
