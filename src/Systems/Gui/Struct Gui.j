@@ -412,11 +412,7 @@ library AStructSystemsGuiGui requires optional ALibraryCoreDebugMisc, AStructCor
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
-				if (IsPlayerPlayingUser(Player(i))) then
-					set thistype.m_playerGui[i] = thistype.create(Player(i))
-				else
-					set thistype.m_playerGui[i] = 0
-				endif
+				set thistype.m_playerGui[i] = thistype.create(Player(i))
 				set i = i + 1
 			endloop
 		endmethod
