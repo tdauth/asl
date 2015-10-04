@@ -1675,7 +1675,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						endif
 					endif
 				// drop with all charges instead of one - moves the item to a free slot in rucksack which is not used by the rucksack
-				elseif (newSlot >= thistype.maxRucksackItemsPerPage) then
+				elseif (newSlot >= thistype.maxRucksackItemsPerPage and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
 					debug call Print("Drop with all charges.")
 					set index = thistype.itemIndex(usedItem)
 					debug call Print("Rucksack item index: " + I2S(index))
