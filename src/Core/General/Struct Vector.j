@@ -971,4 +971,5 @@ endif
 	//! runtextmacro A_VECTOR("", "AItemPoolVector", "itempool", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ATextTagVector", "texttag", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ALocationVector", "location", "null", "100", "150000", "8192")
+	//! runtextmacro A_VECTOR("", "AFogModifierVector", "fogmodifier", "null", "100", "150000", "8192")
 endlibrary
