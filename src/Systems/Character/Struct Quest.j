@@ -66,15 +66,31 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 
 		// methods
 		
+		/// \todo Should be protected
+		public stub method distributeRewards takes nothing returns nothing
+			call super.distributeRewards()
+		endmethod
+		
 		public method latestPingX takes nothing returns real
 			local integer i = 0
 			loop
 				exitwhen (i == this.m_questItems.size())
-				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew) then
-					return AQuestItem(this.m_questItems[i]).pingX()
+				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew and AQuestItem(this.m_questItems[i]).ping()) then
+					if (AQuestItem(this.m_questItems[i]).pingWidget() != null) then
+						return GetWidgetX(AQuestItem(this.m_questItems[i]).pingWidget())
+					else
+						return AQuestItem(this.m_questItems[i]).pingX()
+					endif
 				endif
 				set i = i + 1
 			endloop
+			if (this.state() == thistype.stateNew and this.ping()) then
+				if (this.pingWidget() != null) then
+					return GetWidgetX(this.pingWidget())
+				else
+					return this.pingX()
+				endif
+			endif
 			return 0.0
 		endmethod
 		
@@ -82,24 +98,23 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			local integer i = 0
 			loop
 				exitwhen (i == this.m_questItems.size())
-				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew) then
-					return AQuestItem(this.m_questItems[i]).pingY()
+				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew and AQuestItem(this.m_questItems[i]).ping()) then
+					if (AQuestItem(this.m_questItems[i]).pingWidget() != null) then
+						return GetWidgetY(AQuestItem(this.m_questItems[i]).pingWidget())
+					else
+						return AQuestItem(this.m_questItems[i]).pingY()
+					endif
 				endif
 				set i = i + 1
 			endloop
+			if (this.state() == thistype.stateNew and this.ping()) then
+				if (this.pingWidget() != null) then
+					return GetWidgetY(this.pingWidget())
+				else
+					return this.pingY()
+				endif
+			endif
 			return 0.0
-		endmethod
-		
-		public method latestPingWidget takes nothing returns widget
-			local integer i = 0
-			loop
-				exitwhen (i == this.m_questItems.size())
-				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew) then
-					return AQuestItem(this.m_questItems[i]).pingWidget()
-				endif
-				set i = i + 1
-			endloop
-			return null
 		endmethod
 
 		private method displayStateMessage takes string soundPath returns nothing
