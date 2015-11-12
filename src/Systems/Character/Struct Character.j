@@ -527,30 +527,22 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		endmethod
 
 		private method createLeaveTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_leaveTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterPlayerEvent(this.m_leaveTrigger, this.m_player, EVENT_PLAYER_LEAVE)
+			call TriggerRegisterPlayerEvent(this.m_leaveTrigger, this.m_player, EVENT_PLAYER_LEAVE)
 			if (thistype.m_destroyOnPlayerLeaves) then
-				set triggerAction = TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionDestroyCharacter)
+				call TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionDestroyCharacter)
 			elseif (thistype.m_shareOnPlayerLeaves) then
-				set triggerAction = TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionShareControl)
+				call TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionShareControl)
 			endif
 			call AHashTable.global().setHandleInteger(this.m_leaveTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		/// DON'T MAKE HIM UNMOVABLE, disables all systems!
 		private method createDeathTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_deathTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_deathTrigger, this.m_unit, EVENT_UNIT_DEATH)
-			set triggerAction = TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDestroyCharacter)
+			call TriggerRegisterUnitEvent(this.m_deathTrigger, this.m_unit, EVENT_UNIT_DEATH)
+			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDestroyCharacter)
 			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		private method createSystems takes nothing returns nothing

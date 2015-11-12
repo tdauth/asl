@@ -5,14 +5,13 @@ library AStructSystemsCharacterClass requires AStructCoreGeneralVector
 	 * To provide more attributes per class it could easily be extended by a custom struct which then may be passed to AClassSelection.
 	 */
 	struct AClass
-		// static construction members
-		private static integer m_startLevel
-		private static integer m_startSkillPoints
 		// dynamic members
 		private AStringVector m_descriptionLines // for character class selection
 		private real m_strPerLevel
 		private real m_agiPerLevel
 		private real m_intPerLevel
+		private integer m_startLevel
+		private integer m_startSkillPoints
 		// construction members
 		private integer m_unitType
 		private string m_animation
@@ -84,14 +83,14 @@ library AStructSystemsCharacterClass requires AStructCoreGeneralVector
 		public stub method generateUnit takes player whichPlayer, real x, real y, real facing returns unit
 			local unit whichUnit = CreateUnit(whichPlayer, this.m_unitType, x, y, facing)
 			if (IsUnitType(whichUnit, UNIT_TYPE_HERO)) then
-				call SetHeroLevelBJ(whichUnit, thistype.m_startLevel, false)
-				call UnitModifySkillPoints(whichUnit, (thistype.m_startSkillPoints - GetHeroSkillPoints(whichUnit))) // sets the skill points
+				call SetHeroLevelBJ(whichUnit, this.m_startLevel, false)
+				call UnitModifySkillPoints(whichUnit, (this.m_startSkillPoints - GetHeroSkillPoints(whichUnit))) // sets the skill points
 			endif
 			return whichUnit
 		endmethod
 
 		/// \param unitType Should be the type of a hero
-		public static method create takes integer unitType, string animation, string soundPath returns thistype
+		public static method create takes integer unitType, string animation, string soundPath, integer startLevel, integer startSkillPoints returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
 			set this.m_descriptionLines = AStringVector.create()
@@ -102,6 +101,8 @@ library AStructSystemsCharacterClass requires AStructCoreGeneralVector
 			set this.m_unitType = unitType
 			set this.m_animation = animation
 			set this.m_soundPath = soundPath
+			set this.m_startLevel = startLevel
+			set this.m_startSkillPoints = startSkillPoints
 
 			return this
 		endmethod
@@ -109,12 +110,6 @@ library AStructSystemsCharacterClass requires AStructCoreGeneralVector
 		public method onDestroy takes nothing returns nothing
 			// dynamic members
 			call this.m_descriptionLines.destroy()
-		endmethod
-
-		public static method init takes integer startLevel, integer startSkillPoints returns nothing
-			// static construction members
-			set thistype.m_startLevel = startLevel
-			set thistype.m_startSkillPoints = startSkillPoints
 		endmethod
 	endstruct
 
