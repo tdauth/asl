@@ -31,10 +31,13 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		// static constant members
 		public static constant integer defaultOrderId = OrderId("smart")
 		public static constant real defaultMaxOrderDistance = 250.0
-		public static constant string defaultOrderErrorMessage = A_TEXT_TARGET_TALKS_ALREADY /// German: "Ziel unterhält sich bereits".
 		public static constant string defaultEffectPath = "Abilities\\Spells\\Other\\TalkToMe\\TalkToMe.mdl"
 		public static constant boolean defaultDisableEffectInCinematicMode = true
 		public static constant boolean defaultHideUserInterface = false
+		// static construction members
+		private static string m_textExit
+		private static string m_textBack
+		private static string m_textTargetTalksAlready
 		// static members
 		private static AIntegerList m_cinematicTalks = 0 /// \note allocated on request, not in \ref thistype.init() anymore!
 		// dynamic members
@@ -117,7 +120,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * This message is send to a character's owner when he would enable a talk through order-based activation but fails because the talk is already in use by another player's character.
 		 * It's send using \ref ACharacter.messageTypeError.
 		 * \param message If this value is null there won't be any message.
-		 * \sa defaultOrderErrorMessage
 		 * \sa orderErrorMessage()
 		 * \sa hasOrderErrorMessage()
 		 */
@@ -126,7 +128,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		endmethod
 
 		/**
-		 * \sa defaultOrderErrorMessage
 		 * \sa setOrderErrorMessage()
 		 * \sa hasOrderErrorMessage()
 		 */
@@ -135,7 +136,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		endmethod
 
 		/**
-		 * \sa defaultOrderErrorMessage
 		 * \sa setOrderErrorMessage()
 		 * \sa orderErrorMessage()
 		 */
@@ -356,7 +356,7 @@ endif
 
 		/// \todo Use translated string from Warcraft III.
 		public method addBackButton takes AInfoAction action returns AInfo
-			return AInfo.create.evaluate(this, true, false, 0, action, A_TEXT_BACK)
+			return AInfo.create.evaluate(this, true, false, 0, action, thistype.m_textBack)
 		endmethod
 
 		private static method infoActionBackToStartPage takes AInfo info, ACharacter character returns nothing
@@ -365,7 +365,7 @@ endif
 
 		/// \todo Use translated string from Warcraft III.
 		public method addBackToStartPageButton takes nothing returns AInfo
-			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionBackToStartPage, A_TEXT_BACK)
+			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionBackToStartPage, thistype.m_textBack)
 		endmethod
 		
 		/**
@@ -520,7 +520,7 @@ endif
 		 * \todo Use translated string from Warcraft III.
 		 */
 		public method addExitButton takes nothing returns AInfo
-			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionExit, A_TEXT_EXIT)
+			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionExit, thistype.m_textExit)
 		endmethod
 
 		/**
@@ -658,7 +658,7 @@ endif
 		 * <ul>
 		 * <li>\ref defaultOrderId </li>
 		 * <li>\ref defaultMaxOrderDistance </li>
-		 * <li>\ref defaultOrderErrorMessage </li>
+		 * <li>\ref m_textTargetTalksAlready </li>
 		 * <li>\ref defaultEffectPath </li>
 		 * <li>\ref defaultDisableEffectInCinematicMode </li>
 		 * <li>\ref defaultHideUserInterface </li>
@@ -671,7 +671,7 @@ endif
 			// dynamic members
 			set this.m_orderId = thistype.defaultOrderId
 			set this.m_maxOrderDistance = thistype.defaultMaxOrderDistance
-			set this.m_orderErrorMessage = thistype.defaultOrderErrorMessage
+			set this.m_orderErrorMessage = thistype.m_textTargetTalksAlready
 			set this.m_effectPath = thistype.defaultEffectPath
 			set this.m_disableEffectInCinematicMode = thistype.defaultDisableEffectInCinematicMode
 			set this.m_hideUserInterface = thistype.defaultHideUserInterface
@@ -780,6 +780,12 @@ endif
 				call iterator.next()
 			endloop
 			call iterator.destroy()
+		endmethod
+		
+		public static method init takes string textExit, string textBack, string textTargetTalksAlready returns nothing
+			set thistype.m_textExit = textExit
+			set thistype.m_textBack = textBack
+			set thistype.m_textTargetTalksAlready = textTargetTalksAlready
 		endmethod
 	endstruct
 
