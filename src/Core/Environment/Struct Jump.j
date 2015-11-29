@@ -1,4 +1,4 @@
-library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, ALibraryCoreMathsReal, ALibraryCoreMathsPoint, ALibraryCoreMathsUnit
+library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStructCoreGeneralList, ALibraryCoreMathsReal, ALibraryCoreMathsPoint, ALibraryCoreMathsUnit
 
 	/// \todo Should be a part of \ref AJump, vJass bug.
 	function interface AJumpAlightAction takes unit usedUnit returns nothing
@@ -12,7 +12,7 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 		private static string m_jumpAnimation
 		// static members
 		private static timer m_timer
-		private static AIntegerVector m_jumps
+		private static AIntegerList m_jumps
 		// dynamic members
 		private real m_speed
 		// construction members
@@ -22,7 +22,6 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 		private real m_targetY
 		private AJumpAlightAction m_alightAction
 		// members
-		private integer m_index
 		private real m_startX
 		private real m_startY
 		private real m_distance
@@ -55,17 +54,15 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 
 		public static method create takes unit usedUnit, real maxHeight, real targetX, real targetY, AJumpAlightAction alightAction returns thistype
 			local thistype this = thistype.allocate()
-			//dynamic members
+			// dynamic members
 			call this.setSpeed(100.0)
-			//start members
+			// construction members
 			set this.m_unit = usedUnit
 			set this.m_maxHeight = maxHeight
 			set this.m_targetX = targetX
 			set this.m_targetY = targetY
 			set this.m_alightAction = alightAction
-			//members
-			call thistype.m_jumps.pushBack(this)
-			set this.m_index = thistype.m_jumps.backIndex()
+			// members
 			set this.m_startX = GetUnitX(usedUnit)
 			set this.m_startY = GetUnitY(usedUnit)
 			set this.m_distance = GetDistanceBetweenPoints(this.m_startX, this.m_startY, 0.0, targetX, targetY, 0)
@@ -77,12 +74,14 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			if (thistype.m_jumpAnimation != null) then
 				call SetUnitAnimation(usedUnit, thistype.m_jumpAnimation)
 			endif
+			
+			call thistype.m_jumps.pushBack(this)
 
 			return this
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
-			call thistype.m_jumps.erase(this.m_index)
+			call thistype.m_jumps.remove(this)
 			if (not IsUnitDeadBJ(this.m_unit) and this.m_unit != null) then //could be removed by user function
 				call PauseUnit(this.m_unit, false)
 
@@ -90,40 +89,38 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 					call ResetUnitAnimation(this.m_unit)
 				endif
 			endif
-			//start members
+			// construction members
 			set this.m_unit = null
 		endmethod
 
 		/// \todo fast creation can cause crashes. behaviour is not change if vector members are erased in this method and not in destructor.
 		private static method timerFunction takes nothing returns nothing
 			local thistype jump
-			local integer i = thistype.m_jumps.backIndex()
+			local AIntegerListIterator iterator = thistype.m_jumps.begin()
 			loop
-				exitwhen (i < 0)
-				set jump = thistype.m_jumps[i]
+				exitwhen (not iterator.isValid())
+				set jump = iterator.data()
+				call iterator.next()
 				if (jump.refreshPosition()) then
 					if (jump.m_alightAction != 0) then
-						call jump.m_alightAction.execute(jump.m_unit)
+						call jump.m_alightAction.evaluate(jump.m_unit)
 					endif
 					call jump.destroy()
-					//do not increase i, jump was removed from vector
 				elseif (IsUnitDeadBJ(jump.m_unit)) then
 					call jump.destroy()
-					//do not increase i, jump was removed from vector
-					//debug call thistype.staticPrint("Is Dead!")
 				endif
-				set i = i - 1
 			endloop
+			call iterator.destroy()
 		endmethod
 
 		public static method init takes real refreshRate, string jumpAnimation returns nothing
-			//static start members
+			// static construction members
 			set thistype.m_refreshRate = refreshRate
 			set thistype.m_jumpAnimation = jumpAnimation
-			//static members
+			// static members
 			set thistype.m_timer = CreateTimer()
 			call TimerStart(thistype.m_timer, thistype.m_refreshRate, true, function thistype.timerFunction)
-			set thistype.m_jumps = AIntegerVector.create()
+			set thistype.m_jumps = AIntegerList.create()
 		endmethod
 
 		public static method cleanUp takes nothing returns nothing
