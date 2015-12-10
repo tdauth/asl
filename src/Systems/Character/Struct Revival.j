@@ -15,9 +15,19 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 		private real m_facing
 		private boolean m_showEffect
 		// members
+		/**
+		 * This trigger runs whenever the character dies and starts the automatic revival.
+		 */
+		private trigger m_deathTrigger
+		/**
+		 * This trigger cancels the timer plus timer dialog if the character has been revived somewhere else.
+		 */
 		private trigger m_revivalTrigger
 		private timer m_timer
 		private timerdialog m_timerDialog
+		/**
+		 * Boolean flag which indicates if the revival timer is running at the moment.
+		 */
 		private boolean m_runs
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ARevival\"")
@@ -140,30 +150,43 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
 		endmethod
 		
-		private static method triggerConditionRevival takes nothing returns boolean
+		private static method triggerConditionIsCharacter takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			return GetTriggerUnit() == this.character().unit()
 		endmethod
 
-		private static method triggerActionRevival takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+		private static method triggerActionDeath takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			if (this.m_time > 0.0) then
 				call this.start()
 			else
 				call this.revive()
 			endif
-			// set unmovable
-			set triggeringTrigger = null
 		endmethod
 
-		private method createRevivalTrigger takes nothing returns nothing
-			set this.m_revivalTrigger = CreateTrigger()
+		private method createDeathTrigger takes nothing returns nothing
+			set this.m_deathTrigger = CreateTrigger()
 			/*
 			 * Use a generic event to make sure that the character is always revived even if another player took over or the unit changed.
 			 */
-			call TriggerRegisterAnyUnitEventBJ(this.m_revivalTrigger, EVENT_PLAYER_UNIT_DEATH)
-			call TriggerAddCondition(this.m_revivalTrigger, Condition(function thistype.triggerConditionRevival))
+			call TriggerRegisterAnyUnitEventBJ(this.m_deathTrigger, EVENT_PLAYER_UNIT_DEATH)
+			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionIsCharacter))
+			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
+			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
+		endmethod
+		
+		private static method triggerActionRevival takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			if (this.m_runs) then
+				debug call Print("Hero has been revived by something else.")
+				call this.end()
+			endif
+		endmethod
+		
+		private method createRevivalTrigger takes nothing returns nothing
+			set this.m_revivalTrigger = CreateTrigger()
+			 call TriggerRegisterAnyUnitEventBJ(this.m_revivalTrigger, EVENT_PLAYER_HERO_REVIVE_FINISH)
+			 call TriggerAddCondition(this.m_revivalTrigger, Condition(function thistype.triggerConditionIsCharacter))
 			call TriggerAddAction(this.m_revivalTrigger, function thistype.triggerActionRevival)
 			call AHashTable.global().setHandleInteger(this.m_revivalTrigger, "this", this)
 		endmethod
@@ -180,6 +203,7 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			set this.m_runs = false
 
 			call this.createTimer()
+			call this.createDeathTrigger()
 			call this.createRevivalTrigger()
 			call this.setShowDialog(true) // default value
 			return this
@@ -191,6 +215,11 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			set this.m_timer = null
 		endmethod
 
+		private method destroyDeathTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_deathTrigger)
+			set this.m_deathTrigger = null
+		endmethod
+		
 		private method destroyRevivalTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_revivalTrigger)
 			set this.m_revivalTrigger = null
@@ -199,6 +228,7 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 		public method onDestroy takes nothing returns nothing
 			call this.setShowDialog(false) // destroys dialog if necessary
 			call this.destroyTimer()
+			call this.destroyDeathTrigger()
 			call this.destroyRevivalTrigger()
 		endmethod
 	endstruct
