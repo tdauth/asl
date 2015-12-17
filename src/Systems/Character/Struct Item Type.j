@@ -21,7 +21,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		public static constant integer equipmentTypePrimaryWeapon = 2
 		public static constant integer equipmentTypeSecondaryWeapon = 3
 		public static constant integer equipmentTypeAmulet = 4
-		public static constant integer maxEquipmentTypes = 5
+		//public static constant integer maxEquipmentTypes = 5
 		// static construction members
 		private static string textLevel
 		private static string textStrength
