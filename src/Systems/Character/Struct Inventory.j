@@ -563,14 +563,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 				call this.m_equipmentItemData[equipmentType].destroy()
 				set this.m_equipmentItemData[equipmentType] = 0
-				call itemType.onUnequipItem.execute(characterUnit, equipmentType)
-				call this.checkEquipment.evaluate() //added
-				set characterUnit = null
 				
 				if (not this.rucksackIsEnabled()) then
 					// show place holder
 					call this.showEquipmentPlaceholder.evaluate(equipmentType)
 				endif
+				
+				call itemType.onUnequipItem.evaluate(characterUnit, equipmentType)
+				call this.checkEquipment.evaluate() // added
+				set characterUnit = null
 			endif
 		endmethod
 		
@@ -1154,7 +1155,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call itemType.addPermanentAbilities(this.character().unit())
 				//endif
 			endif
-			call itemType.onEquipItem.execute(this.character().unit(), equipmentType)
+			call itemType.onEquipItem.evaluate(this.character().unit(), equipmentType)
 		endmethod
 
 		/**

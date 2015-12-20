@@ -107,7 +107,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		/**
 		 * This method is called automatically by \ref AInventory whenever an item is being equipped.
 		 * You may overwrite this method to add additionally behaviour.
-		 * This method is called by .execute() to allow TriggerSleepAction calls.
+		 * This method is called by .evaluate() to allow TriggerSleepAction calls.
 		 */
 		public stub method onEquipItem takes unit whichUnit, integer slot returns nothing
 		endmethod
@@ -115,7 +115,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		/**
 		 * This method is called automatically by \ref AInventory whenever an item is being unequipped.
 		 * You may overwrite this method to add additionally behaviour.
-		 * This method is called by .execute() to allow TriggerSleepAction calls.
+		 * This method is called by .evaluate() to allow TriggerSleepAction calls.
 		 */
 		public stub method onUnequipItem takes unit whichUnit, integer slot returns nothing
 		endmethod
