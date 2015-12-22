@@ -213,6 +213,7 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 
 		public method enableForCharacter takes ACharacter character, boolean showMessage returns nothing
 			local player user = character.player()
+			local Shrine oldShrine = character.shrine()
 			if (ACharacter.playerCharacter(user).shrine() != 0) then
 				call ACharacter.playerCharacter(user).shrine().disableForCharacter(ACharacter.playerCharacter(user)) // disable old
 			endif
@@ -230,6 +231,14 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 				call character.displayMessage(ACharacter.messageTypeInfo, this.message())
 			endif
 			set user = null
+			call this.onEnable.evaluate(character, oldShrine)
+		endmethod
+		
+		/**
+		 * Called by .evaluate().
+		 * Is triggered whenever \ref enableForCharacter() is called.
+		 */
+		public stub method onEnable takes ACharacter character, AShrine oldShrine returns nothing
 		endmethod
 
 		/**

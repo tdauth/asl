@@ -211,13 +211,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	 * \note Do not forget to create \ref AItemType instances for all equipable item types!
 	 * \todo Use \ref UnitDropItemSlot instead of item removals.
 	 * \todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
+	 * \todo Test if shop events work even with a full inventory. At the moment the player has to select the shop but computer controlled players won't do that. For human players it should work.
 	 */
 	struct AInventory extends AAbstractCharacterSystem
 		// static constant members, useful for GUIs
 		/**
-		 * No empty slot is required since picking up items with full inventory is supported.
+		 * No empty slot is required since picking up items with full inventory is supported as well as buying items with a full inventory as long as the shop is selected by the player before.
 		 * If no empty slot is used the items however can not be dropped with all stacks at once (which the empty slot was used for).
-		 * TODO Besides you cannot buy items from shops if the inventory is full.
 		 */
 		public static constant integer maxEquipmentTypes = 6 /// \ref AItemType.equipmentTypeAmulet gets the last two slots. Therefore two amulets can be carried. \todo \ref AItemType.maxEuqipmentTypes, vJass bug
 		public static constant integer maxRucksackItems = 90
@@ -258,9 +258,21 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private trigger m_orderTrigger
 		private trigger m_useTrigger // show next page, show previous page, disable in equipment
 		private trigger m_pickupOrderTrigger
+		/**
+		 * Since we use all slots in the inventory we have to manually create a pickup function.
+		 * Unfortunately this does not work for buying items which would still lead to the error "inventory is full" if all slots are used.
+		 * Therefore whenever the player selects a shop to buy items, all items in the slots are hidden.
+		 * When the shop is deselected the items will be shown again.
+		 *
+		 * Since the player cannot interact with the inventory anyway when selecting a shop this does not bother the player.
+		 * @{
+		 */
 		private trigger m_shopSelectionTrigger
 		private unit m_shop
-		private trigger m_characterSelectionTrigger
+		private trigger m_shopDeselectionTrigger
+		/**
+		 * @}
+		 */
 		private trigger m_pickupTrigger
 		private trigger m_dropTrigger
 		private integer m_rucksackPage
@@ -702,22 +714,42 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set i = i + 1
 			endloop
 		endmethod
+		
+		private method hidePageItem takes boolean left returns boolean
+			local boolean result = false
+			local integer slot
+			local item slotItem
+			
+			if (not this.rucksackIsEnabled()) then
+				return false
+			endif
+			
+			if (left) then
+				set slot = thistype.previousPageItemSlot
+			else
+				set slot = thistype.nextPageItemSlot
+			endif
+			
+			set slotItem = UnitItemInSlot(this.character().unit(), slot)
+			
+			if (slotItem == null) then
+				return false
+			endif
+		
+			call DisableTrigger(this.m_dropTrigger)
+			call RemoveItem(slotItem)
+			set slotItem = null
+			call EnableTrigger(this.m_dropTrigger)
+			
+			return true
+		endmethod
 
 		private method disableRucksack takes nothing returns nothing
-			local item leftArrowItem
-			local item rightArrowItem
-			
 			if (this.m_rucksackIsEnabled) then
-				set this.m_rucksackIsEnabled = false
-				set leftArrowItem = UnitItemInSlot(this.character().unit(), thistype.previousPageItemSlot)
-				set rightArrowItem = UnitItemInSlot(this.character().unit(), thistype.nextPageItemSlot)
-				call DisableTrigger(this.m_dropTrigger)
-				call RemoveItem(leftArrowItem)
-				call RemoveItem(rightArrowItem)
-				call EnableTrigger(this.m_dropTrigger)
+				call this.hidePageItem(true)
+				call this.hidePageItem(false)
 				call this.hideCurrentRucksackPage()
-				set leftArrowItem = null
-				set rightArrowItem = null
+				set this.m_rucksackIsEnabled = false
 			debug else
 				debug call this.print("Disabling rucksack although it is not even enabled.")
 			endif
@@ -1144,12 +1176,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method setEquipmentItem takes integer equipmentType, AInventoryItemData inventoryItemData, boolean add returns nothing
 			local AItemType itemType = AItemType.itemTypeOfItemTypeId(inventoryItemData.itemTypeId())
 			set this.m_equipmentItemData[equipmentType] = inventoryItemData
-			if (add) then
+			if (add and this.m_shop == null) then
 				if (not this.m_rucksackIsEnabled) then
 					call this.hideEquipmentPlaceholder(equipmentType)
 				endif
 				call this.showEquipmentItem(equipmentType)
-			elseif (this.m_rucksackIsEnabled) then
+			elseif (this.m_rucksackIsEnabled or this.m_shop != null) then
 				// equipped items must always have an item type
 				//if (itemType != 0) then
 					call itemType.addPermanentAbilities(this.character().unit())
@@ -1284,7 +1316,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call inventoryItemData.destroy()
 				set refreshOnly = true
 			endif
-			if (add) then
+			if (add and this.m_shop == null) then
 				if (not refreshOnly) then
 					call this.showRucksackItem(index)
 				else
@@ -1943,17 +1975,32 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		private static method triggerActionSelectShop takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local integer i
 			set this.m_shop = GetTriggerUnit()
 			debug call Print("Selected shop " + GetUnitName(this.m_shop))
-			// TODO make sure an empty page is open for one single buy slot, don't allow other players to place items there wrongly
+			// Make sure an empty page is open for one single buy slot, don't allow other players to place items there wrongly
 			if (this.rucksackIsEnabled()) then
-				if (this.rucksackItemData(this.rucksackItemIndex(0)) != 0) then
-					call this.hideRucksackItem(this.rucksackItemIndex(0))
-				endif
-			elseif (this.equipmentItemData(0) != 0) then
-				 call this.hideEquipmentItem(0, true)
+				set i = 0
+				loop
+					exitwhen (i == thistype.maxRucksackItemsPerPage)
+					if (this.rucksackItemData(this.rucksackItemIndex(i)) != 0) then
+						call this.hideRucksackItem(this.rucksackItemIndex(i))
+					endif
+					set i = i + 1
+				endloop
+				call this.hidePageItem(true)
+				call this.hidePageItem(false)
 			else
-				call this.hideEquipmentPlaceholder(0)
+				set i = 0
+				loop
+					exitwhen (i == thistype.maxEquipmentTypes)
+					if (this.equipmentItemData(i) != 0) then
+						call this.hideEquipmentItem(i, true) // add abilities to make sure the unit still has them
+					else
+						call this.hideEquipmentPlaceholder(i)
+					endif
+					set i = i + 1
+				endloop
 			endif
 		endmethod
 		
@@ -1965,32 +2012,47 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(this.m_shopSelectionTrigger, "this", this)
 		endmethod
 		
-		private static method triggerConditionIsCharacterAndShopWasSelected takes nothing returns boolean
+		private static method triggerConditionIsCurrentShop takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			return GetTriggerUnit() == this.character().unit() and this.m_shop != null
+			return GetTriggerUnit() == this.m_shop
 		endmethod
 		
-		private static method triggerActionSelectCharacter takes nothing returns nothing
+		private static method triggerActionDeselectShop takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			debug call Print("Selecting character again")
+			local integer i
+			debug call Print("Deselecting shop")
 			set this.m_shop = null
 			if (this.rucksackIsEnabled()) then
-				if (this.rucksackItemData(this.rucksackItemIndex(0)) != 0) then
-					call this.showRucksackItem(this.rucksackItemIndex(0))
-				endif
-			elseif (this.equipmentItemData(0) != 0) then
-				 call this.showEquipmentItem(0)
+				set i = 0
+				loop
+					exitwhen (i == thistype.maxRucksackItemsPerPage)
+					if (this.rucksackItemData(this.rucksackItemIndex(i)) != 0) then
+						call this.showRucksackItem(this.rucksackItemIndex(i))
+					endif
+					set i = i + 1
+				endloop
+				call this.showPageItem(true)
+				call this.showPageItem(false)
 			else
-				call this.showEquipmentPlaceholder(0)
+				set i = 0
+				loop
+					exitwhen (i == thistype.maxEquipmentTypes)
+					if (this.equipmentItemData(i) != 0) then
+						call this.showEquipmentItem(i)
+					else
+						call this.showEquipmentPlaceholder(i)
+					endif
+					set i = i + 1
+				endloop
 			endif
 		endmethod
 		
-		private method createCharacterSelectionTrigger takes nothing returns nothing
-			set this.m_characterSelectionTrigger = CreateTrigger()
-			call TriggerRegisterPlayerUnitEvent(this.m_characterSelectionTrigger, this.character().player(), EVENT_PLAYER_UNIT_SELECTED, null)
-			call TriggerAddCondition(this.m_characterSelectionTrigger, Condition(function thistype.triggerConditionIsCharacterAndShopWasSelected))
-			call TriggerAddAction(this.m_characterSelectionTrigger, function thistype.triggerActionSelectCharacter)
-			call AHashTable.global().setHandleInteger(this.m_characterSelectionTrigger, "this", this)
+		private method createShopDeselectionTrigger takes nothing returns nothing
+			set this.m_shopDeselectionTrigger = CreateTrigger()
+			call TriggerRegisterPlayerUnitEvent(this.m_shopDeselectionTrigger, this.character().player(), EVENT_PLAYER_UNIT_DESELECTED, null)
+			call TriggerAddCondition(this.m_shopDeselectionTrigger, Condition(function thistype.triggerConditionIsCurrentShop))
+			call TriggerAddAction(this.m_shopDeselectionTrigger, function thistype.triggerActionDeselectShop)
+			call AHashTable.global().setHandleInteger(this.m_shopDeselectionTrigger, "this", this)
 		endmethod
 
 		private static method triggerConditionIsNoPowerup takes nothing returns boolean
@@ -2199,7 +2261,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.createOrderTrigger()
 			call this.createPickupOrderTrigger()
 			call this.createShopSelectionTrigger()
-			call this.createCharacterSelectionTrigger()
+			call this.createShopDeselectionTrigger()
 			call this.createPickupTrigger()
 			call this.createDropTrigger()
 			call this.createUseTrigger()
@@ -2229,9 +2291,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_shopSelectionTrigger = null
 		endmethod
 		
-		private method destroyCharacterSelectionTrigger takes nothing returns nothing
-			call AHashTable.global().destroyTrigger(this.m_characterSelectionTrigger)
-			set this.m_characterSelectionTrigger = null
+		private method destroyShopDeselectionTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_shopDeselectionTrigger)
+			set this.m_shopDeselectionTrigger = null
 		endmethod
 
 		private method destroyPickupTrigger takes nothing returns nothing
@@ -2274,7 +2336,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.destroyOrderTrigger()
 			call this.destroyPickupOrderTrigger()
 			call this.destroyShopSelectionTrigger()
-			call this.destroyCharacterSelectionTrigger()
+			call this.destroyShopDeselectionTrigger()
 			call this.destroyPickupTrigger()
 			call this.destroyDropTrigger()
 			call this.destroyUseTrigger()
