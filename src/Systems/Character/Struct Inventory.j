@@ -1726,7 +1726,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
-			return GetSpellAbilityId() == thistype.m_openRucksackAbilityId
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return this.character().unit() == GetTriggerUnit() and GetSpellAbilityId() == thistype.m_openRucksackAbilityId
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
@@ -1747,14 +1748,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		private method createOpenTrigger takes nothing returns nothing
 			set this.m_openTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_openTrigger, this.character().unit(), EVENT_UNIT_SPELL_CAST)
+			call TriggerRegisterAnyUnitEventBJ(this.m_openTrigger, EVENT_PLAYER_UNIT_SPELL_CAST)
 			call TriggerAddCondition(this.m_openTrigger, Condition(function thistype.triggerConditionOpen))
 			call TriggerAddAction(this.m_openTrigger, function thistype.triggerActionOpen)
 			call AHashTable.global().setHandleInteger(this.m_openTrigger, "this", this)
 		endmethod
 
 		private static method triggerConditionOrder takes nothing returns boolean
-			return GetIssuedOrderId() >= A_ORDER_ID_MOVE_SLOT_0 and GetIssuedOrderId() <= A_ORDER_ID_MOVE_SLOT_5
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() >= A_ORDER_ID_MOVE_SLOT_0 and GetIssuedOrderId() <= A_ORDER_ID_MOVE_SLOT_5
 		endmethod
 		
 		/**
@@ -1875,7 +1877,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		private method createOrderTrigger takes nothing returns nothing
 			set this.m_orderTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_orderTrigger, this.character().unit(), EVENT_UNIT_ISSUED_TARGET_ORDER)
+			call TriggerRegisterAnyUnitEventBJ(this.m_orderTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
 			call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOrder))
 			call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOrder)
 			call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
@@ -1899,7 +1901,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		private static method triggerConditionPickupOrder takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			return GetIssuedOrderId() == A_ORDER_ID_SMART and GetOrderTargetItem() != null and not IsItemPowerup(GetOrderTargetItem()) and this.inventoryIsFull()
+			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() == A_ORDER_ID_SMART and GetOrderTargetItem() != null and not IsItemPowerup(GetOrderTargetItem()) and this.inventoryIsFull()
 		endmethod
 		
 		/**
@@ -1962,7 +1964,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		private method createPickupOrderTrigger takes nothing returns nothing
 			set this.m_pickupOrderTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_pickupOrderTrigger, this.character().unit(), EVENT_UNIT_ISSUED_TARGET_ORDER)
+			call TriggerRegisterAnyUnitEventBJ(this.m_pickupOrderTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
 			call TriggerAddCondition(this.m_pickupOrderTrigger, Condition(function thistype.triggerConditionPickupOrder))
 			call TriggerAddAction(this.m_pickupOrderTrigger, function thistype.triggerActionPickupOrder)
 			call AHashTable.global().setHandleInteger(this.m_pickupOrderTrigger, "this", this)
@@ -2056,7 +2058,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerConditionIsNoPowerup takes nothing returns boolean
-			return  not IsItemIdPowerup(GetItemTypeId(GetManipulatedItem()))
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return GetTriggerUnit() == this.character().unit() and not IsItemIdPowerup(GetItemTypeId(GetManipulatedItem()))
 		endmethod
 
 		private static method triggerActionPickup takes nothing returns nothing
@@ -2070,7 +2073,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private method createPickupTrigger takes nothing returns nothing
 			set this.m_pickupTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_pickupTrigger, this.character().unit(), EVENT_UNIT_PICKUP_ITEM) // pawn?
+			call TriggerRegisterAnyUnitEventBJ(this.m_pickupTrigger, EVENT_PLAYER_UNIT_PICKUP_ITEM) // pawn?
 			call TriggerAddCondition(this.m_pickupTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
 			call TriggerAddAction(this.m_pickupTrigger, function thistype.triggerActionPickup)
 			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, "this", this)
@@ -2184,7 +2187,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		// drop, destack and drop, unequip and drop
 		private method createDropTrigger takes nothing returns nothing
 			set this.m_dropTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_dropTrigger, this.character().unit(), EVENT_UNIT_DROP_ITEM)
+			call TriggerRegisterAnyUnitEventBJ(this.m_dropTrigger, EVENT_PLAYER_UNIT_DROP_ITEM)
 			call TriggerAddCondition(this.m_dropTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
 			call TriggerAddAction(this.m_dropTrigger, function thistype.triggerActionDrop)
 			call AHashTable.global().setHandleInteger(this.m_dropTrigger, "this", this)
@@ -2192,7 +2195,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerConditionUse takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			return this.m_rucksackIsEnabled
+			return GetTriggerUnit() == this.character().unit() and this.m_rucksackIsEnabled
 		endmethod
 		
 		private static method timerFunctionRefreshCharges takes nothing returns nothing
@@ -2238,7 +2241,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private method createUseTrigger takes nothing returns nothing
 			set this.m_useTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_useTrigger, this.character().unit(), EVENT_UNIT_USE_ITEM)
+			call TriggerRegisterAnyUnitEventBJ(this.m_useTrigger, EVENT_PLAYER_UNIT_USE_ITEM)
 			call TriggerAddCondition(this.m_useTrigger, Condition(function thistype.triggerConditionUse))
 			call TriggerAddAction(this.m_useTrigger, function thistype.triggerActionUse)
 			call AHashTable.global().setHandleInteger(this.m_useTrigger, "this", this)

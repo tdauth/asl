@@ -511,19 +511,20 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endif
 			*/
 		endmethod
+		
+		private static method triggerConditionIsCharacter takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return this.unit() == GetTriggerUnit()
+		endmethod
 
 		private static method triggerActionDestroyCharacter takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call thistype.destroy(this)
-			set triggeringTrigger = null
 		endmethod
 
 		private static method triggerActionShareControl takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call this.shareControl(true)
-			set triggeringTrigger = null
 		endmethod
 
 		private method createLeaveTrigger takes nothing returns nothing
@@ -540,7 +541,8 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		/// DON'T MAKE HIM UNMOVABLE, disables all systems!
 		private method createDeathTrigger takes nothing returns nothing
 			set this.m_deathTrigger = CreateTrigger()
-			call TriggerRegisterUnitEvent(this.m_deathTrigger, this.m_unit, EVENT_UNIT_DEATH)
+			call TriggerRegisterAnyUnitEventBJ(this.m_deathTrigger, EVENT_PLAYER_UNIT_DEATH)
+			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionIsCharacter))
 			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDestroyCharacter)
 			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
 		endmethod
@@ -617,11 +619,12 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endif
 		endmethod
 
-		//Automatic destruction when player leaves
+		// Automatic destruction when player leaves
 		private method onDestroy takes nothing returns nothing
-			//start members
+			// construction members
 			set this.m_player = null
-			//members
+			// members
+			// make sure the spell instances are destroyed as well, otherwise on repick they will stay available
 			loop
 				exitwhen (this.m_spells.empty())
 				call ASpell(this.m_spells.back()).destroy()

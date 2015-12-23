@@ -634,9 +634,12 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 
 		private method onDestroy takes nothing returns nothing
+			local player user = this.m_user
 			// construction members
 			set this.m_user = null
 			// static members
+			set thistype.m_playerClassSelection[GetPlayerId(user)] = 0
+			set user = null
 			set thistype.m_stack = thistype.m_stack - 1
 
 			call this.destroyLeaveTrigger()
