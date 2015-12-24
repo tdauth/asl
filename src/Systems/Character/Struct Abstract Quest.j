@@ -544,6 +544,13 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			endif
 		endmethod
 
+		/**
+		 * \note Only use this method when the character has been repicked and the quest value needs to be updated.
+		 */
+		public method updateCharacter takes ACharacter character returns nothing
+			set this.m_character = character
+		endmethod
+
 		public static method create takes ACharacter character, string title returns thistype
 			local thistype this = thistype.allocate()
 			local integer i
@@ -667,6 +674,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			// static members
 			call thistype.m_abstractQuests.destroy()
 			if (thistype.m_pingRate > 0.0) then
+				call PauseTimer(thistype.m_pingTimer)
 				call DestroyTimer(thistype.m_pingTimer)
 				set thistype.m_pingTimer = null
 			endif

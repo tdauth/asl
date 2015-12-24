@@ -1438,6 +1438,38 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		public method addItem takes item whichItem returns boolean
 			return this.equipItem(whichItem, false, false, true) // try always equipment first!
 		endmethod
+		
+		public method dropAllEquipment takes real x, real y returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0) then
+					call this.equipmentItemData(i).createItem(x, y)
+					call this.clearEquipmentItem(i, false)
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+		
+		public method dropAllRucksack takes real x, real y returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxRucksackItems)
+				if (this.rucksackItemData(i) != 0) then
+					call this.rucksackItemData(i).createItem(x, y)
+					call this.clearRucksackItem(i, false)
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+		
+		/**
+		 * Drops all items from the equipment and rucksack to the location at \p x, \p y.
+		 */
+		public method dropAll takes real x, real y returns nothing
+			call this.dropAllEquipment(x, y)
+			call this.dropAllRucksack(x, y)
+		endmethod
 
 		/**
 		 * Adds item \p usedItem to the rucksack.
