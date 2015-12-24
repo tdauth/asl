@@ -9,7 +9,6 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 	struct AJump
 		// static construction members
 		private static real m_refreshRate
-		private static string m_jumpAnimation
 		// static members
 		private static timer m_timer
 		private static AIntegerList m_jumps
@@ -43,19 +42,16 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 
 		private method refreshPosition takes nothing returns boolean
 			set this.m_x = this.m_x + this.m_speed
-			//debug call this.print("Refresh. Distance is " + R2S(this.m_distance) + " refresh rate is " + R2S(thistype.m_refreshRate))
 			call SetUnitX(this.m_unit, GetPolarProjectionX(this.m_startX, GetUnitFacing(this.m_unit), this.m_x))
 			call SetUnitY(this.m_unit, GetPolarProjectionY(this.m_startY, GetUnitFacing(this.m_unit), this.m_x))
 			call SetUnitZ(this.m_unit, ParabolaZ(this.m_maxHeight, this.m_distance, this.m_x))
-			//debug call this.print("X is " + R2S(this.m_x))
-			//debug call this.print("New x is " + R2S(this.m_x))
 			return this.m_x >= this.m_distance
 		endmethod
 
-		public static method create takes unit usedUnit, real maxHeight, real targetX, real targetY, AJumpAlightAction alightAction returns thistype
+		public static method create takes unit usedUnit, real maxHeight, real targetX, real targetY, AJumpAlightAction alightAction, real speed returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
-			call this.setSpeed(100.0)
+			call this.setSpeed(speed)
 			// construction members
 			set this.m_unit = usedUnit
 			set this.m_maxHeight = maxHeight
@@ -71,10 +67,6 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			call PauseUnit(usedUnit, true)
 			call SetUnitFacing(usedUnit, GetAngleBetweenPoints(this.m_startX, this.m_startY, targetX, targetY))
 
-			if (thistype.m_jumpAnimation != null) then
-				call SetUnitAnimation(usedUnit, thistype.m_jumpAnimation)
-			endif
-			
 			call thistype.m_jumps.pushBack(this)
 
 			return this
@@ -82,12 +74,8 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 
 		public method onDestroy takes nothing returns nothing
 			call thistype.m_jumps.remove(this)
-			if (not IsUnitDeadBJ(this.m_unit) and this.m_unit != null) then //could be removed by user function
+			if (this.m_unit != null) then //could be removed by user function
 				call PauseUnit(this.m_unit, false)
-
-				if (thistype.m_jumpAnimation != null) then
-					call ResetUnitAnimation(this.m_unit)
-				endif
 			endif
 			// construction members
 			set this.m_unit = null
@@ -113,10 +101,9 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			call iterator.destroy()
 		endmethod
 
-		public static method init takes real refreshRate, string jumpAnimation returns nothing
+		public static method init takes real refreshRate returns nothing
 			// static construction members
 			set thistype.m_refreshRate = refreshRate
-			set thistype.m_jumpAnimation = jumpAnimation
 			// static members
 			set thistype.m_timer = CreateTimer()
 			call TimerStart(thistype.m_timer, thistype.m_refreshRate, true, function thistype.timerFunction)
