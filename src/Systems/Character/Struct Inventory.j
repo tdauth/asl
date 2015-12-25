@@ -576,14 +576,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.m_equipmentItemData[equipmentType].destroy()
 				set this.m_equipmentItemData[equipmentType] = 0
 				
+				// unequip first since it might have some effects on the unit and show placeholder afterwards
+				call itemType.onUnequipItem.evaluate(characterUnit, equipmentType)
+				call this.checkEquipment.evaluate() // added
+				
 				if (not this.rucksackIsEnabled()) then
 					debug call Print("Show placeholder")
 					// show place holder
 					call this.showEquipmentPlaceholder.evaluate(equipmentType)
 				endif
 				
-				call itemType.onUnequipItem.evaluate(characterUnit, equipmentType)
-				call this.checkEquipment.evaluate() // added
 				set characterUnit = null
 			endif
 		endmethod
