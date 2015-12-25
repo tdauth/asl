@@ -83,7 +83,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		public method placeItem takes integer index, real x, real y returns item
-			return PlaceRandomItem(this.m_itemPools[index], x, y)
+			local item result =  PlaceRandomItem(this.m_itemPools[index], x, y)
+			call UpdateStockAvailability(result)
+			return result
 		endmethod
 		
 		/**
@@ -519,13 +521,14 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			set itemOwner = null
 		endmethod
 
-		private method dropItem takes ASpawnPointMember member, real x, real y returns nothing
+		private method dropItem takes unit whichUnit, ASpawnPointMember member, real x, real y returns nothing
 			local item whichItem
 			local integer i = 0
 			loop
 				exitwhen (i == member.itemPoolsCount())
 				set whichItem = member.placeItem(i, x, y)
 				if (whichItem != null and this.distributeItems()) then // item can be null if member has no item types to place
+					call SetItemDropID(whichItem, GetUnitTypeId(whichUnit))
 					call this.distributeDroppedItem(whichItem)
 				debug else
 					debug call this.print("Warning: Couldn't place item.")
@@ -565,7 +568,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			local unit triggerUnit = GetTriggerUnit()
 			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
 			local ASpawnPointMember member = thistype.spawnPointMember(triggerUnit)
-			call this.dropItem(member, GetUnitX(triggerUnit), GetUnitY(triggerUnit)) // drop before removing member
+			call this.dropItem(triggerUnit, member, GetUnitX(triggerUnit), GetUnitY(triggerUnit)) // drop before removing member
 			call this.removeUnit(triggerUnit)
 			if (this.m_group.units().empty()) then
 				call this.startTimer()
