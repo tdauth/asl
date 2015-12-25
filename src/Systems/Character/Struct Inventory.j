@@ -577,6 +577,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set this.m_equipmentItemData[equipmentType] = 0
 				
 				if (not this.rucksackIsEnabled()) then
+					debug call Print("Show placeholder")
 					// show place holder
 					call this.showEquipmentPlaceholder.evaluate(equipmentType)
 				endif
@@ -1839,8 +1840,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 							call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textNextPageIsFull)
 						endif
 					endif
-				// drop with all charges instead of one - moves the item to a free slot in rucksack which is not used by the rucksack
-				elseif (newSlot >= thistype.maxRucksackItemsPerPage and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
+				// drop with all charges instead of one - moves the item to the same slot in the rucksack but cannot be equipped or to a free unused slot
+				elseif ((newSlot >= thistype.maxRucksackItemsPerPage or (AItemType.itemTypeOfItem(usedItem) == 0 and oldSlot == newSlot)) and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
 					debug call Print("Drop with all charges.")
 					set index = thistype.itemIndex(usedItem)
 					debug call Print("Rucksack item index: " + I2S(index))
