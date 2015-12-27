@@ -276,7 +276,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private trigger m_pickupTrigger
 		private trigger m_dropTrigger
 		private integer m_rucksackPage
+		/**
+		 * This flag indicates if the rucksack is shown or the equipment is shown instead.
+		 */
 		private boolean m_rucksackIsEnabled
+		/**
+		 * If this flag is true, the equipped items won't have any effect and items cannot be equipped.
+		 */
+		private boolean m_onlyRucksackIsEnabled
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AInventory\"")
 		
@@ -297,6 +304,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		public method rucksackIsEnabled takes nothing returns boolean
 			return this.m_rucksackIsEnabled
+		endmethod
+		
+		/**
+		 * \return Returns true if the rucksack is open, the equipment has no effect and no items can be equipped at the moment.
+		 */
+		public method onlyRucksackIsEnabled takes nothing returns boolean
+			return this.m_onlyRucksackIsEnabled
 		endmethod
 
 		/**
@@ -1287,6 +1301,93 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			return result
 		endmethod
+		
+		private method disableEquipmentAbilities takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.removePermanentAbilities(this.character().unit())
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+		
+		private method enableEquipmentAbilities takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.addPermanentAbilities(this.character().unit())
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+		
+		private method onUnequipForAllEquipment takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.onUnequipItem.evaluate(this.character().unit(), i)
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+		
+		private method onEquipForAllEquipment takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.onEquipItem.evaluate(this.character().unit(), i)
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+		
+		/**
+		 * Allows to disable the equipment completly and to re-enable it later.
+		 * The rucksack can be used as usual.
+		 * \param enableOnly If this value is true, the equipment will disappear and only the rucksack will be available. The player cannot equip any items anymore. If the value is false the equipment will be available again.
+		 */
+		public method enableOnlyRucksack takes boolean enableOnly returns nothing
+			if (enableOnly == this.m_onlyRucksackIsEnabled) then
+				return
+			endif
+			if (enableOnly) then
+				if (this.rucksackIsEnabled()) then
+					call this.disableEquipmentAbilities()
+				else
+					call this.disableEquipment(false)
+					call this.enableRucksack()
+				endif
+				// call the onUnequipItem() methods which might have effects on the unit as well
+				call this.onUnequipForAllEquipment()
+				set this.m_onlyRucksackIsEnabled = true
+			else
+				call this.enableEquipmentAbilities()
+				// call the onEquipItem() methods which might have effects on the unit as well
+				call this.onEquipForAllEquipment()
+				set this.m_onlyRucksackIsEnabled = false
+			endif
+		endmethod
 
 		/**
 		 * Checks requirements of all equipped items. If some requirements aren't met the checked item is dropped.
@@ -1720,12 +1821,18 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			if (oldIndex == newIndex) then
 				//debug call this.print("Same index: Equip.")
 				set movedItem = null
-				//debug call this.print("Creating item at characters position and trying to equip.")
-				set movedItem = this.m_rucksackItemData[oldIndex].createItem(GetUnitX(characterUnit), GetUnitY(characterUnit))
-				call SetItemCharges(movedItem, 0)
-				call this.setRucksackItemCharges(oldIndex, this.m_rucksackItemData[oldIndex].charges() - 1)
-				call this.equipItem(movedItem, false, true, true) //test
-				set characterUnit = null
+				
+				if (not this.onlyRucksackIsEnabled()) then
+					//debug call this.print("Creating item at characters position and trying to equip.")
+					set movedItem = this.m_rucksackItemData[oldIndex].createItem(GetUnitX(characterUnit), GetUnitY(characterUnit))
+					call SetItemCharges(movedItem, 0)
+					call this.setRucksackItemCharges(oldIndex, this.m_rucksackItemData[oldIndex].charges() - 1)
+					call this.equipItem(movedItem, false, true, true) //test
+					set characterUnit = null
+				else
+					call this.character().displayMessage(ACharacter.messageTypeError, tr("Das Ausrüsten von Gegenständen ist momentan nicht möglich."))
+				endif
+				
 				return
 			endif
 			set targetItem = UnitItemInSlot(this.character().unit(), this.rucksackItemSlot(oldIndex))
@@ -2103,7 +2210,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			 * Tests have shown the the unit has the item without any trigger sleep.
 			 * UnitHasItem() returns always true. There is no need of a 0 timer here.
 			 */
-			call this.addItem(GetManipulatedItem())
+			if (not this.onlyRucksackIsEnabled()) then
+				call this.addItem(GetManipulatedItem())
+			// don't equip items if equipment is disabled
+			else
+				call this.addItemToRucksack(GetManipulatedItem(), true, false)
+			endif
 		endmethod
 
 		private method createPickupTrigger takes nothing returns nothing
@@ -2287,6 +2399,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			// members
 			set this.m_rucksackPage = 0
 			set this.m_rucksackIsEnabled = false
+			set this.m_onlyRucksackIsEnabled = false
 
 			/*
 			 * Make sure that the character's unit has the rucksack ability. Otherwise it cannot change to the rucksack.
