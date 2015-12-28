@@ -672,10 +672,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				call StopSound(thistype.m_playedSound, false, false)
 				set thistype.m_playedSound = null
 			endif
-			if (firstStop) then
-				debug call Print("Cancel sound " + I2S(GetHandleId(bj_cineSceneLastSound)))
-				call CancelCineSceneBJ()
-			endif
+			// cancel sound
+			debug call Print("Cancel sound " + I2S(GetHandleId(bj_cineSceneLastSound)))
+			call CancelCineSceneBJ()
 			/*
 			 * Reset the number of skipping players.
 			 */

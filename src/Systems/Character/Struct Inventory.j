@@ -2241,6 +2241,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
+		
+		private static method timerFunctionClearEquipmentType takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			call this.clearEquipmentType(index)
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
+		endmethod
 
 		private static method triggerActionDrop takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
@@ -2324,7 +2332,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			// unequip and drop
 			else
 				if (index != -1) then
-					call this.clearEquipmentType(index)
+					// clear after the item has been dropped, otherwise the placeholder cannot be shown
+					set whichTimer = CreateTimer()
+					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+					call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionClearEquipmentType)
 				debug else
 					debug call this.print("Item has no index. Doing nothing.")
 				endif
