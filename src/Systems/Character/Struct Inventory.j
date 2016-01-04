@@ -1543,24 +1543,38 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.equipItem(whichItem, false, false, true) // try always equipment first!
 		endmethod
 		
-		public method dropAllEquipment takes real x, real y returns nothing
+		/**
+		 * Drops all equipment items at location \p x | \p y.
+		 * \param owned If this value is true the items will still have the owner of the character. Otherwise they won't be owned by anyone.
+		 */
+		public method dropAllEquipment takes real x, real y, boolean owned returns nothing
+			local item whichItem
 			local integer i = 0
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.equipmentItemData(i) != 0) then
-					call this.equipmentItemData(i).createItem(x, y)
+					set whichItem = this.equipmentItemData(i).createItem(x, y)
+					if (owned) then
+						call SetItemPlayer(whichItem, this.character().player(), true)
+					endif
+					set whichItem = null
 					call this.clearEquipmentItem(i, false)
 				endif
 				set i = i + 1
 			endloop
 		endmethod
 		
-		public method dropAllRucksack takes real x, real y returns nothing
+		public method dropAllRucksack takes real x, real y, boolean owned returns nothing
+			local item whichItem
 			local integer i = 0
 			loop
 				exitwhen (i == thistype.maxRucksackItems)
 				if (this.rucksackItemData(i) != 0) then
-					call this.rucksackItemData(i).createItem(x, y)
+					set whichItem = this.rucksackItemData(i).createItem(x, y)
+					if (owned) then
+						call SetItemPlayer(whichItem, this.character().player(), true)
+					endif
+					set whichItem = null
 					call this.clearRucksackItem(i, false)
 				endif
 				set i = i + 1
@@ -1570,9 +1584,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		/**
 		 * Drops all items from the equipment and rucksack to the location at \p x, \p y.
 		 */
-		public method dropAll takes real x, real y returns nothing
-			call this.dropAllEquipment(x, y)
-			call this.dropAllRucksack(x, y)
+		public method dropAll takes real x, real y, boolean owned returns nothing
+			call this.dropAllEquipment(x, y, owned)
+			call this.dropAllRucksack(x, y, owned)
 		endmethod
 
 		/**
