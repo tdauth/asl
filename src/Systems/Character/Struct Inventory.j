@@ -1834,24 +1834,30 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			// equip
 			if (oldIndex == newIndex) then
 				//debug call this.print("Same index: Equip.")
-				set movedItem = null
 				
-				if (not this.onlyRucksackIsEnabled()) then
-					//debug call this.print("Creating item at characters position and trying to equip.")
-					set movedItem = this.m_rucksackItemData[oldIndex].createItem(GetUnitX(characterUnit), GetUnitY(characterUnit))
-					call SetItemCharges(movedItem, 0)
-					call this.setRucksackItemCharges(oldIndex, this.m_rucksackItemData[oldIndex].charges() - 1)
-					call this.equipItem(movedItem, false, true, true) //test
-					set characterUnit = null
+				if (AItemType.itemTypeOfItem(movedItem) != 0) then
+					if (not this.onlyRucksackIsEnabled()) then
+						//debug call this.print("Creating item at characters position and trying to equip.")
+						set movedItem = this.m_rucksackItemData[oldIndex].createItem(GetUnitX(characterUnit), GetUnitY(characterUnit))
+						call SetItemCharges(movedItem, 0)
+						call this.setRucksackItemCharges(oldIndex, this.m_rucksackItemData[oldIndex].charges() - 1)
+						call this.equipItem(movedItem, false, true, true) //test
+						set characterUnit = null
+					else
+						call this.character().displayMessage(ACharacter.messageTypeError, tr("Das Ausrüsten von Gegenständen ist momentan nicht möglich."))
+					endif
 				else
-					call this.character().displayMessage(ACharacter.messageTypeError, tr("Das Ausrüsten von Gegenständen ist momentan nicht möglich."))
+					call this.character().displayMessage(ACharacter.messageTypeError, tr("Gegenstand kann nicht angelegt werden."))
 				endif
+				
+				set movedItem = null
 				
 				return
 			endif
 			set targetItem = UnitItemInSlot(this.character().unit(), this.rucksackItemSlot(oldIndex))
 			// move
 			if (targetItem == null) then
+				debug call Print("Move")
 				call thistype.setItemIndex(movedItem, newIndex)
 				// destack
 				if (this.m_rucksackItemData[oldIndex].charges() > 1) then
@@ -1915,6 +1921,37 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() >= A_ORDER_ID_MOVE_SLOT_0 and GetIssuedOrderId() <= A_ORDER_ID_MOVE_SLOT_5
 		endmethod
 		
+		private method dropItemWithAllCharges takes item usedItem returns nothing
+			local integer index = thistype.itemIndex(usedItem)
+			local integer charges = 0
+			debug call Print("Drop with all charges.")
+			debug call Print("Rucksack item index: " + I2S(index))
+		
+			if (not UnitHasItem(this.character().unit(), usedItem) or this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
+				if (index != -1) then
+					debug call Print("Clearing rucksack slot " + I2S(index))
+					set charges = this.m_rucksackItemData[index].charges()
+					call this.clearRucksackSlot(index)
+					debug call Print("After clearing rucksack slot " + I2S(index))
+				endif
+				call thistype.clearItemIndex(usedItem)
+
+				/*
+				 * Do only reset the charges to 0 if exactly one item is dropped for an item which usually is not stacked.
+				 */
+				if (GetItemType(usedItem) != ITEM_TYPE_CHARGED and charges == 1) then
+					call SetItemCharges(usedItem, 0)
+				endif
+				
+				/*
+				 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
+				 */
+				call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), true)
+			debug else
+				debug call this.print("Unknown error on dropping item.")
+			endif
+		endmethod
+		
 		/**
 		 * All orders are recognized after they are done so this method is called by a 0 seconds timer.
 		 */
@@ -1929,7 +1966,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			debug call this.print("Moving item " + GetItemName(usedItem) + " to slot " + I2S(newSlot))
 
 			if (this.rucksackIsEnabled()) then
-				//debug call this.print("Rucksack is enabled.")
+				debug call this.print("Rucksack is enabled.")
 				/*
 				 * If a page item is moved it will be reset immediately.
 				 */
@@ -1947,6 +1984,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					endif
 				// move item previous - player drops an item on the previous page item
 				elseif (GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and newSlot == thistype.previousPageItemSlot) then
+					debug call Print("Move item to previous page")
 					set index = thistype.itemIndex(usedItem)
 					set oldSlot = this.rucksackItemSlot(index)
 					if (this.resetItemSlots(newSlot, oldSlot)) then
@@ -1956,6 +1994,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					endif
 				// move item next - player drops an item on the next page item
 				elseif (GetItemTypeId(usedItem) != thistype.m_rightArrowItemType and newSlot == thistype.nextPageItemSlot) then
+					debug call Print("Move item to next page")
 					set index = thistype.itemIndex(usedItem)
 					set oldSlot = this.rucksackItemSlot(index)
 					if (this.resetItemSlots(newSlot, oldSlot)) then
@@ -1963,41 +2002,20 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 							call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textNextPageIsFull)
 						endif
 					endif
-				// drop with all charges instead of one - moves the item to the same slot in the rucksack but cannot be equipped or to a free unused slot
-				elseif ((newSlot >= thistype.maxRucksackItemsPerPage or (AItemType.itemTypeOfItem(usedItem) == 0 and oldSlot == newSlot)) and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
-					debug call Print("Drop with all charges.")
-					set index = thistype.itemIndex(usedItem)
-					debug call Print("Rucksack item index: " + I2S(index))
-				
-					if (this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
-						if (index != -1) then
-							debug call Print("Clearing rucksack slot " + I2S(index))
-							set charges = this.m_rucksackItemData[index].charges()
-							call this.clearRucksackSlot(index)
-							debug call Print("After clearing rucksack slot " + I2S(index))
-						endif
-						call thistype.clearItemIndex(usedItem)
-
-						/*
-						 * Do only reset the charges to 0 if exactly one item is dropped for an item which usually is not stacked.
-						 */
-						if (GetItemType(usedItem) != ITEM_TYPE_CHARGED and charges == 1) then
-							call SetItemCharges(usedItem, 0)
-						endif
-						
-						/*
-						 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
-						 */
-						call SetItemPlayer(usedItem, Player(PLAYER_NEUTRAL_PASSIVE), true)
-					debug else
-						debug call this.print("Unknown error on dropping item.")
-					endif
+				// drop with all charges if moved to an unused free slot
+				elseif (newSlot >= thistype.maxRucksackItemsPerPage and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
+					debug call Print("Drop with all charges")
+					call this.dropItemWithAllCharges(usedItem)
 				// equip item/stack items/swap items
 				elseif (newSlot >= 0 and newSlot < thistype.maxRucksackItemsPerPage) then
+					debug call Print("Move rucksack item")
 					call this.moveRucksackItem(usedItem, newSlot)
+				debug else
+					debug call this.print("Nothing!")
 				endif
 			// equipment is enabled
 			else
+				debug call this.print("Equipment is enabled.")
 				set oldSlot = thistype.itemIndex(usedItem)
 				// reset moved equipped items to their positions
 				if (newSlot != oldSlot) then
@@ -2057,6 +2075,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		private static method triggerConditionPickupOrder takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			debug call Print("Maybe pickup order with trigger unit " + GetUnitName(GetTriggerUnit()) + " and item " + GetItemName(GetOrderTargetItem()) + " and target unit " + GetUnitName(GetOrderTargetUnit()))
 			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() == A_ORDER_ID_SMART and GetOrderTargetItem() != null and not IsItemPowerup(GetOrderTargetItem()) and this.inventoryIsFull()
 		endmethod
 		
@@ -2248,10 +2267,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
 		
-		private static method timerFunctionRemoveOneCharge takes nothing returns nothing
+		private static method timerFunctionDropItemWithAllCharges takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
-			call this.setRucksackItemCharges(index, this.m_rucksackItemData[index].charges() - 1)
+			local item whichItem = AHashTable.global().handleItem(GetExpiredTimer(), "item")
+			call this.dropItemWithAllCharges(whichItem)
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
@@ -2304,42 +2324,19 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call AHashTable.global().setHandleBoolean(whichTimer, "left", left)
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionShowPageItem)
 				elseif (index != -1) then
-					// destack and drop
-					if (this.m_rucksackItemData[index].charges() > 1) then
-						debug call Print("Destacking and dropping item " + GetItemName(GetManipulatedItem()))
-						if (GetItemType(GetManipulatedItem()) == ITEM_TYPE_CHARGED) then
-							debug call Print("Is charged so 1")
-							call SetItemCharges(GetManipulatedItem(), 1)
-						else
-							debug call Print("Is not charged so 0")
-							call SetItemCharges(GetManipulatedItem(), 0)
-						endif
-						/*
-						* When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
-						*/
-						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), true)
-						
-						/*
-						 * Wait 0 seconds until the item is actually dropped and show the old item with minus one charge.
-						 */
-						set whichTimer = CreateTimer()
-						call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-						call AHashTable.global().setHandleInteger(whichTimer, "index", index)
-						call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionRemoveOneCharge)
-					// drop
-					else
-						// do not drop by this function since unit could also give the item to another character
-						call this.m_rucksackItemData[index].destroy()
-						set this.m_rucksackItemData[index] = 0
-
-						if (GetItemType(GetManipulatedItem()) != ITEM_TYPE_CHARGED) then
-							call SetItemCharges(GetManipulatedItem(), 0)
-						endif
-						/*
-						* When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
-						*/
-						call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), true)
-					endif
+					/*
+					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
+					 */
+					call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), true)
+					
+					/*
+					 * Wait 0 seconds until the item is actually dropped and show the old item with minus one charge.
+					 */
+					set whichTimer = CreateTimer()
+					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+					call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+					call AHashTable.global().setHandleItem(whichTimer, "item", GetManipulatedItem())
+					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionDropItemWithAllCharges)
 				debug else
 					debug call this.print("Item has no index. Doing nothing.")
 				endif
@@ -2351,6 +2348,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
 					call AHashTable.global().setHandleInteger(whichTimer, "index", index)
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionClearEquipmentType)
+					
+					/*
+					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
+					 */
+					call SetItemPlayer(GetManipulatedItem(), Player(PLAYER_NEUTRAL_PASSIVE), true)
 				debug else
 					debug call this.print("Item has no index. Doing nothing.")
 				endif
