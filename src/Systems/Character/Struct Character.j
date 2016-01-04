@@ -147,6 +147,9 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			return this.m_talkLog
 		endmethod
 
+		/**
+		 * \return Returns the size of the character's spells.
+		 */
 		public method spellCount takes nothing returns integer
 			return this.m_spells.size()
 		endmethod
@@ -460,6 +463,9 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			call this.m_spells.remove(spell)
 		endmethod
 
+		/**
+		 * \return Returns the character spell with index \p index.
+		 */
 		public method spell takes integer index returns ASpell
 			return this.m_spells[index]
 		endmethod
@@ -625,11 +631,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			set this.m_player = null
 			// members
 			// make sure the spell instances are destroyed as well, otherwise on repick they will stay available
-			loop
-				exitwhen (this.m_spells.empty())
-				call ASpell(this.m_spells.back()).destroy()
-			endloop
-			call this.m_spells.destroy()
+			call this.destroySpells.evaluate() // new OpLimit
 
 			call this.removeUnit()
 			if (thistype.m_destroyOnPlayerLeaves or thistype.m_shareOnPlayerLeaves) then
@@ -639,6 +641,14 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				call this.destroyDeathTrigger()
 			endif
 			call this.destroySystems()
+		endmethod
+		
+		private method destroySpells takes nothing returns nothing
+			loop
+				exitwhen (this.m_spells.empty())
+				call ASpell(this.m_spells.back()).destroy()
+			endloop
+			call this.m_spells.destroy()
 		endmethod
 
 		/**
