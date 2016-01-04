@@ -1,22 +1,22 @@
-library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, AStructCoreMathsVector3, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsUnit, ALibraryCoreInterfaceSelection
-
-	/// OnCollisionFunction functions can be set by method \ref AMissileType.setOnCollisionFunction and will be called when missile collides.
-	function interface AMissileTypeOnCollisionFunction takes AMissile missile returns nothing
+library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsReal, ALibraryCoreMathsUnit, ALibraryCoreInterfaceSelection
 
 	/// OnDeathFunction functions can by set by method \ref AMissileType.setOnDeathFunction and will be called when missile hits target.
 	function interface AMissileTypeOnDeathFunction takes AMissile missile returns nothing
 
+	/**
+	 * \brief Missile types can be used for one or several missiles. They determine the missile's behaviour.
+	 */
 	struct AMissileType
 		private player m_owner
 		private integer m_unitType
 		private real m_speed
+		private real m_maxHeight
 		private boolean m_targetSeeking
-		private boolean m_collides
+		private real m_collisionRadius
 		private boolean m_destroyOnDeath
 		private string m_deathEffectPath
 		private string m_startSoundPath
 		private string m_deathSoundPath
-		private AMissileTypeOnCollisionFunction m_onCollisionFunction
 		private AMissileTypeOnDeathFunction m_onDeathFunction
 
 		public method setOwner takes player owner returns nothing
@@ -45,6 +45,14 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method speed takes nothing returns real
 			return this.m_speed
 		endmethod
+		
+		public method setMaxHeight takes real maxHeight returns nothing
+			set this.m_maxHeight = maxHeight
+		endmethod
+		
+		public method maxHeight takes nothing returns real
+			return this.m_maxHeight
+		endmethod
 
 		public method setTargetSeeking takes boolean targetSeeking returns nothing
 			set this.m_targetSeeking = targetSeeking
@@ -53,15 +61,27 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method targetSeeking takes nothing returns boolean
 			return this.m_targetSeeking
 		endmethod
-
-		public method setCollides takes boolean collides returns nothing
-			set this.m_collides = collides
+		
+		/**
+		 * The collision radius is used at the target point or widget. When the missile reaches its target at this radius it will collide and therefore stop.
+		 * @{
+		 */
+		public method setCollisionRadius takes real collisionRadius returns nothing
+			set this.m_collisionRadius = collisionRadius
 		endmethod
-
-		public method collides takes nothing returns boolean
-			return this.m_collides
+		
+		public method collisionRadius takes nothing returns real
+			return this.m_collisionRadius
 		endmethod
+		/**
+		 * @}
+		 */
 
+		/**
+		 * If this value is true, the missile will be destroyed when it reaches its target and "dies".
+		 *
+		 * @{
+		 */
 		public method setDestroyOnDeath takes boolean destroyOnDeath returns nothing
 			set this.m_destroyOnDeath = destroyOnDeath
 		endmethod
@@ -69,6 +89,9 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method destroyOnDeath takes nothing returns boolean
 			return this.m_destroyOnDeath
 		endmethod
+		/**
+		 * @}
+		 */
 
 		public method setDeathEffectPath takes string deathEffectPath returns nothing
 			set this.m_deathEffectPath = deathEffectPath
@@ -94,14 +117,10 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			return this.m_deathSoundPath
 		endmethod
 
-		public method setOnCollisionFunction takes AMissileTypeOnCollisionFunction onCollisionFunction returns nothing
-			set this.m_onCollisionFunction = onCollisionFunction
-		endmethod
-
-		public method onCollisionFunction takes nothing returns AMissileTypeOnCollisionFunction
-			return this.m_onCollisionFunction
-		endmethod
-
+		/**
+		 * @{
+		 * The onDeathFunction is called whenever the missile is stopped. It is called with .evaluate().
+		 */
 		public method setOnDeathFunction takes AMissileTypeOnDeathFunction onDeathFunction returns nothing
 			set this.m_onDeathFunction = onDeathFunction
 		endmethod
@@ -109,62 +128,65 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method onDeathFunction takes nothing returns AMissileTypeOnDeathFunction
 			return this.m_onDeathFunction
 		endmethod
+		/**
+		 * @}
+		 */
 
 		public static method create takes nothing returns thistype
 			local thistype this = thistype.allocate()
-			//dynamic members
+			// dynamic members
 			set this.m_owner = null
 			set this.m_unitType = 'hfoo'
 			set this.m_speed = 100.0
+			set this.m_maxHeight = 100.0
 			set this.m_targetSeeking = false
-			set this.m_collides = false
+			set this.m_collisionRadius = 30.0
 			set this.m_destroyOnDeath = false
 			set this.m_deathEffectPath = null
 			set this.m_startSoundPath = null
 			set this.m_deathSoundPath = null
-			set this.m_onCollisionFunction = 0
 			set this.m_onDeathFunction = 0
 			return this
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
-			//dynamic members
+			// dynamic members
 			set this.m_owner = null
 		endmethod
 	endstruct
 
 	/**
 	 * Provides the functionality of a single physical missile which can have a specific missile type, a widget source and target or three coordinate values (x, y and z).
-	 * \todo Incompleted!
-	 * \todo Add static methods for missile containers.
+	 * All missiles are moved by a timer at a certain periodical interval.
+	 * To provide a graphic for the missile you have to create a custom unit type with the graphic as model.
+	 * For simiplification it does not use any gravity. It just uses a parabola function to deterimne the curve.
 	 * \todo Collision between missiles?!
-	 * \author Draculark
 	 * \author Tamino Dauth
-	 * <a href="http://warcraft.ingame.de/forum/showthread.php?s=6f44abe813a621c950b94373b91ed929&threadid=186184">source</a>
 	 */
 	struct AMissile
-		//static start members
+		// static construction members
 		private static real m_refreshTime
-		private static real m_gravitationalAcceleration
-		private static boolean m_enableCollisions
-		//static members
+		// static members
 		private static AIntegerVector m_missiles
 		private static timer m_refreshTimer
-		//dynamic members
+		private static boolean m_refreshTimerStarted
+		// dynamic members
 		private AMissileType m_missileType
 		private real m_targetX
 		private real m_targetY
 		private real m_targetZ
 		private widget m_targetWidget
 		private boolean m_isPaused
-		//members
-		private AVector3 m_speed
+		// members
 		private unit m_unit
+		private real m_startX
+		private real m_startY
+		private real m_startDistance
 		private integer m_index
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AMissile\"")
 
-		//dynamic members
+		// dynamic members
 
 		public method setMissileType takes AMissileType missileType returns nothing
 			set this.m_missileType = missileType
@@ -214,13 +236,25 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			return this.m_isPaused
 		endmethod
 
-		//members
+		// members
 
 		public method unit takes nothing returns unit
 			return this.m_unit
 		endmethod
+		
+		public method startX takes nothing returns real
+			return this.m_startX
+		endmethod
+		
+		public method startY takes nothing returns real
+			return this.m_startY
+		endmethod
+		
+		public method startDistance takes nothing returns real
+			return this.m_startDistance
+		endmethod
 
-		//convenience methods
+		// convenience methods
 
 		public method startFromUnit takes unit whichUnit returns nothing
 			call this.start.evaluate(GetUnitX(whichUnit), GetUnitY(whichUnit), 0.0)
@@ -240,67 +274,70 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			set this.m_isPaused = false
 		endmethod
 
-		//public methods
+		// public methods
 
-		public method onTheWay takes nothing returns boolean
-			return this.m_speed != 0
-		endmethod
-
+		/**
+		 * \return Returns the current X coordinate of the missile.
+		 */
 		public method x takes nothing returns real
-static if (DEBUG_MODE) then
-			if (not this.onTheWay()) then
-				call this.print("Is not on the way.")
-				return 0.0
-			endif
-endif
 			return GetUnitX(this.m_unit)
 		endmethod
 
+		/**
+		 * \return Returns the current Y coordinate of the missile.
+		 */
 		public method y takes nothing returns real
-static if (DEBUG_MODE) then
-			if (not this.onTheWay()) then
-				call this.print("Is not on the way.")
-				return 0.0
-			endif
-endif
 			return GetUnitY(this.m_unit)
 		endmethod
 
+		/**
+		 * \return Returns the current Z coordinate of the missile.
+		 */
 		public method z takes nothing returns real
-static if (DEBUG_MODE) then
-			if (not this.onTheWay()) then
-				call this.print("Is not on the way.")
-				return 0.0
-			endif
-endif
 			return GetUnitZ(this.m_unit)
 		endmethod
+		
+		private method angleBetweenTarget takes real x, real y returns real
+			if (this.m_targetWidget != null) then
+				return GetAngleBetweenPoints(x, y, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget))
+			else
+				return GetAngleBetweenPoints(x, y, this.m_targetX, this.m_targetY)
+			endif
+		endmethod
+		
+		private method distanceBetweenTarget takes real x, real y returns real
+			if (this.m_targetWidget != null) then
+				return GetDistanceBetweenPointsWithoutZ(x, y, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget))
+			else
+				return GetDistanceBetweenPointsWithoutZ(x, y, this.m_targetX, this.m_targetY)
+			endif
+		endmethod
 
-		/// Starts the missile from coordinates \p x, \p y, and \p z with angle \p angle.
+		/// Starts the missile from coordinates \p x, \p y, and \p z.
 		public method start takes real x, real y, real z returns nothing
-			local real angle
-			debug if (this.onTheWay()) then
+			local real angle = this.angleBetweenTarget(x, y)
+			debug if (not this.isPaused()) then
 				debug call this.print("Missile has already been started.")
 				debug return
 			debug endif
 			debug if (this.m_missileType == 0) then
 				debug call this.print("Can't start with missile type 0.")
 			debug endif
-			if (this.m_targetWidget != null) then
-
-				set angle = GetAngleBetweenPoints(x, y, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget))
-			else
-				set angle = GetAngleBetweenPoints(x, y, this.m_targetX, this.m_targetY)
-			endif
-			set this.m_speed = AVector3.create(this.m_missileType.speed(), this.m_missileType.speed(), this.m_missileType.speed())
-			call this.m_speed.rotate(angle)
 			set this.m_unit = CreateUnit(this.m_missileType.owner(), this.m_missileType.unitType(), x, y, angle)
 			call SetUnitInvulnerable(this.m_unit, true)
 			call MakeUnitSelectable(this.m_unit, false)
+			call MakeUnitFlyable(this.m_unit)
 			call SetUnitZ(this.m_unit, z)
+			set this.m_startX = x
+			set this.m_startY = y
+			set this.m_startDistance = this.distanceBetweenTarget(x, y)
 			set this.m_isPaused = false
 			if (this.m_missileType.startSoundPath() != null) then
 				call PlaySoundFileAt(this.m_missileType.startSoundPath(), x, y, z)
+			endif
+			
+			if (not thistype.m_refreshTimerStarted) then
+				call thistype.enable.evaluate()
 			endif
 		endmethod
 
@@ -319,14 +356,15 @@ endif
 			if (this.m_missileType.deathSoundPath() != null) then
 				call PlaySoundFileAt(this.m_missileType.deathSoundPath(), GetUnitX(this.m_unit), GetUnitY(this.m_unit), GetUnitZ(this.m_unit))
 			endif
-			call this.m_speed.destroy()
-			set this.m_speed = 0
 			call KillUnit(this.m_unit)
 			call RemoveUnit(this.m_unit)
 			set this.m_unit = null
 			set this.m_isPaused = true
+			/*
+			 * Call user-defined event handler function to run user-defined code.
+			 */
 			if (this.m_missileType.onDeathFunction() != 0) then
-				call this.m_missileType.onDeathFunction().execute(this)
+				call this.m_missileType.onDeathFunction().evaluate(this)
 			endif
 			if (this.m_missileType.destroyOnDeath()) then
 				call this.destroy()
@@ -339,73 +377,40 @@ endif
 			local rect mapRect = GetPlayableMapRect()
 			local real currentX = GetUnitX(this.m_unit)
 			local real currentY = GetUnitY(this.m_unit)
-			local real angle
+			local real angle = GetUnitFacing(this.m_unit)
 			local real newX
 			local real newY
 			local real newZ
 			local integer i
-			local boolean collided = false
 
+			// if it is not target seeking, it just moves into the direction where it started to
 			if (this.m_missileType.targetSeeking()) then
-				if (this.m_targetWidget != null) then
-					//set currentDistance = GetDistanceBetweenPoints(currentX, currentY, 0.0, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget), 0.0)
-					set angle = GetAngleBetweenPoints(currentX, currentY, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget))
-				else
-					//set currentDistance = GetDistanceBetweenPoints(currentX, currentY, 0.0, this.m_targetX, this.m_targetY, 0.0)
-					set angle = GetAngleBetweenPoints(currentX, currentY, this.m_targetX, this.m_targetY)
-				endif
-				call this.m_speed.rotate(angle)
+				set angle = this.angleBetweenTarget(currentX, currentY)
 				call SetUnitFacing(this.m_unit, angle)
 			endif
 			set newX = GetPolarProjectionX(currentX, angle, this.m_missileType.speed())
 			set newY = GetPolarProjectionY(currentY, angle, this.m_missileType.speed())
 
-			debug call this.print("Move")
-
-			if (RectContainsCoords(mapRect, newX, newY) and not IsTerrainPathable(newX, newY, PATHING_TYPE_WALKABILITY)) then //not?!
-				debug call this.print("Is pathable and on map.")
-				/// \todo Doesn't work if it's target seeking, Z value has to be shortend much more if target gets nearer to missile position?
-				call this.m_speed.setZ(this.m_speed.z() - thistype.m_gravitationalAcceleration)
-				set newZ = GetUnitZ(this.m_unit) + this.m_speed.z()
-				debug call this.print("New X " + R2S(newX) + ", new Y " + R2S(newY) + ", new Z " + R2S(newZ) + ".")
-				// hits ground
-				if (newZ <= GetTerrainZ(newX, newY)) then
-					debug call this.print("Hit ground")
+			if (RectContainsCoords(mapRect, newX, newY) and not IsTerrainPathable(newX, newY, PATHING_TYPE_WALKABILITY)) then // not since the function returns the inverse result
+				// if it is not target seeking it stops at the distance but in its initial direction
+				if (not this.missileType().targetSeeking() and GetDistanceBetweenPointsWithoutZ(newX, newY, this.startX(), this.startY()) >= this.startDistance()) then
 					call this.stop()
-				elseif (this.m_missileType.collides()) then
-					/// \todo Check for things, maybe other missiles?
-					set i = 0
-					loop
-						exitwhen (i == thistype.m_missiles.size())
-						// collides with missile
-						if (i != this.m_index and thistype(thistype.m_missiles[i]).m_missileType.collides() and newX == thistype(thistype.m_missiles[i]).x() and newY == thistype(thistype.m_missiles[i]).y() and newZ == thistype(thistype.m_missiles[i]).z()) then
-							debug call this.print("Collision between " + I2S(this) + " and " + I2S(thistype.m_missiles[i]) + ".")
-							set collided = true
-							call thistype(thistype.m_missiles[i]).stop()
-							call this.stop()
-							exitwhen (true)
-						endif
-						set i = i + 1
-					endloop
-				endif
-
-				if (not collided) then
-					debug call this.print("Not collided.")
-					// hits target widget
-					if (this.m_targetWidget != null and newX == GetWidgetX(this.m_targetWidget) and newY == GetWidgetY(this.m_targetWidget) and newZ == GetWidgetZ(this.m_targetWidget)) then
-						call this.stop()
-					// hits target point
-					elseif (newX == this.m_targetX and newY == this.m_targetY and newZ == this.m_targetZ) then
-						call this.stop()
-					else
-						call SetUnitX(this.m_unit, newX)
-						call SetUnitY(this.m_unit, newY)
-						call SetUnitZ(this.m_unit, newZ)
-						debug call this.print("2 New X " + R2S(newX) + ", new Y " + R2S(newY) + ", new Z " + R2S(newZ) + ".")
-					endif
+				// hits target widget
+				elseif (this.m_targetWidget != null and GetDistanceBetweenPointsWithoutZ(newX, newY, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget)) <= this.missileType().collisionRadius()) then
+					call this.stop()
+				// hits target point
+				elseif (GetDistanceBetweenPointsWithoutZ(newX, newY, this.targetX(), this.targetY()) <= this.missileType().collisionRadius()) then
+					call this.stop()
+				// normal movement, no collision, no target
+				else
+					set newZ = ParabolaZ(this.m_missileType.maxHeight(), this.startDistance(), newX)
+					call SetUnitX(this.m_unit, newX)
+					call SetUnitY(this.m_unit, newY)
+					call SetUnitZ(this.m_unit, newZ)
 				endif
 			// out of map rect
 			else
+				debug call this.print("Reached map bounds")
 				call this.stop()
 			endif
 			set mapRect = null
@@ -417,8 +422,10 @@ endif
 			set this.m_missileType = 0
 			set this.m_isPaused = true
 			// members
-			set this.m_speed = 0
 			set this.m_unit = null
+			set this.m_startX = 0.0
+			set this.m_startY = 0.0
+			set this.m_startDistance = 0.0
 			call thistype.m_missiles.pushBack(this)
 			set this.m_index = thistype.m_missiles.backIndex()
 			return this
@@ -427,10 +434,10 @@ endif
 		public method onDestroy takes nothing returns nothing
 			// static members
 			call thistype.m_missiles.erase(this.m_index)
-			// members
-			if (this.m_speed != 0) then
-				call this.m_speed.destroy()
+			if (thistype.m_missiles.empty()) then
+				call thistype.disable.evaluate()
 			endif
+			// members
 			if (this.m_unit != null) then
 				call RemoveUnit(this.m_unit)
 			endif
@@ -441,7 +448,7 @@ endif
 			local integer i = thistype.m_missiles.backIndex()
 			loop
 				exitwhen (i < 0)
-				if (not thistype(thistype.m_missiles[i]).m_isPaused) then
+				if (not thistype(thistype.m_missiles[i]).isPaused()) then
 					call thistype(thistype.m_missiles[i]).move()
 				endif
 				set i = i - 1
@@ -451,18 +458,16 @@ endif
 		/**
 		 * \param gravitationalAcceleration Earth average: 9.80665.
 		 */
-		public static method init takes real refreshTime, real gravitationalAcceleration, boolean enableCollisions returns nothing
+		public static method init takes real refreshTime returns nothing
 			debug if (refreshTime <= 0.0) then
 				debug call thistype.staticPrint("Wrong value refresh time value in AMissile struct initialization: " + R2S(refreshTime) + ".")
 			debug endif
 			// static construction members
 			set thistype.m_refreshTime = refreshTime
-			set thistype.m_gravitationalAcceleration = gravitationalAcceleration * refreshTime
-			set thistype.m_enableCollisions = enableCollisions
 			// static members
 			set thistype.m_missiles = AIntegerVector.create()
 			set thistype.m_refreshTimer = CreateTimer()
-			call TimerStart(thistype.m_refreshTimer, thistype.m_refreshTime, true, function thistype.timerFunctionRefresh)
+			set thistype.m_refreshTimerStarted = false
 		endmethod
 
 		public static method cleanUp takes nothing returns nothing
@@ -478,62 +483,31 @@ endif
 		endmethod
 
 		public static method enable takes nothing returns nothing
-			call ResumeTimer(thistype.m_refreshTimer)
+			if (not thistype.m_refreshTimerStarted) then
+				set thistype.m_refreshTimerStarted = true
+				call TimerStart(thistype.m_refreshTimer, thistype.m_refreshTime, true, function thistype.timerFunctionRefresh)
+			endif
 		endmethod
 
 		public static method disable takes nothing returns nothing
-			call PauseTimer(thistype.m_refreshTimer)
+			if (thistype.m_refreshTimerStarted) then
+				set thistype.m_refreshTimerStarted = false
+				call PauseTimer(thistype.m_refreshTimer)
+			endif
 		endmethod
 
-		//dynamic static members
+		// static construction members
 
 		public static method refreshTime takes nothing returns real
 			return thistype.m_refreshTime
 		endmethod
-
-		//convenience methods
-		/*
-		public static method createCircle takes real x, real y, real z, real distance, integer count, boolean start, player owner, integer unitType, real speed, real damage, real damageRange, unit damageSource, attacktype attackType, damagetype damageType, weapontype weaponType, boolean collides, string deathEffectPath, string deathSoundPath returns AMissileVector
-			local AMissileVector vector = AMissileVector.create()
-			local thistype missile
-			local real angle = 0.0
-			local real angleValue = 360.0 / count
-			local integer i = 0
-			loop
-				exitwhen (i == count)
-				set missile = thistype.create()
-				call missile.setOwner(owner)
-				call missile.setUnitType(unitType)
-				call missile.setSpeed(speed)
-				call missile.setDamage(damage)
-				call missile.setDamageRange(damageRange)
-				call missile.setDamageSource(damageSource)
-				call missile.setAttackType(attackType)
-				call missile.setDamageType(damageType)
-				call missile.setWeaponType(weaponType)
-				call missile.setCollides(collides)
-				call missile.setTargetX(GetPolarProjectionX(x, angle, distance))
-				call missile.setTargetY(GetPolarProjectionY(y, angle, distance))
-				call missile.setDeathEffectPath(deathEffectPath)
-				call missile.setDeathSoundPath(deathSoundPath)
-				call vector.pushBack(missile)
-				if (start) then
-					call missile.start(x, y, z, angle)
-				endif
-				set angle = angle + angleValue
-				set i = i + 1
-			endloop
-			return missile
-		endmethod
-
-		public static method createCircleFromUnit takes unit usedUnit, real distance, integer count, boolean start, player owner, integer unitType, real speed, real damage, real damageRange, unit damageSource, attacktype attackType, damagetype damageType, weapontype weaponType, boolean collides, string deathEffectPath, string deathSoundPath returns AMissileVector
-			return thistype.createCircle(GetUnitX(usedUnit), GetUnitY(usedUnit), GetUnitZ(usedUnit), distance, count, start, owner, unitType, speed, damage, damageRange, damageSource, attackType, damageType, weaponType, collides, deathEffectPath, deathSoundPath)
-		endmethod
-		*/
 	endstruct
 
+	/**
+	 * \brief Example missile type which causes damage to the target point or target widget.
+	 */
 	struct ADamageMissileType extends AMissileType
-		//dynamic members
+		// dynamic members
 		private real m_damage
 		private real m_damageRange
 		private unit m_damageSource
@@ -605,7 +579,7 @@ endif
 
 		public static method create takes nothing returns thistype
 			local thistype this = thistype.allocate()
-			//dynamic members
+			// dynamic members
 			set this.m_damage = 0.0
 			set this.m_damageRange = 0.0
 			set this.m_damageSource = null
@@ -618,7 +592,7 @@ endif
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
-			//dynamic members
+			// dynamic members
 			set this.m_damageSource = null
 			set this.m_attackType = null
 			set this.m_damageType = null
