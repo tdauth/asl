@@ -220,14 +220,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * If no empty slot is used the items however can not be dropped with all stacks at once (which the empty slot was used for).
 		 */
 		public static constant integer maxEquipmentTypes = 6 /// \ref AItemType.equipmentTypeAmulet gets the last two slots. Therefore two amulets can be carried. \todo \ref AItemType.maxEuqipmentTypes, vJass bug
-		public static constant integer maxRucksackItems = 90
 		public static constant integer maxRucksackPages = 30 //maxRucksackItems / maxRucksackItemsPerPage
-		public static constant integer previousPageItemSlot = 4
-		public static constant integer nextPageItemSlot = 5
 		/**
 		 * Leave one slot empty that the character can always pick up an item.
 		 */
 		public static constant integer maxRucksackItemsPerPage = 4
+		public static constant integer maxRucksackItems = 120 // TODO thistype.maxRucksackPages * thistype.maxRucksackItemsPerPage
+		public static constant integer previousPageItemSlot = 4
+		public static constant integer nextPageItemSlot = 5
 		// static construction members
 		private static integer m_leftArrowItemType
 		private static integer m_rightArrowItemType
@@ -1753,7 +1753,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				if (oldPage == 0) then
 					debug call this.print("Is first page")
 					set i = thistype.maxRucksackItems - 1
+					debug call this.print("Starting with index " + I2S(i))
 					set exitValue = thistype.maxRucksackItems - thistype.maxRucksackItemsPerPage
+					debug call this.print("Ending with value " + I2S(exitValue))
 				else
 					set i = oldPage * thistype.maxRucksackItemsPerPage - 1
 					set exitValue = i - thistype.maxRucksackItemsPerPage
@@ -1844,10 +1846,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						call this.equipItem(movedItem, false, true, true) //test
 						set characterUnit = null
 					else
-						call this.character().displayMessage(ACharacter.messageTypeError, tr("Das Ausrüsten von Gegenständen ist momentan nicht möglich."))
+						call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
 					endif
 				else
-					call this.character().displayMessage(ACharacter.messageTypeError, tr("Gegenstand kann nicht angelegt werden."))
+					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
 				endif
 				
 				set movedItem = null
