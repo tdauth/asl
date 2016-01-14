@@ -249,6 +249,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static item array m_targetItem[12] // TODO bj_MAX_PLAYERS
 		
 		// dynamic members
+		/**
+		 * The item type ID of the placeholder items for the equipment.
+		 */
 		private integer array m_equipmentItemTypeId[thistype.maxEquipmentTypes]
 		
 		// members
@@ -275,6 +278,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		private trigger m_pickupTrigger
 		private trigger m_dropTrigger
+		private trigger m_pawnTrigger
+		/**
+		 * Stores the currently open rucksack page.
+		 */
 		private integer m_rucksackPage
 		/**
 		 * This flag indicates if the rucksack is shown or the equipment is shown instead.
@@ -1471,6 +1478,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			set itemPlayer = GetItemPlayer(usedItem)
 			
+			/*
+			 * If configured it is not allowed to pickup items from other players.
+			 */
 			if (not thistype.m_allowPickingUpFromOthers and itemPlayer != this.character().player() and IsPlayerPlayingUser(itemPlayer)) then
 				if (thistype.m_textOwnedByOther != null) then
 					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
@@ -2307,7 +2317,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			 *
 			 * One solution is to start a 0 timer, not TriggerSleepAction() since it has a low resolution and after the 0 timer has expired to reset the page item.
 			 */
-			
 			if (this.rucksackIsEnabled()) then
 				// page items
 				if (GetItemTypeId(GetManipulatedItem()) == thistype.m_leftArrowItemType or GetItemTypeId(GetManipulatedItem()) == thistype.m_rightArrowItemType) then
@@ -2325,6 +2334,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
 					call AHashTable.global().setHandleBoolean(whichTimer, "left", left)
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionShowPageItem)
+				// usual item from the rucksack
 				elseif (index != -1) then
 					/*
 					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
@@ -2368,6 +2378,56 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerAddCondition(this.m_dropTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
 			call TriggerAddAction(this.m_dropTrigger, function thistype.triggerActionDrop)
 			call AHashTable.global().setHandleInteger(this.m_dropTrigger, "this", this)
+		endmethod
+		
+		private static method triggerConditionIsCharacter takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return GetTriggerUnit() == this.character().unit()
+		endmethod
+		
+		private static method timerFunctionPawnOneCharge takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			local integer charges = this.m_rucksackItemData[index].charges() - 1
+			if (charges <= 0) then
+				call this.clearRucksackSlot(index)
+			else
+				call this.setRucksackItemCharges(index, charges)
+			endif
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
+		endmethod
+		
+		private static method triggerActionPawn takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local integer index = this.itemIndex(GetSoldItem())
+			local timer whichTimer
+			debug call this.print("Pawning item " + GetItemName(GetSoldItem()) + " in trigger " + I2S(GetHandleId(GetTriggeringTrigger())))
+			debug if (not UnitHasItem(GetTriggerUnit(), GetSoldItem())) then
+			debug call this.print("Unit has dropped item successfully.")
+			debug else
+			debug call this.print("Unit still has item")
+			debug endif
+			
+			debug call Print("PAWN STOP!!")
+			
+			/*
+			 * Tests showed that the unit still has the item when this event is triggered.
+			 * Therefore a 0 timer has to be used to run code after the pawning.
+			 */
+			call SetItemCharges(GetSoldItem(), 1) // only sell 1 charge
+			set whichTimer = CreateTimer()
+			call AHashTable.global().setHandleInteger(whichTimer, "this", this)
+			call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionPawnOneCharge)
+		endmethod
+		
+		private method createPawnTrigger takes nothing returns nothing
+			set this.m_pawnTrigger = CreateTrigger()
+			call TriggerRegisterAnyUnitEventBJ(this.m_pawnTrigger, EVENT_PLAYER_UNIT_PAWN_ITEM)
+			call TriggerAddCondition(this.m_pawnTrigger, Condition(function thistype.triggerConditionIsCharacter))
+			call TriggerAddAction(this.m_pawnTrigger, function thistype.triggerActionPawn)
+			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, "this", this)
 		endmethod
 
 		private static method triggerConditionUse takes nothing returns boolean
@@ -2445,6 +2505,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.createShopDeselectionTrigger()
 			call this.createPickupTrigger()
 			call this.createDropTrigger()
+			call this.createPawnTrigger()
 			call this.createUseTrigger()
 			
 			debug call Print("Creating inventory for character of player " + GetPlayerName(character.player()))
@@ -2486,6 +2547,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().destroyTrigger(this.m_dropTrigger)
 			set this.m_dropTrigger = null
 		endmethod
+		
+		private method destroyPawnTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_pawnTrigger)
+			set this.m_pawnTrigger = null
+		endmethod
 
 		private method destroyUseTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_useTrigger)
@@ -2520,6 +2586,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.destroyShopDeselectionTrigger()
 			call this.destroyPickupTrigger()
 			call this.destroyDropTrigger()
+			call this.destroyPawnTrigger()
 			call this.destroyUseTrigger()
 		endmethod
 

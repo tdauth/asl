@@ -45,7 +45,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		private static AIntegerVector m_abstractQuests
 		private static timer m_pingTimer
 		// dynamic members
-		private integer m_state /// Should be setted by state method.
+		private integer m_state /// Should be set by state method.
 		private AAbstractQuestStateCondition array m_stateCondition[thistype.maxStates]
 		private AAbstractQuestStateAction array m_stateAction[thistype.maxStates]
 		private integer array m_reward[thistype.maxRewards]
