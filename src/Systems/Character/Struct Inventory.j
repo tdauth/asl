@@ -2283,7 +2283,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
 			local item whichItem = AHashTable.global().handleItem(GetExpiredTimer(), "item")
-			call this.dropItemWithAllCharges(whichItem)
+			/*
+			 * If the item is already gone, it might have been pawned.
+			 * In this case do nothing.
+			 */
+			if (whichItem != null and thistype.itemIndex(whichItem) != -1) then
+				call this.dropItemWithAllCharges(whichItem)
+			debug else
+				debug call this.print("Item is already gone.")
+			endif
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
@@ -2380,9 +2388,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(this.m_dropTrigger, "this", this)
 		endmethod
 		
-		private static method triggerConditionIsCharacter takes nothing returns boolean
+		private static method triggerConditionIsCharacterAndRucksackIsEnabled takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			return GetTriggerUnit() == this.character().unit()
+			return GetTriggerUnit() == this.character().unit() and this.rucksackIsEnabled()
 		endmethod
 		
 		private static method timerFunctionPawnOneCharge takes nothing returns nothing
@@ -2411,6 +2419,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			debug call Print("PAWN STOP!!")
 			
+			// prevent drop action from firing
+			call DisableTrigger(this.m_dropTrigger)
+			
 			/*
 			 * Tests showed that the unit still has the item when this event is triggered.
 			 * Therefore a 0 timer has to be used to run code after the pawning.
@@ -2420,12 +2431,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(whichTimer, "this", this)
 			call AHashTable.global().setHandleInteger(whichTimer, "index", index)
 			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionPawnOneCharge)
+			
+			// reanable drop trigger
+			call EnableTrigger(this.m_dropTrigger)
 		endmethod
 		
 		private method createPawnTrigger takes nothing returns nothing
 			set this.m_pawnTrigger = CreateTrigger()
 			call TriggerRegisterAnyUnitEventBJ(this.m_pawnTrigger, EVENT_PLAYER_UNIT_PAWN_ITEM)
-			call TriggerAddCondition(this.m_pawnTrigger, Condition(function thistype.triggerConditionIsCharacter))
+			call TriggerAddCondition(this.m_pawnTrigger, Condition(function thistype.triggerConditionIsCharacterAndRucksackIsEnabled))
 			call TriggerAddAction(this.m_pawnTrigger, function thistype.triggerActionPawn)
 			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, "this", this)
 		endmethod
