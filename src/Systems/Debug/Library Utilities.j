@@ -113,7 +113,8 @@ endif
 		if (amount == -1) then
 			debug call Print(Format(tr(A_TEXT_PLAYER_STATE_AMOUNT)).s(playerStateName).i(GetPlayerState(whichPlayer, whichPlayerState)).result())
 		else
-			call AdjustPlayerStateBJ(amount, whichPlayer, whichPlayerState)
+			// don't adjust which would add gathered gold
+			call SetPlayerState(whichPlayer, whichPlayerState, GetPlayerState(whichPlayer, whichPlayerState) + amount)
 			debug call Print(Format(tr(A_TEXT_PLAYER_STATE_ADDED)).i(amount).s(playerStateName).result())
 		endif
 	endfunction
