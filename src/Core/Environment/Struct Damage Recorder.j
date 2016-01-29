@@ -24,12 +24,12 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		private static trigger m_globalDamageDetectionDeathTrigger
 		// dynamic members
 		private ADamageRecorderOnDamageAction m_onDamageAction
-		private boolean m_saveData
+		private boolean m_saveData = false
 		// construction members
 		private unit m_target
 		// members
-		private AUnitVector m_damageSources
-		private ARealVector m_damageAmounts
+		private AUnitVector m_damageSources = 0
+		private ARealVector m_damageAmounts = 0
 		private real m_totalDamage
 		private trigger m_damageTrigger
 
@@ -49,9 +49,20 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		 * \param saveData If this value is true damage sources and amounts will be saved.
 		 * \sa saveData()
 		 * \sa defaultSaveData
+		 * \note If set to false the stored sources and amounts are discarded.
 		 */
 		public method setSaveData takes boolean saveData returns nothing
+			if (this.m_saveData == saveData) then
+				return
+			endif
 			set this.m_saveData = saveData
+			if (saveData) then
+				set this.m_damageSources = AUnitVector.create()
+				set this.m_damageAmounts = ARealVector.create()
+			else
+				call this.m_damageSources.destroy()
+				call this.m_damageAmounts.destroy()
+			endif
 		endmethod
 
 		/**
@@ -150,8 +161,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		debug endmethod
 
 		private static method triggerActionDamaged takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			if (this.m_saveData) then
 				if (this.m_damageSources.size() == AIntegerVector.maxSize()) then
 					call this.m_damageSources.popFront()
@@ -162,18 +172,13 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 				set this.m_totalDamage = this.m_totalDamage + GetEventDamage()
 			endif
 			call this.onSufferDamage()
-			set triggeringTrigger = null
 		endmethod
 
 		private method createDamageTrigger takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_damageTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterUnitEvent(this.m_damageTrigger, this.m_target, EVENT_UNIT_DAMAGED)
-			set triggerAction = TriggerAddAction(this.m_damageTrigger, function thistype.triggerActionDamaged)
+			call TriggerRegisterUnitEvent(this.m_damageTrigger, this.m_target, EVENT_UNIT_DAMAGED)
+			call TriggerAddAction(this.m_damageTrigger, function thistype.triggerActionDamaged)
 			call AHashTable.global().setHandleInteger(this.m_damageTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		public static method create takes unit target returns thistype
@@ -183,12 +188,9 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			debug endif
 			// dynamic members
 			set this.m_onDamageAction = 0
-			set this.m_saveData = thistype.defaultSaveData
+			call this.setSaveData(thistype.defaultSaveData)
 			// construction members
 			set this.m_target = target
-			// members
-			set this.m_damageSources = AUnitVector.create()
-			set this.m_damageAmounts = ARealVector.create()
 
 			call this.createDamageTrigger()
 			return this
@@ -203,8 +205,10 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			// construction members
 			set this.m_target = null
 			// members
-			call this.m_damageSources.destroy()
-			call this.m_damageAmounts.destroy()
+			if (this.saveData()) then
+				call this.m_damageSources.destroy()
+				call this.m_damageAmounts.destroy()
+			endif
 
 			call this.destroyDamageTrigger()
 		endmethod
@@ -212,10 +216,14 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		private static method groupFunctionRegister takes nothing returns nothing
 			call thistype.registerGlobalUnit.evaluate(GetEnumUnit())
 		endmethod
+		
+		private static method unitIsNotDead takes nothing returns boolean
+			return not IsUnitDeadBJ(GetFilterUnit())
+		endmethod
 
 		private static method registerAllUnitsInPlayableMap takes nothing returns nothing
 			local group whichGroup = CreateGroup()
-			call GroupEnumUnitsInRect(whichGroup, bj_mapInitialPlayableArea, null)
+			call GroupEnumUnitsInRect(whichGroup, bj_mapInitialPlayableArea, Filter(function thistype.unitIsNotDead))
 			call ForGroup(whichGroup, function thistype.groupFunctionRegister)
 			call DestroyGroup(whichGroup)
 			set whichGroup = null
