@@ -279,6 +279,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private trigger m_pickupTrigger
 		private trigger m_dropTrigger
 		private trigger m_pawnTrigger
+		private trigger m_giveTrigger
 		/**
 		 * Stores the currently open rucksack page.
 		 */
@@ -2443,6 +2444,24 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerAddAction(this.m_pawnTrigger, function thistype.triggerActionPawn)
 			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, "this", this)
 		endmethod
+		
+		private static method triggerConditionGive takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			return GetTriggerUnit() == this.character().unit() and GetIssuedOrderId() == OrderId("smart") and GetOrderTargetItem() != null and GetOrderTargetUnit() != null
+		endmethod
+		
+		private static method triggerActionGive takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			debug call Print("Give item " + GetItemName(GetOrderTargetItem()) + " to " + GetUnitName(GetOrderTargetUnit()))
+		endmethod
+		
+		private method createGiveTrigger takes nothing returns nothing
+			set this.m_giveTrigger = CreateTrigger()
+			call TriggerRegisterAnyUnitEventBJ(this.m_giveTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
+			call TriggerAddCondition(this.m_giveTrigger, Condition(function thistype.triggerConditionGive))
+			call TriggerAddAction(this.m_giveTrigger, function thistype.triggerActionGive)
+			call AHashTable.global().setHandleInteger(this.m_giveTrigger, "this", this)
+		endmethod
 
 		private static method triggerConditionUse takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
@@ -2520,6 +2539,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.createPickupTrigger()
 			call this.createDropTrigger()
 			call this.createPawnTrigger()
+			call this.createGiveTrigger()
 			call this.createUseTrigger()
 			
 			debug call Print("Creating inventory for character of player " + GetPlayerName(character.player()))
@@ -2566,6 +2586,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().destroyTrigger(this.m_pawnTrigger)
 			set this.m_pawnTrigger = null
 		endmethod
+		
+		private method destroyGiveTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_giveTrigger)
+			set this.m_giveTrigger = null
+		endmethod
 
 		private method destroyUseTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_useTrigger)
@@ -2601,6 +2626,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.destroyPickupTrigger()
 			call this.destroyDropTrigger()
 			call this.destroyPawnTrigger()
+			call this.destroyGiveTrigger()
 			call this.destroyUseTrigger()
 		endmethod
 

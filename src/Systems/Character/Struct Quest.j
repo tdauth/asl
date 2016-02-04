@@ -20,6 +20,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		private AIntegerVector m_questItems
 		private string m_iconPath
 		private string m_description
+		private boolean m_isRequired
 		// members
 		private quest m_questLogQuest
 
@@ -55,6 +56,15 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 
 		public method description takes nothing returns string
 			return this.m_description
+		endmethod
+		
+		public method setIsRequired takes boolean isRequired returns nothing
+			set this.m_isRequired = isRequired
+			call QuestSetRequired(this.m_questLogQuest, isRequired)
+		endmethod
+		
+		public method isRequired takes nothing returns boolean
+			return this.m_isRequired
 		endmethod
 
 		// members
@@ -369,7 +379,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 				set this.m_questLogQuest = CreateQuest()
 				call QuestSetEnabled(this.m_questLogQuest, false)
 				//call this.setQuestLogState(this.state()) // hide quest before setting state
-				call QuestSetRequired(this.m_questLogQuest, this.character() == 0)
+				call QuestSetRequired(this.m_questLogQuest, this.isRequired())
 			endif
 		endmethod
 		
@@ -404,6 +414,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			local thistype this = thistype.allocate(character, title)
 			// dynamic members
 			set this.m_questItems = AIntegerVector.create()
+			set this.m_isRequired = this.character() == 0
 
 			call this.createQuestLogQuest()
 
