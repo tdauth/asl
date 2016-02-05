@@ -646,9 +646,14 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		private method destroySpells takes nothing returns nothing
 			loop
 				exitwhen (this.m_spells.empty())
-				call ASpell(this.m_spells.back()).destroy()
+				// new OpLimit
+				call this.destroySpell.evaluate(ASpell(this.m_spells.back()))
 			endloop
 			call this.m_spells.destroy()
+		endmethod
+		
+		private method destroySpell takes ASpell spell returns nothing
+			call spell.destroy()
 		endmethod
 
 		/**

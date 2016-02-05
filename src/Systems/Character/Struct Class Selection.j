@@ -438,6 +438,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
 			debug if (this.m_cameraSetup != null) then
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, 0.0)
+				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, this.m_refreshRate)
 			debug else
 				debug call this.print("No camera object.")
 			debug endif

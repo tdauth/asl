@@ -1899,6 +1899,24 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set characterUnit = null
 			set targetItem = null
 		endmethod
+		
+		/**
+		 * Opens or closes the rucksack.
+		 * \param rucksackIsEnabled If this value is true the rucksack will be open. Otherwise it will be closed.
+		 * \note If the value is equal to the current value nothing happens.
+		 */
+		public method setRucksackIsEnabled takes boolean rucksackIsEnabled returns nothing
+			if (rucksackIsEnabled == this.rucksackIsEnabled()) then
+				return
+			endif
+			if (not rucksackIsEnabled) then
+				call this.disableRucksack()
+				call this.enableEquipment()
+			else
+				call this.disableEquipment(true)
+				call this.enableRucksack()
+			endif
+		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
@@ -1908,13 +1926,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method triggerActionOpen takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			
-			if (this.rucksackIsEnabled()) then
-				call this.disableRucksack()
-				call this.enableEquipment()
-			else
-				call this.disableEquipment(true)
-				call this.enableRucksack()
-			endif
+			call this.setRucksackIsEnabled(not this.rucksackIsEnabled())
 		endmethod
 
 		/**
