@@ -1216,14 +1216,21 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		/**
-		 * Sets equipment item of type \p equipmentType to item \p usedItem and removes \p usedItem after that.
+		 * Sets equipment item of type \p equipmentType to item \p usedItem and removes \p usedItem after that if it has only 0 or 1 charges. Otherwise it reduces its charges.
+		 * \param usedItem This item is expected to be not in the rucksack of the character.
 		 */
-		private method setEquipmentItemByItem takes integer equipmentType, item usedItem, boolean add returns nothing
+		private method setEquipmentItemByItemOnTheGround takes integer equipmentType, item usedItem, boolean add returns nothing
 			local AInventoryItemData inventoryItemData = AInventoryItemData.create(usedItem, this.character().unit())
-			call DisableTrigger(this.m_dropTrigger)
-			call RemoveItem(usedItem)
-			call EnableTrigger(this.m_dropTrigger)
+			if (GetItemCharges(usedItem) == 0 or GetItemCharges(usedItem) == 1) then
+				debug call Print("Item charges are 0 or 1")
+				call RemoveItem(usedItem)
+			else
+				debug call Print("Item charges are reduced")
+				call SetItemCharges(usedItem, GetItemCharges(usedItem) - 1)
+			endif
 			set usedItem = null
+			// equipment has never any charges
+			call inventoryItemData.setCharges(0)
 			call this.setEquipmentItem(equipmentType, inventoryItemData, add)
 		endmethod
 
@@ -1448,6 +1455,40 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set usedItem = null
 			call this.setRucksackItem(index, inventoryItemData, add)
 		endmethod
+		
+		private method dropItemIfCharacterHasIt takes item usedItem returns boolean
+			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
+				if (not this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
+					debug call this.print("Error on dropping item " + GetItemName(usedItem))
+					
+					return false
+				endif
+			debug else
+				debug call this.print("Unit has no item.")
+			endif
+			
+			return true
+		endmethod
+		
+		/**
+		 * If configured that way characters must not pickup items which are owned by other players.
+		 * In this case the item stays dropped.
+		 * \return Returns true if the item is not owned by another playing user or if it is allowed to pickup items from other players. Otherwise it returns false.
+		 */
+		private method checkForOwner takes item usedItem returns boolean
+			/*
+			 * If configured it is not allowed to pickup items from other players.
+			 */
+			if (not thistype.m_allowPickingUpFromOthers and GetItemPlayer(usedItem) != this.character().player() and IsPlayerPlayingUser(GetItemPlayer(usedItem))) then
+				if (thistype.m_textOwnedByOther != null) then
+					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
+				endif
+
+				return false
+			endif
+			
+			return true
+		endmethod
 
 		/**
 		 * Tries to equip item \p usedItem to the character's unit.
@@ -1459,7 +1500,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method equipItem takes item usedItem, boolean dontMoveToRucksack, boolean swapWithAlreadyEquipped, boolean showEquipMessage returns boolean
 			local AItemType itemType
 			local integer equipmentType
-			local player itemPlayer
 			local item equippedItem
 			local string itemName
 
@@ -1469,28 +1509,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				return false
 			endif
 
-			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
-				if (not this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
-					debug call this.print("Error on dropping item " + GetItemName(usedItem))
-				endif
-			debug else
-				debug call this.print("Unit has no item.")
-			endif
+			call this.dropItemIfCharacterHasIt(usedItem)
 
-			set itemPlayer = GetItemPlayer(usedItem)
-			
-			/*
-			 * If configured it is not allowed to pickup items from other players.
-			 */
-			if (not thistype.m_allowPickingUpFromOthers and itemPlayer != this.character().player() and IsPlayerPlayingUser(itemPlayer)) then
-				if (thistype.m_textOwnedByOther != null) then
-					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
-				endif
-				set itemPlayer = null
-
+			if (not this.checkForOwner(usedItem)) then
 				return false
 			endif
-			set itemPlayer = null
 
 			set itemType = AItemType.itemTypeOfItem(usedItem)
 			set equipmentType = itemType.equipmentType()
@@ -1522,7 +1545,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 							set equipmentType = equipmentType + 1
 						endif
 						set itemName = GetItemName(usedItem)
-						call this.setEquipmentItemByItem(equipmentType, usedItem, not this.m_rucksackIsEnabled)
+						call this.setEquipmentItemByItemOnTheGround(equipmentType, usedItem, not this.m_rucksackIsEnabled)
 						if (showEquipMessage and thistype.m_textEquipItem != null) then
 							call this.character().displayMessage(ACharacter.messageTypeInfo, Format(thistype.m_textEquipItem).s(itemName).result())
 						endif
@@ -1594,6 +1617,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		/**
 		 * Drops all items from the equipment and rucksack to the location at \p x, \p y.
+		 * \param owned If this value is true, the owner of the items stays the owner of the character. Otherwise the owner is reset.
 		 */
 		public method dropAll takes real x, real y, boolean owned returns nothing
 			call this.dropAllEquipment(x, y, owned)
@@ -1608,7 +1632,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage returns boolean
 			local integer i
-			local player itemPlayer
 			local string itemName
 
 			// sometimes null items will be added for example when an item is added which is removed at the same moment
@@ -1617,26 +1640,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				return false
 			endif
 			
-			if (UnitHasItem(this.character().unit(), usedItem)) then // already picked up
-				if (not this.unitDropItemPoint(this.character().unit(), usedItem, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))) then
-					debug call this.print("Error on dropping item " + GetItemName(usedItem))
-				endif
-			endif
+			call this.dropItemIfCharacterHasIt(usedItem)
 
-			/*
-			 * If configured that way characters must not pickup items which are owned by other players.
-			 * In this case the item stays dropped.
-			 */
-			set itemPlayer = GetItemPlayer(usedItem)
-			
-			if (not thistype.m_allowPickingUpFromOthers and itemPlayer != this.character().player() and IsPlayerPlayingUser(itemPlayer)) then
-				if (thistype.m_textOwnedByOther != null) then
-					call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textOwnedByOther)
-				endif
-				set itemPlayer = null
+			if (not this.checkForOwner(usedItem)) then
 				return false
 			endif
-			set itemPlayer = null
 
 			/*
 			 * Now check for a free slot in the rucksack.
@@ -1839,6 +1847,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call thistype.setItemIndex(secondItem, firstIndex)
 		endmethod
 
+		/**
+		 * Reacts to moving item \p movedItem to \p slot. When moved to the same slot again the item is equipped.
+		 * Otherwise it is destacked or fully moved to another slot. If the slot is not empty it is either swapped or stacked with the existing other item.
+		 */
 		private method moveRucksackItem takes item movedItem, integer slot returns nothing
 			local unit characterUnit = this.character().unit()
 			local item targetItem
@@ -2083,14 +2095,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 		
 		/**
-		 * \return Returns true if all visible slots of the character's inventory are full.
+		 * \return Returns true if all visible slots of the unit's inventory are full.
 		 */
-		private method inventoryIsFull takes nothing returns boolean
-			local integer size = UnitInventorySize(this.character().unit())
+		private static method inventoryIsFull takes unit whichUnit returns boolean
+			local integer size = UnitInventorySize(whichUnit)
 			local integer i = 0
 			loop
 				exitwhen (i == size)
-				if (UnitItemInSlot(this.character().unit(), i) == null) then
+				if (UnitItemInSlot(whichUnit, i) == null) then
 					return false
 				endif
 				set i = i + 1
@@ -2101,7 +2113,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method triggerConditionPickupOrder takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			//debug call Print("Maybe pickup order with trigger unit " + GetUnitName(GetTriggerUnit()) + " and item " + GetItemName(GetOrderTargetItem()) + " and target unit " + GetUnitName(GetOrderTargetUnit()))
-			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() == A_ORDER_ID_SMART and GetOrderTargetItem() != null and not IsItemPowerup(GetOrderTargetItem()) and this.inventoryIsFull()
+			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() == A_ORDER_ID_SMART and GetOrderTargetItem() != null and not IsItemPowerup(GetOrderTargetItem()) and thistype.inventoryIsFull(GetTriggerUnit())
 		endmethod
 		
 		/**
@@ -2457,14 +2469,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, "this", this)
 		endmethod
 		
+		/**
+		 * This trigger is only necessary when the other unit is a character and its inventory is full.
+		 */
 		private static method triggerConditionGive takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			return GetTriggerUnit() == this.character().unit() and GetIssuedOrderId() == OrderId("smart") and GetOrderTargetItem() != null and GetOrderTargetUnit() != null
+			return GetTriggerUnit() == this.character().unit() and GetIssuedOrderId() == OrderId("smart") and GetOrderTargetItem() != null and GetOrderTargetUnit() != null and ACharacter.isUnitCharacter(GetOrderTargetUnit()) and thistype.inventoryIsFull(GetOrderTargetUnit())
 		endmethod
 		
 		private static method triggerActionGive takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
-			debug call Print("Give item " + GetItemName(GetOrderTargetItem()) + " to " + GetUnitName(GetOrderTargetUnit()))
+			debug call Print("Give item " + GetItemName(GetOrderTargetItem()) + " to " + GetUnitName(GetOrderTargetUnit()) + " who is a character with a fully inventory.")
 		endmethod
 		
 		private method createGiveTrigger takes nothing returns nothing
