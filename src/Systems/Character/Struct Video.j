@@ -314,6 +314,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private static integer m_skippingPlayers
 		private static boolean array m_playerHasSkipped[12] /// \todo \ref bj_MAX_PLAYERS
 		private static trigger m_skipTrigger
+		/**
+		 * Whenever a player leaves the game the number of skipping players has to be recalculated.
+		 */
+		private static trigger m_leaveTrigger
 		private static AActorData m_actor //copy of first character
 		private static AVideoPlayerData array m_playerData[12] /// \todo \ref bj_MAX_PLAYERS
 		private static AVideoCharacterData array m_playerCharacterData[12] /// \todo \ref bj_MAX_PLAYERS
@@ -606,6 +610,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				debug return
 			debug endif
 			call DisableTrigger(thistype.m_skipTrigger)
+			call DisableTrigger(thistype.m_leaveTrigger)
 			
 			if (fadeOut) then
 				call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
@@ -682,6 +687,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call thistype.resetSkippingPlayers()
 			if (firstStop) then
 				call DisableTrigger(thistype.m_skipTrigger) // do not allow skipping at twice!
+				call DisableTrigger(thistype.m_leaveTrigger)
 			endif
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
 			call this.onSkipAction.evaluate()
@@ -694,12 +700,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * It returns whether the video is actually being skipped or not.
 		 * You can overwrite this method in your custom derived structure to avoid this default behaviour.
 		 * Usually there must be at least playing players / divident of playing players who want to skip the video so that it will be skipped.
-		 * \param skippingPlayer The player who skips.
 		 * \param skipablePlayers The number of players controlled by humans.
 		 * \return Returns true if the video actually will be skipped.
 		 * \todo If a player leaves the game who should have skipped the video or all players leave the game who did not skip what happens? Store the number of skips!
 		 */
-		public stub method onSkipCondition takes player skippingPlayer, integer skipablePlayers returns boolean
+		public stub method onSkipCondition takes integer skipablePlayers returns boolean
 			return thistype.m_skippingPlayers >= skipablePlayers / 2 + ModuloInteger(skipablePlayers, 2)
 		endmethod
 
@@ -722,32 +727,16 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 			return this
 		endmethod
-
+		
 		/**
-		 * Increases the number of skips and calls \ref onSkipCondition() with the number of skipable players (all playing humans).
-		 * If the method returns true the video is being skipped.
-		 * \return Returns true if the video is skipped. Otherwise it returns false.
-		 * \note This method can only be called once during a video for each player. Called a second time it won't have any effect and simply return false.
+		 * Checks the number of skipable players (all playing human players) and runs \ref onSkipCondition() with that number.
+		 * If it returns true it prepares the skip of the video setting \ref thistype.m_skipped to true and fading to black.
+		 * The actual skip is done in the corresponding wait method of the video.
 		 */
-		public static method playerSkips takes player whichPlayer returns boolean
-			local integer i
+		private method checkForSkip takes nothing returns boolean
 			local integer skipablePlayers = 0
-			local thistype this = thistype.m_runningVideo
-
-			if (thistype.m_runningVideo == 0 or thistype.m_skipped) then
-				return false
-			endif
-			
-			if (thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)]) then
-				return false
-			endif
-
-			set thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)] = true
-			set thistype.m_skippingPlayers = thistype.m_skippingPlayers + 1
-			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, StringArg(thistype.m_textPlayerSkips, GetPlayerName(whichPlayer)))
-
 			// recalculate every time since players could have left the game by now
-			set i = 0
+			local integer i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
 				if (IsPlayerPlayingUser(Player(i))) then
@@ -755,8 +744,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				endif
 				set i = i + 1
 			endloop
-
-			if (this.onSkipCondition.evaluate(whichPlayer, skipablePlayers)) then
+		
+			if (this.onSkipCondition.evaluate(skipablePlayers)) then
 				debug call Print("Skipping video: " + I2S(this))
 				/*
 				 * skip() must be called in any wait action or in the action of the video itself.
@@ -773,7 +762,32 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				
 				return true
 			endif
+			
 			return false
+		endmethod
+
+		/**
+		 * Increases the number of skips and calls \ref onSkipCondition() with the number of skipable players (all playing humans).
+		 * If the method returns true the video is being skipped.
+		 * \return Returns true if the video is skipped. Otherwise it returns false.
+		 * \note This method can only be called once during a video for each player. Called a second time it won't have any effect and simply return false.
+		 */
+		public static method playerSkips takes player whichPlayer returns boolean
+			local thistype this = thistype.m_runningVideo
+
+			if (thistype.m_runningVideo == 0 or thistype.m_skipped) then
+				return false
+			endif
+			
+			if (thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)]) then
+				return false
+			endif
+
+			set thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)] = true
+			set thistype.m_skippingPlayers = thistype.m_skippingPlayers + 1
+			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, StringArg(thistype.m_textPlayerSkips, GetPlayerName(whichPlayer)))
+
+			return this.checkForSkip()
 		endmethod
 
 		public static method transmissionFromUnitType takes integer unitType, player owner, string name, string text, sound playedSound returns nothing
@@ -791,7 +805,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call TransmissionFromUnitWithName(whichUnit, name, text, playedSound)
 		endmethod
 
-		private static method triggerConditionSkip takes nothing returns boolean
+		private static method triggerConditionVideoIsRunning takes nothing returns boolean
 			return thistype.m_runningVideo != 0
 		endmethod
 
@@ -811,8 +825,34 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				endif
 				set i = i + 1
 			endloop
-			call TriggerAddCondition(thistype.m_skipTrigger, Condition(function thistype.triggerConditionSkip))
+			call TriggerAddCondition(thistype.m_skipTrigger, Condition(function thistype.triggerConditionVideoIsRunning))
 			call TriggerAddAction(thistype.m_skipTrigger, function thistype.triggerActionSkip)
+		endmethod
+		
+		private static method triggerActionLeave takes nothing returns nothing
+			local thistype this = thistype.m_runningVideo
+			// recalculate skipping players and skip if there is a majority.
+			if (thistype.m_playerHasSkipped[GetPlayerId(GetTriggerPlayer())]) then
+				set thistype.m_skippingPlayers = thistype.m_skippingPlayers - 1
+			endif
+			
+			call this.checkForSkip()
+		endmethod
+		
+		private static method createLeaveTrigger takes nothing returns nothing
+			local integer i
+			set thistype.m_leaveTrigger = CreateTrigger()
+			call DisableTrigger(thistype.m_leaveTrigger)
+			set i = 0
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				if (IsPlayerPlayingUser(Player(i))) then
+					call TriggerRegisterPlayerEvent(thistype.m_leaveTrigger, Player(i), EVENT_PLAYER_LEAVE)
+				endif
+				set i = i + 1
+			endloop
+			call TriggerAddCondition(thistype.m_leaveTrigger, Condition(function thistype.triggerConditionVideoIsRunning))
+			call TriggerAddAction(thistype.m_leaveTrigger, function thistype.triggerActionLeave)
 		endmethod
 
 		public static method init takes string textPlayerSkips, string textSkip returns nothing
@@ -839,11 +879,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_timeOfDay = 0.0
 
 			call thistype.createSkipTrigger()
+			call thistype.createLeaveTrigger()
 		endmethod
 
 		private static method destroySkipTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(thistype.m_skipTrigger)
 			set thistype.m_skipTrigger = null
+		endmethod
+		
+		private static method destroyLeaveTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(thistype.m_leaveTrigger)
+			set thistype.m_leaveTrigger = null
 		endmethod
 
 		public static method cleanUp takes nothing returns nothing
@@ -874,6 +920,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endloop
 
 			call thistype.destroySkipTrigger()
+			call thistype.destroyLeaveTrigger()
 		endmethod
 
 		// static members

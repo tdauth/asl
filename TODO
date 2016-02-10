@@ -5,7 +5,7 @@
 * FIXED: AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
 * AInventory: More public methods: showRucksackPage(integer pageNumber)
 * FIXED: AInventory: Allow giving owned item to another character. Detect giving order!
-* AInventory: Allow picking up items with full inventory page: http://www.hiveworkshop.com/forums/spells-569/easy-item-stack-n-split-v2-7-4-a-153287/?prev=search%3Dstack%26d%3Dlist%26r%3D20
+* FIXED: AInventory: Allow picking up items with full inventory page: http://www.hiveworkshop.com/forums/spells-569/easy-item-stack-n-split-v2-7-4-a-153287/?prev=search%3Dstack%26d%3Dlist%26r%3D20
 * FIXED: AInventory: When adding item fails the AInventoryItemData should not be set. It duplicates the items!
 * DONE: ALayer: Remove since deprecated and not used.
 * AJump: Remove init() and disable timer if no AJump instance exists.
@@ -22,7 +22,7 @@
 * No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
 * Change tests for containers, strings and time of day functions to unit tests:
 	* multiboard bar could get Unit Test too with dynamic refreshment
-* AVideo: Add player leaves trigger which then checks m_skippingPlayers and skips the video if it is greater than the number of remaining players!!!
+* FIXED: AVideo: Add player leaves trigger which then checks m_skippingPlayers and skips the video if it is greater than the number of remaining players!!!
 * AVideo: Should be based on force, not one global video!
 * ASpell and AUnitSpell: Use one base struct or module since it is the same functionaility.
 * FIXED: AClassSelection: Remove static members, make more members dynamic, add event handler methods, make it more flexible, handle player leaves who still has to select a class and for whom the class is not selected automatically since it is destroyed completely.
