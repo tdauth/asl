@@ -82,7 +82,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 					set i = i + 1
 				endloop
 			endif
-			//call SetUnitOwner(this.m_actor, newOwner, false)
+			call SetUnitOwner(this.m_actor, Player(PLAYER_NEUTRAL_PASSIVE), false) // set passive owner so unit won't attack or be attacked but still use the color
 			call ShowUnit(this.m_actor, true)
 
 			call SelectUnit(this.m_actor, false)
@@ -93,13 +93,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 
 		public static method create takes unit oldUnit returns thistype
 			local thistype this = thistype.allocate()
-			//local player newOwner = Player(PLAYER_NEUTRAL_PASSIVE) // set passive owner so unit won't attack or be attacked
 			// construction members
 			call ShowUnit(oldUnit, false)
 			set this.m_unit = oldUnit
 			// members
 			call this.refresh()
-			//set newOwner = null
 			return this
 		endmethod
 
