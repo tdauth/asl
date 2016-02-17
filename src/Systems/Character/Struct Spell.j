@@ -20,7 +20,18 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		private ASpellCastAction m_castAction
 		// members
 		private trigger m_upgradeTrigger
+		/**
+		 * The channel trigger is used to check the condition first and stop the character if the condition is not fullfilled.
+		 * In this case \ref m_canCast is set to false and therefore the cast trigger blocks the action.
+		 */
+		private trigger m_channelTrigger
 		private trigger m_castTrigger
+		/*
+		 * Flag which stores if the spell can even be cast.
+		 * This flag is set on the channel event from the condition.
+		 * It is checked in the cast trigger.
+		 */
+		private boolean m_canCast
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ASpell\"")
 
@@ -106,11 +117,13 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		//Make it available
 		public method enable takes nothing returns nothing
 			call EnableTrigger(this.m_upgradeTrigger)
+			call EnableTrigger(this.m_channelTrigger)
 			call EnableTrigger(this.m_castTrigger)
 		endmethod
 
 		public method disable takes nothing returns nothing
 			call DisableTrigger(this.m_upgradeTrigger)
+			call DisableTrigger(this.m_channelTrigger)
 			call DisableTrigger(this.m_castTrigger)
 		endmethod
 
@@ -164,12 +177,14 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call TriggerAddAction(this.m_upgradeTrigger, function thistype.triggerActionUpgrade)
 			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, "this", this)
 		endmethod
-
-		private static method triggerConditionCast takes nothing returns boolean
+		
+		private static method triggerConditionChannel takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
+			set this.m_canCast = result
 			if (result) then
 				set result = this.onCastCondition()
+				set this.m_canCast = result
 				if (not result) then
 					//taken from wc3jass.com
 					//call PauseUnit(this.character().unit(), true)
@@ -177,6 +192,28 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 					//call PauseUnit(this.character().unit(), false)
 					debug call Print("Stop: " + GetAbilityName(this.ability()))
 				endif
+			endif
+			return false
+		endmethod
+		
+		private method createChannelTrigger takes nothing returns nothing
+			set this.m_channelTrigger = CreateTrigger()
+			// never use ENDCAST since GetSpellTargetX() etc. won't work anymore
+			call TriggerRegisterAnyUnitEventBJ(this.m_channelTrigger, EVENT_PLAYER_UNIT_SPELL_CHANNEL)
+			call TriggerAddCondition(this.m_channelTrigger, Condition(function thistype.triggerConditionChannel))
+			call AHashTable.global().setHandleInteger(this.m_channelTrigger, "this", this)
+		endmethod
+		
+		private static method triggerConditionCast takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
+			if (result) then
+				debug if (this.m_canCast) then
+					debug call this.print("Can cast")
+				debug else
+					debug call this.print("Cannot cast")
+				debug endif
+				return this.m_canCast
 			endif
 			return result
 		endmethod
@@ -202,15 +239,19 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		 */
 		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction, playerunitevent castEvent returns thistype
 			local thistype this = thistype.allocate(character)
-			//start members
+			// construction members
 			set this.m_ability = usedAbility
 			set this.m_upgradeAction = upgradeAction
 			set this.m_castCondition = castCondition
 			set this.m_castAction = castAction
+			// members
+			set this.m_canCast = false
 
 			call character.addSpell(this)
 
 			call this.createUpgradeTrigger()
+			// conditions have always to be checked on a channel event that the spell order can be stopped before mana consumption and cooldown!
+			call this.createChannelTrigger()
 			call this.createCastTrigger(castEvent)
 
 			return this
@@ -230,6 +271,11 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call AHashTable.global().destroyTrigger(this.m_upgradeTrigger)
 			set this.m_upgradeTrigger = null
 		endmethod
+		
+		private method destroyChannelTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_channelTrigger)
+			set this.m_channelTrigger = null
+		endmethod
 
 		private method destroyCastTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_castTrigger)
@@ -240,6 +286,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call this.character().removeSpell(this)
 
 			call this.destroyUpgradeTrigger()
+			call this.destroyChannelTrigger()
 			call this.destroyCastTrigger()
 		endmethod
 
