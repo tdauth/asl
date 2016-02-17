@@ -18,6 +18,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	 */
 	private struct AActorData extends AActorInterface
 		// construction members
+		private AVideo m_video
 		private unit m_unit
 		// members
 		private unit m_actor
@@ -82,7 +83,9 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 					set i = i + 1
 				endloop
 			endif
-			call SetUnitOwner(this.m_actor, Player(PLAYER_NEUTRAL_PASSIVE), false) // set passive owner so unit won't attack or be attacked but still use the color
+			if (this.m_video.actorOwner.evaluate() != null) then
+				call SetUnitOwner(this.m_actor, this.m_video.actorOwner.evaluate(), false) // set passive owner so unit won't attack or be attacked but still use the color
+			endif
 			call ShowUnit(this.m_actor, true)
 
 			call SelectUnit(this.m_actor, false)
@@ -91,9 +94,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call IssueImmediateOrder(this.m_actor, "halt") // make sure it runs not away
 		endmethod
 
-		public static method create takes unit oldUnit returns thistype
+		public static method create takes AVideo video, unit oldUnit returns thistype
 			local thistype this = thistype.allocate()
 			// construction members
+			set this.m_video = video
 			call ShowUnit(oldUnit, false)
 			set this.m_unit = oldUnit
 			// members
@@ -316,13 +320,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * Whenever a player leaves the game the number of skipping players has to be recalculated.
 		 */
 		private static trigger m_leaveTrigger
-		private static AActorData m_actor //copy of first character
 		private static AVideoPlayerData array m_playerData[12] /// \todo \ref bj_MAX_PLAYERS
 		private static AVideoCharacterData array m_playerCharacterData[12] /// \todo \ref bj_MAX_PLAYERS
-		/// Vector of \ref AActorInterface instances.
-		private static AIntegerVector m_actors
 		private static real m_timeOfDay
 		// dynamic members
+		private player m_actorOwner
 		private boolean m_hasCharacterActor
 		private AVideoAction m_initAction
 		private AVideoAction m_playAction
@@ -332,10 +334,27 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private real m_playFilterTime
 		private real m_stopFilterTime
 		private real m_skipFilterTime
+		// members
+		private AActorData m_actor // copy of first character
+		/// Vector of \ref AActorInterface instances.
+		private AIntegerVector m_actors
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AVideo\"")
 
 		// dynamic members
+		
+		/**
+		 * Sets the owner of all unit actors which are copies of actual owners.
+		 * This helps preventing fights between hostile units in videos.
+		 * \param owner If this value is null the owner won't be changed at all.
+		 */
+		public method setActorOwner takes player owner returns nothing
+			set this.m_actorOwner = owner
+		endmethod
+		
+		public method actorOwner takes nothing returns player
+			return this.m_actorOwner
+		endmethod
 		
 		public method setHasCharacterActor takes boolean hasCharacterActor returns nothing
 			set this.m_hasCharacterActor = hasCharacterActor
@@ -511,6 +530,113 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 		endmethod
 		
+		/**
+		 * \return Returns the first character's actor.
+		 * \note \ref hasCharacterActor() must return true for the current video if you use this method.
+		 */
+		public method actor takes nothing returns unit
+			debug if (thistype.m_runningVideo == 0) then
+				debug call thistype.staticPrint("Running video is 0.")
+			debug endif
+
+			return this.m_actor.actor()
+		endmethod
+
+		/**
+		 * Stores an actor for unit \p actor and returns the corresponding internal index.
+		 *
+		 * \return Returns the internal index which can be used for further treatment.
+		 * \note If you want to create a newly actor based on a unit type use \ref createUnitActor().
+		 * \note Use \ref unitActor() to get the corresponding created unit.
+		 */
+		public method saveUnitActor takes unit actor returns integer
+			local AActorData data = AActorData.create(this, actor)
+			call this.m_actors.pushBack(data)
+			return this.m_actors.backIndex()
+		endmethod
+
+		/**
+		 * Creates a newly actor unit based on a unit type rather than an existing unit.
+		 * \return Returns the corresponding internal index of the created unit actor.
+		 * \note Use \ref unitActor() to get the corresponding created unit.
+		 */
+		public method createUnitActor takes player owner, integer unitTypeId, real x, real y, real face returns integer
+			local AUnitTypeActorData data = AUnitTypeActorData.create(owner, unitTypeId, x, y, face)
+			call this.m_actors.pushBack(data)
+			return this.m_actors.backIndex()
+		endmethod
+
+		public method createUnitActorAtLocation takes player owner, integer unitTypeId, location whichLocation, real face returns integer
+			return this.createUnitActor(owner, unitTypeId, GetLocationX(whichLocation), GetLocationY(whichLocation), face)
+		endmethod
+
+		public method createUnitActorAtRect takes player owner, integer unitTypeId, rect whichRect, real face returns integer
+			return this.createUnitActor(owner, unitTypeId, GetRectCenterX(whichRect), GetRectCenterY(whichRect), face)
+		endmethod
+
+		/**
+		 * Returns the created actor unit for the video based on the internal index.
+		 * \param index The internal index of the unit actor.
+		 */
+		public method unitActor takes integer index returns unit
+			// TEST
+			debug if (AActorInterface(this.m_actors[index]).actor() == null) then
+			debug call Print("Unit actor " + I2S(index) + " is null")
+			debug endif
+			return AActorInterface(this.m_actors[index]).actor()
+		endmethod
+
+		public method restoreUnitActor takes integer index returns nothing
+			call AActorInterface(this.m_actors[index]).restore()
+			call AActorInterface(this.m_actors[index]).destroy()
+			call this.m_actors.erase(index)
+		endmethod
+
+		public method restoreUnitActorOnActorLocation takes integer index returns nothing
+			call AActorInterface(this.m_actors[index]).restoreOnActorsLocation()
+			call AActorInterface(this.m_actors[index]).destroy()
+			call this.m_actors.erase(index)
+		endmethod
+
+		/**
+		 * Restores all stored unit actors.
+		 * This method is called automatically when the video is being stopped.
+		 */
+		public method restoreUnitActors takes nothing returns nothing
+			debug call Print("Restoring " + I2S(this.m_actors.size()) + " unit actors.")
+			loop
+				exitwhen (this.m_actors.empty())
+				call this.restoreUnitActor(this.m_actors.backIndex())
+			endloop
+		endmethod
+
+		public method restoreUnitActorsOnActorsLocations takes nothing returns nothing
+			loop
+				exitwhen (this.m_actors.empty())
+				call this.restoreUnitActorOnActorLocation(this.m_actors.backIndex())
+			endloop
+		endmethod
+
+		public method setActorsMoveSpeed takes real moveSpeed returns nothing
+			local integer i = 0
+			call SetUnitMoveSpeed(this.actor(), moveSpeed)
+			loop
+				exitwhen (i == this.m_actors.size())
+				call SetUnitMoveSpeed(AActorInterface(this.m_actors[i]).actor(), moveSpeed)
+				set i = i + 1
+			endloop
+		endmethod
+		
+		public method setActorsOwner takes player owner returns nothing
+			local integer i = 0
+			call SetUnitOwner(this.actor(), owner, true)
+			loop
+				exitwhen (i == this.m_actors.size())
+				call SetUnitOwner(AActorInterface(this.m_actors[i]).actor(), owner, true)
+				set i = i + 1
+			endloop
+		endmethod
+		
 		private static method resetSkippingPlayers takes nothing returns nothing
 			local integer i
 			set thistype.m_skippingPlayers = 0
@@ -558,16 +684,16 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			 */
 			if (this.hasCharacterActor()) then
 				debug call this.print("Has character actor")
-				if (thistype.m_actor == 0) then
+				if (this.m_actor == 0) then
 					debug call this.print("is 0 so create one")
 					if (ACharacter.getFirstCharacter() != 0) then
-						set thistype.m_actor = AActorData.create(ACharacter.getFirstCharacter().unit())
+						set this.m_actor = AActorData.create(this, ACharacter.getFirstCharacter().unit())
 					debug else
 						debug call this.print("There is no character for the video.")
 					endif
 				endif
 				
-				call thistype.m_actor.refresh()
+				call this.m_actor.refresh()
 			endif
 			call SetCameraBoundsToRect(bj_mapInitialPlayableArea) // for all players
 			set playersAll = GetPlayersAll()
@@ -623,17 +749,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call ForForce(bj_FORCE_PLAYER[0], function ATalk.showAllEffects)
 			call ResetToGameCamera(0.0)
 			if (this.hasCharacterActor()) then
-				if (thistype.m_actor != 0) then
+				if (this.m_actor != 0) then
 					debug call Print("Restoring actor")
-					call thistype.m_actor.restore()
-					call thistype.m_actor.destroy()
-					set thistype.m_actor = 0
+					call this.m_actor.restore()
+					call this.m_actor.destroy()
+					set this.m_actor = 0
 				debug else
 					debug call this.print("Missing character actor.")
 				endif
 			endif
 			// make sure all actors are restored before unpausing and restoring player selection
-			call thistype.restoreUnitActors.evaluate()
+			call this.restoreUnitActors()
 			call ACharacter.showAll(true)
 			call PauseAllUnits(false)
 			// make sure data is already restored when calling the on stop action
@@ -709,6 +835,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public static method create takes boolean hasCharacterActor returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
+			set this.m_actorOwner = Player(PLAYER_NEUTRAL_PASSIVE) // with this player they won't attack anyone BUT will return to their location (creep bug)
 			set this.m_hasCharacterActor = hasCharacterActor
 			set this.m_initAction = 0
 			set this.m_playAction = 0
@@ -718,12 +845,28 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_playFilterTime = 1.0
 			set this.m_stopFilterTime = 1.0
 			set this.m_skipFilterTime = 0.50
+			// members
+			set this.m_actor = 0
+			set this.m_actors = AIntegerVector.create()
 			
 			debug call this.checkFilterTime(this.m_playFilterTime, "play")
 			debug call this.checkFilterTime(this.m_stopFilterTime, "stop")
 			debug call this.checkFilterTime(this.m_skipFilterTime, "skip")
 
 			return this
+		endmethod
+		
+		public method onDestroy takes nothing returns nothing
+			if (this.m_actor != 0) then
+				call this.m_actor.destroy()
+			endif
+			
+			loop
+				exitwhen (this.m_actors.empty())
+				call AActorInterface(this.m_actors.back()).destroy()
+				call this.m_actors.popBack()
+			endloop
+			call this.m_actors.destroy()
 		endmethod
 		
 		/**
@@ -863,8 +1006,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_runningVideo = 0
 			set thistype.m_skipped = false
 			set thistype.m_skippingPlayers = 0
-			set thistype.m_actor = 0
-			set thistype.m_actors = AIntegerVector.create()
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
@@ -893,18 +1034,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public static method cleanUp takes nothing returns nothing
 			local integer i
 			// static members
-			if (thistype.m_actor != 0) then
-				call thistype.m_actor.destroy()
-				set thistype.m_actor = 0
-			endif
-			
-			loop
-				exitwhen (thistype.m_actors.empty())
-				call AActorInterface(thistype.m_actors.back()).destroy()
-				call thistype.m_actors.popBack()
-			endloop
-			call thistype.m_actors.destroy()
-
 			set i = 0
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
@@ -939,62 +1068,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public static method isRunning takes nothing returns boolean
 			return thistype.m_runningVideo != 0
 		endmethod
-
-		/**
-		 * \return Returns the first character's actor.
-		 * \note \ref hasCharacterActor() must return true for the current video if you use this method.
-		 */
-		public static method actor takes nothing returns unit
-			debug if (thistype.m_runningVideo == 0) then
-				debug call thistype.staticPrint("Running video is 0.")
-			debug endif
-
-			return thistype.m_actor.actor()
-		endmethod
-
-		/**
-		 * Stores an actor for unit \p actor and returns the corresponding internal index.
-		 *
-		 * \return Returns the internal index which can be used for further treatment.
-		 * \note If you want to create a newly actor based on a unit type use \ref createUnitActor().
-		 * \note Use \ref unitActor() to get the corresponding created unit.
-		 */
-		public static method saveUnitActor takes unit actor returns integer
-			local AActorData data = AActorData.create(actor)
-			call thistype.m_actors.pushBack(data)
-			return thistype.m_actors.backIndex()
-		endmethod
-
-		/**
-		 * Creates a newly actor unit based on a unit type rather than an existing unit.
-		 * \return Returns the corresponding internal index of the created unit actor.
-		 * \note Use \ref unitActor() to get the corresponding created unit.
-		 */
-		public static method createUnitActor takes player owner, integer unitTypeId, real x, real y, real face returns integer
-			local AUnitTypeActorData data = AUnitTypeActorData.create(owner, unitTypeId, x, y, face)
-			call thistype.m_actors.pushBack(data)
-			return thistype.m_actors.backIndex()
-		endmethod
-
-		public static method createUnitActorAtLocation takes player owner, integer unitTypeId, location whichLocation, real face returns integer
-			return thistype.createUnitActor(owner, unitTypeId, GetLocationX(whichLocation), GetLocationY(whichLocation), face)
-		endmethod
-
-		public static method createUnitActorAtRect takes player owner, integer unitTypeId, rect whichRect, real face returns integer
-			return thistype.createUnitActor(owner, unitTypeId, GetRectCenterX(whichRect), GetRectCenterY(whichRect), face)
-		endmethod
-
-		/**
-		 * Returns the created actor unit for the video based on the internal index.
-		 * \param index The internal index of the unit actor.
-		 */
-		public static method unitActor takes integer index returns unit
-			// TEST
-			debug if (AActorInterface(thistype.m_actors[index]).actor() == null) then
-			debug call Print("Unit actor " + I2S(index) + " is null")
-			debug endif
-			return AActorInterface(thistype.m_actors[index]).actor()
-		endmethod
+		
+		// static methods
 		
 		public static method unitIsActor takes unit whichUnit returns boolean
 			return AHashTable.global().hasHandleInteger(whichUnit, "actor")
@@ -1002,57 +1077,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		
 		public static method actorByUnit takes unit whichUnit returns AActorInterface
 			return AActorInterface(AHashTable.global().handleInteger(whichUnit, "actor"))
-		endmethod
-
-		public static method restoreUnitActor takes integer index returns nothing
-			call AActorInterface(thistype.m_actors[index]).restore()
-			call AActorInterface(thistype.m_actors[index]).destroy()
-			call thistype.m_actors.erase(index)
-		endmethod
-
-		public static method restoreUnitActorOnActorLocation takes integer index returns nothing
-			call AActorInterface(thistype.m_actors[index]).restoreOnActorsLocation()
-			call AActorInterface(thistype.m_actors[index]).destroy()
-			call thistype.m_actors.erase(index)
-		endmethod
-
-		/**
-		 * Restores all stored unit actors.
-		 * This method is called automatically when the video is being stopped.
-		 */
-		public static method restoreUnitActors takes nothing returns nothing
-			debug call Print("Restoring " + I2S(thistype.m_actors.size()) + " unit actors.")
-			loop
-				exitwhen (thistype.m_actors.empty())
-				call thistype.restoreUnitActor(thistype.m_actors.backIndex())
-			endloop
-		endmethod
-
-		public static method restoreUnitActorsOnActorsLocations takes nothing returns nothing
-			loop
-				exitwhen (thistype.m_actors.empty())
-				call thistype.restoreUnitActorOnActorLocation(thistype.m_actors.backIndex())
-			endloop
-		endmethod
-
-		public static method setActorsMoveSpeed takes real moveSpeed returns nothing
-			local integer i = 0
-			call SetUnitMoveSpeed(thistype.actor(), moveSpeed)
-			loop
-				exitwhen (i == thistype.m_actors.size())
-				call SetUnitMoveSpeed(AActorInterface(thistype.m_actors[i]).actor(), moveSpeed)
-				set i = i + 1
-			endloop
-		endmethod
-		
-		public static method setActorsOwner takes player owner returns nothing
-			local integer i = 0
-			call SetUnitOwner(thistype.actor(), owner, true)
-			loop
-				exitwhen (i == thistype.m_actors.size())
-				call SetUnitOwner(AActorInterface(thistype.m_actors[i]).actor(), owner, true)
-				set i = i + 1
-			endloop
 		endmethod
 	 endstruct
 
