@@ -967,6 +967,7 @@ endif
 	//! runtextmacro A_VECTOR("", "ADestructableVector", "destructable", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ARectVector", "rect", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AWeatherEffectVector", "weathereffect", "null", "100", "150000", "8192")
+	//! runtextmacro A_VECTOR("", "ATerrainDeformationVector", "terraindeformation", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "APlayerVector", "player", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AItemPoolVector", "itempool", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ATextTagVector", "texttag", "null", "100", "150000", "8192")
