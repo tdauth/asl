@@ -396,10 +396,23 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		if (useThirdPerson) then
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamAoa()
 			call AThirdPersonCamera.playerThirdPersonCamera(user).resetCamRot()
-			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(listener, 0.0)
+			// view always from your character otherwise changing the focus would be annoying as hell
+			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(character.unit(), 0.0)
 		endif
 
 		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
+		
+		// TODO Showing a transmission when the interface is not hidden during a talk overlays with the chat messages by other players. Therefore the subtitle of the transmission should be placeed somewhere else on the screen
+		// DisplayTimedTextToPlayer     takes player toPlayer, real x, real y, real duration, string message returns nothing
+		// x = 0.50 -> center
+		// y = 0.0 -> top
+		/*
+		if (GetLocalPlayer() == user) then
+			call ClearTextMessages()
+			call DisplayTimedTextToPlayer(user, 0.50, 0.0, duration, "")
+		endif
+		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
+		*/
 		
 		if (skipTrigger == null) then
 			call PolledWait(duration)
