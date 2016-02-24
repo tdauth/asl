@@ -153,8 +153,8 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		/**
-		* Uses dialog button's index as shortcut and adds string "[<shortcut index>]" before button's text.
-		*/
+		 * Uses dialog button's index as shortcut and adds string "[<shortcut index>]" before button's text.
+		 */
 		public method addExtendedDialogButtonIndex takes string text, boolean isQuitButton, boolean doScoreScreen, ADialogButtonAction action returns ADialogButton
 			local integer shortcut = ModuloInteger(this.m_dialogButtons.size(), thistype.maxPageButtons) // faster than ADialog.pageIndex() + 1
 			return this.addExtendedDialogButton(Format(A_TEXT_DIALOG_BUTTON).i(shortcut).s(text).result(), '0' + shortcut, isQuitButton, doScoreScreen, action)
@@ -165,8 +165,8 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		/**
-		* Uses dialog button's index as shortcut and adds string "[<shortcut index>]" before button's text.
-		*/
+		 * Uses dialog button's index as shortcut and adds string "[<shortcut index>]" before button's text.
+		 */
 		public method addDialogButtonIndex takes string text, ADialogButtonAction action returns ADialogButton
 			return this.addExtendedDialogButtonIndex(text, false, false, action)
 		endmethod
@@ -176,8 +176,8 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		/**
-		* Uses dialog button's index as shortcut and adds string "[<shortcut index>]" before button's text.
-		*/
+		 * Uses dialog button's index as shortcut and adds string "[<shortcut index>]" before button's text.
+		 */
 		public method addSimpleDialogButtonIndex takes string text returns ADialogButton
 			return this.addExtendedDialogButtonIndex(text, false, false, 0)
 		endmethod
@@ -211,6 +211,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 				call this.m_dialogButtons.popBack()
 			endloop
 			set this.m_currentPage = 0
+			set this.m_maxPageNumber = 0
 			call DialogClear(this.m_dialog)
 		endmethod
 
@@ -240,29 +241,21 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		private static method triggerActionPreviousPage takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call this.changeToPreviousPage()
-			set triggeringTrigger = null
 		endmethod
 
 		private method createPreviousPageButton takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_previousPageButton = DialogAddButton(this.m_dialog, thistype.formatText(thistype.textPreviousPage, thistype.shortcutPreviousPage), thistype.shortcutPreviousPage)
 			set this.m_previousPageTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterDialogButtonEvent(this.m_previousPageTrigger, this.m_previousPageButton)
-			set triggerAction = TriggerAddAction(this.m_previousPageTrigger, function thistype.triggerActionPreviousPage)
+			call TriggerRegisterDialogButtonEvent(this.m_previousPageTrigger, this.m_previousPageButton)
+			call TriggerAddAction(this.m_previousPageTrigger, function thistype.triggerActionPreviousPage)
 			call AHashTable.global().setHandleInteger(this.m_previousPageTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		private static method triggerActionNextPage takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			call this.changeToNextPage()
-			set triggeringTrigger = null
 		endmethod
 
 		private method removePreviousPageButton takes nothing returns nothing
@@ -272,15 +265,11 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		private method createNextPageButton takes nothing returns nothing
-			local event triggerEvent
-			local triggeraction triggerAction
 			set this.m_nextPageButton = DialogAddButton(this.m_dialog, thistype.formatText(thistype.textNextPage, thistype.shortcutNextPage), thistype.shortcutNextPage)
 			set this.m_nextPageTrigger = CreateTrigger()
-			set triggerEvent = TriggerRegisterDialogButtonEvent(this.m_nextPageTrigger, this.m_nextPageButton)
-			set triggerAction = TriggerAddAction(this.m_nextPageTrigger, function thistype.triggerActionNextPage)
+			call TriggerRegisterDialogButtonEvent(this.m_nextPageTrigger, this.m_nextPageButton)
+			call TriggerAddAction(this.m_nextPageTrigger, function thistype.triggerActionNextPage)
 			call AHashTable.global().setHandleInteger(this.m_nextPageTrigger, "this", this)
-			set triggerEvent = null
-			set triggerAction = null
 		endmethod
 
 		private method removeNextPageButton takes nothing returns nothing
