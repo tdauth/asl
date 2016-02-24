@@ -824,6 +824,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call DisableTrigger(this.m_openTrigger)
 			call DisableTrigger(this.m_orderTrigger)
 			call DisableTrigger(this.m_pickupTrigger)
+			call DisableTrigger(this.m_pawnTrigger)
 			call DisableTrigger(this.m_dropTrigger)
 		endmethod
 
@@ -1073,6 +1074,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call EnableTrigger(this.m_openTrigger)
 			call EnableTrigger(this.m_orderTrigger)
 			call EnableTrigger(this.m_pickupTrigger)
+			call EnableTrigger(this.m_pawnTrigger)
 			call EnableTrigger(this.m_dropTrigger)
 		endmethod
 
@@ -1132,6 +1134,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					set slotItem = null
 				// item could have been dropped (e. g. in drop trigger action)
 				else
+					debug call Print("Refresh rucksack item")
 					call this.showRucksackItem(index)
 				endif
 				set characterUnit = null
@@ -1218,13 +1221,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call this.hideEquipmentPlaceholder(equipmentType)
 				endif
 				call this.showEquipmentItem(equipmentType)
-			elseif (this.m_rucksackIsEnabled or this.m_shop != null) then
-				// equipped items must always have an item type
-				//if (itemType != 0) then
-					call itemType.addPermanentAbilities(this.character().unit())
-				//endif
 			endif
 			call itemType.onEquipItem.evaluate(this.character().unit(), equipmentType)
+			debug call Print("After onEquip")
+			// Add permanent abilities afterwards since onEquipItem() might change the unit (transformations etc.). Besides make sure it is still equipped.
+			if ((this.m_rucksackIsEnabled or this.m_shop != null) and this.m_equipmentItemData[equipmentType] == inventoryItemData) then
+				debug call Print("Adding permanent abilities AFTER transformation.")
+				call itemType.addPermanentAbilities(this.character().unit())
+			debug else
+				debug call Print("Either rucksack is not enabled and shop is not null or equipment type has diferent item type")
+			endif
 		endmethod
 
 		/**
@@ -1881,6 +1887,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						call this.equipItem(movedItem, false, true, true) //test
 						set characterUnit = null
 					else
+						// TODO show different message
 						call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
 					endif
 				else
@@ -2436,6 +2443,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
 			local integer charges = this.m_rucksackItemData[index].charges() - 1
+			debug call Print("Charges are now " + I2S(charges))
 			if (charges <= 0) then
 				call this.clearRucksackSlot(index)
 			else
