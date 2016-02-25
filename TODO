@@ -1,6 +1,8 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
 * Character/world systems: Replace all init() methods by dynamic members!
+* There is lots of erase() calls for AVector instances which might perform really really bad. Use AList instead! But only for the cases where really often something is erased.
+* AHashTable with StringHash() functions is not necessarily safe. StringHash() might collide with another hash. Besides it is very slow. Remove methods with StringHash(). Replace everything by integer keys.
 * FIXED: AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
 * FIXED: AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
 * AInventory: More public methods: showRucksackPage(integer pageNumber)

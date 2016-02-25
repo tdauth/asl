@@ -362,13 +362,29 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 				endloop
 			endmethod
 
-			/// No reverse erasing.
-			public method eraseNumber takes $NAME$Iterator first, $NAME$Iterator last returns nothing
+			/**
+			 * Erases elements from the list which start at \p first (inclusive) and go until \p last (inclusive).
+			 * The passed iterators will be destroyed automatically since they become invalid anyway.
+			 * \return Returns a newly allocated iterator which points to the next element after \p last.
+			 * \note No reverse erasing.
+			 */
+			public method eraseNumber takes $NAME$Iterator first, $NAME$Iterator last returns $NAME$Iterator
+				local $NAME$Node oldNode = last.node()
+				local $NAME$Iterator result = $NAME$Iterator.create()
+				call result.setNode(oldNode.next())
 				call this.eraseNumberNode(first.node(), last.node())
+				call first.destroy()
+				call last.destroy()
+				return result
 			endmethod
 
-			public method erase takes $NAME$Iterator position returns nothing
-				call this.eraseNumber(position, position)
+			/**
+			 * Erases the element from the list which \p position is pointing to.
+			 * The passed iterator will be destroyed automatically since they become invalid anyway.
+			 * \return Returns a newly allocated iterator which points to the next element after \p position.
+			 */
+			public method erase takes $NAME$Iterator position returns $NAME$Iterator
+				return this.eraseNumber(position, position)
 			endmethod
 
 			/**
@@ -439,13 +455,10 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			*/
 			public method removeIf takes $NAME$UnaryPredicate predicate returns nothing
 				local $NAME$Iterator iterator = this.begin()
-				local $NAME$Iterator tmpIterator
 				loop
 					exitwhen (not iterator.isValid())
 					if (predicate.evaluate(iterator.data())) then
-						set tmpIterator = iterator
-						call iterator.next()
-						call this.erase(tmpIterator)
+						set iterator = this.erase(iterator)
 					else
 						call iterator.next()
 					endif

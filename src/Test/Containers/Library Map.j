@@ -61,7 +61,7 @@ library ALibraryTestContainersMap requires AStructCoreDebugBenchmark, AStructCor
 
 				//! runtextmacro A_REQUIRE("this.iterator != 0")
 
-				call this.map.erase(this.iterator)
+				call this.map.erase(this.iterator).destroy() // destroy resulting iterator to prevent leaks
 
 				//! runtextmacro A_REQUIRE("this.map.size() == 99")
 

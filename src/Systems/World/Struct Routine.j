@@ -797,7 +797,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			loop
 				exitwhen (not iterator.isValid())
 				if (thistype(iterator.data()) == period) then
-					call list.erase(iterator)
+					call list.erase(iterator).destroy() // destroy the resulting iterator to prevent leaks
 					exitwhen (true)
 				endif
 				call iterator.next()

@@ -251,6 +251,8 @@ endif
 			/**
 			 * Removes from the vector \p number elements at position \p position.
 			 * This effectively reduces the list size by \p number.
+			 * To erase n elements all elements of the vector after the position must be moved by n positions.
+			 * Therefore erasing elements from a list might be much more efficient.
 			 */
 			public method eraseNumber takes integer position, integer number returns nothing
 				local integer i = position + number
@@ -270,6 +272,11 @@ endif
 				set this.m_size = this.m_size - number
 			endmethod
 
+			/**
+			 * Erases the element at \p position.
+			 * To erase one element all elements of the vector after the position must be moved by one position.
+			 * Therefore erasing elements from a list might be much more efficient.
+			 */
 			public method erase takes integer position returns nothing
 				call this.eraseNumber(position, 1)
 			endmethod
@@ -968,6 +975,7 @@ endif
 	//! runtextmacro A_VECTOR("", "ARectVector", "rect", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AWeatherEffectVector", "weathereffect", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ATerrainDeformationVector", "terraindeformation", "null", "100", "150000", "8192")
+	//! runtextmacro A_VECTOR("", "ASoundVector", "sound", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "APlayerVector", "player", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AItemPoolVector", "itempool", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ATextTagVector", "texttag", "null", "100", "150000", "8192")

@@ -419,6 +419,7 @@ endif
 			call PauseUnit(this.m_unit, true) // disables routines or something else of NPC
 			call SetUnitFacing(character.unit(), GetAngleBetweenUnits(character.unit(), this.m_unit))
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
+			call ResetUnitAnimation(this.m_unit) // make sure he stops routines etc.
 			call SetUnitLookAt(character.unit(), "bone_head", this.m_unit, 0.0, 0.0, GetUnitFlyHeight(this.m_unit) + 90.0)
 			call SetUnitLookAt(this.m_unit, "bone_head", character.unit(), 0.0, 0.0, GetUnitFlyHeight(character.unit()) + 90.0)
 			if (this.useThirdPerson(character)) then

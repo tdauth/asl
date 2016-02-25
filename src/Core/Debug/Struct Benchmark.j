@@ -1,4 +1,4 @@
-library AStructCoreDebugBenchmark requires AStructCoreGeneralAsl, AStructCoreGeneralVector
+library AStructCoreDebugBenchmark requires AStructCoreGeneralAsl, AStructCoreGeneralVector, AStructCoreGeneralHashTable
 
 	/**
 	 * \brief ABenchmark can be used for time measurement of important code parts.
@@ -24,6 +24,7 @@ static if (A_DEBUG_HANDLES) then
 		private static AUnitVector m_units = 0
 		private static AItemVector m_items = 0
 		private static ADestructableVector m_destructables = 0
+		private static AHashTable m_timers = 0
 endif
 		// dynamic members
 		private string m_identifier

@@ -1,4 +1,4 @@
-library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, AStructCoreGeneralHashTable, ALibraryCoreStringConversion, AStructSystemsCharacterCharacter
+library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreStringConversion, AStructSystemsCharacterCharacter
 
 	/// \todo Should be a part of \ref AAbstractQuest, vJass bug.
 	function interface AAbstractQuestStateEvent takes AAbstractQuest abstractQuest, trigger usedTrigger returns nothing
@@ -42,7 +42,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		private static string m_textRewardGold
 		private static string m_textRewardLumber
 		// static members
-		private static AIntegerVector m_abstractQuests
+		private static AIntegerList m_abstractQuests
 		private static timer m_pingTimer
 		// dynamic members
 		private integer m_state /// Should be set by state method.
@@ -62,7 +62,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		private ACharacter m_character
 		private string m_title
 		// members
-		private integer m_index
+		private AIntegerListIterator m_iterator
 		private trigger array m_stateTrigger[thistype.maxStates]
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AAbstractQuest\"")
@@ -571,7 +571,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			// static members
 			call thistype.m_abstractQuests.pushBack(this)
 			// members
-			set this.m_index = thistype.m_abstractQuests.backIndex()
+			set this.m_iterator = thistype.m_abstractQuests.end()
 			set i = 0
 			loop
 				exitwhen (i == thistype.maxStates)
@@ -596,7 +596,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		public method onDestroy takes nothing returns nothing
 			// static members
-			call thistype.m_abstractQuests.erase(this.m_index)
+			call thistype.m_abstractQuests.erase(this.m_iterator)
 
 			call this.destroyStateTriggers()
 		endmethod
@@ -606,10 +606,10 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			local player user
 			local real x
 			local real y
-			local integer i = thistype.m_abstractQuests.backIndex()
+			local AIntegerListIterator iterator = thistype.m_abstractQuests.begin()
 			loop
-				exitwhen (i < 0)
-				set abstractQuest = thistype.m_abstractQuests[i]
+				exitwhen (not iterator.isValid())
+				set abstractQuest = thistype(iterator.data())
 				if (abstractQuest.m_ping and abstractQuest.m_state == thistype.stateNew) then
 					if (abstractQuest.m_pingWidget != null) then
 						set x = GetWidgetX(abstractQuest.m_pingWidget)
@@ -626,8 +626,9 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 						call PingMinimapEx(x, y, abstractQuest.m_pingDuration, PercentTo255(abstractQuest.m_pingRed), PercentTo255(abstractQuest.m_pingGreen), PercentTo255(abstractQuest.m_pingBlue), false)
 					endif
 				endif
-				set i = i - 1
+				call iterator.next()
 			endloop
+			call iterator.destroy()
 		endmethod
 
 		/// \param pingRate If this value is 0.0 or smaller there won't be any pings.
@@ -649,7 +650,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			set thistype.m_textRewardGold = textRewardGold
 			set thistype.m_textRewardLumber = textRewardLumber
 			// static members
-			set thistype.m_abstractQuests = AIntegerVector.create()
+			set thistype.m_abstractQuests = AIntegerList.create()
 			if (thistype.m_pingRate > 0.0) then
 				set thistype.m_pingTimer = CreateTimer()
 				call TimerStart(thistype.m_pingTimer, thistype.m_pingRate, true, function thistype.timerFunctionPing)

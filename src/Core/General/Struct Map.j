@@ -611,12 +611,19 @@ library AStructCoreGeneralMap requires AInterfaceCoreGeneralContainer, optional 
 			endmethod
 
 			/// No reverse erasing.
-			public method eraseNumber takes $NAME$Iterator first, $NAME$Iterator last returns nothing
+			public method eraseNumber takes $NAME$Iterator first, $NAME$Iterator last returns $NAME$Iterator
+				local $NAME$Iterator result = $NAME$Iterator.create()
+				call result.setNode(last.node())
+				call result.next()
 				call this.eraseNumberNode(first.node(), last.node())
+				call first.destroy()
+				call last.destroy()
+				
+				return result
 			endmethod
 
-			public method erase takes $NAME$Iterator position returns nothing
-				call this.eraseNumber(position, position)
+			public method erase takes $NAME$Iterator position returns $NAME$Iterator
+				return this.eraseNumber(position, position)
 			endmethod
 
 			/**

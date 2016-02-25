@@ -1,4 +1,4 @@
-library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, AStructCoreGeneralVector, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsReal, ALibraryCoreMathsUnit, ALibraryCoreInterfaceSelection
+library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, AStructCoreGeneralList, ALibraryCoreMathsHandle, ALibraryCoreMathsPoint, ALibraryCoreMathsReal, ALibraryCoreMathsUnit, ALibraryCoreInterfaceSelection
 
 	/// OnDeathFunction functions can by set by method \ref AMissileType.setOnDeathFunction and will be called when missile hits target.
 	function interface AMissileTypeOnDeathFunction takes AMissile missile returns nothing
@@ -167,7 +167,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		// static construction members
 		private static real m_refreshTime
 		// static members
-		private static AIntegerVector m_missiles
+		private static AIntegerList m_missiles
 		private static timer m_refreshTimer
 		private static boolean m_refreshTimerStarted
 		// dynamic members
@@ -182,7 +182,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		private real m_startX
 		private real m_startY
 		private real m_startDistance
-		private integer m_index
+		private AIntegerListIterator m_iterator
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AMissile\"")
 
@@ -427,13 +427,13 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			set this.m_startY = 0.0
 			set this.m_startDistance = 0.0
 			call thistype.m_missiles.pushBack(this)
-			set this.m_index = thistype.m_missiles.backIndex()
+			set this.m_iterator = thistype.m_missiles.end()
 			return this
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
 			// static members
-			call thistype.m_missiles.erase(this.m_index)
+			call thistype.m_missiles.erase(this.m_iterator)
 			if (thistype.m_missiles.empty()) then
 				call thistype.disable.evaluate()
 			endif
@@ -445,14 +445,14 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		endmethod
 
 		private static method timerFunctionRefresh takes nothing returns nothing
-			local integer i = thistype.m_missiles.backIndex()
+			local AIntegerListIterator iterator = thistype.m_missiles.begin()
 			loop
-				exitwhen (i < 0)
-				if (not thistype(thistype.m_missiles[i]).isPaused()) then
-					call thistype(thistype.m_missiles[i]).move()
+				exitwhen (not iterator.isValid())
+				if (not thistype(iterator.data()).isPaused()) then
+					call thistype(iterator.data()).move()
 				endif
-				set i = i - 1
 			endloop
+			call iterator.destroy()
 		endmethod
 
 		/**
@@ -465,7 +465,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			// static construction members
 			set thistype.m_refreshTime = refreshTime
 			// static members
-			set thistype.m_missiles = AIntegerVector.create()
+			set thistype.m_missiles = AIntegerList.create()
 			set thistype.m_refreshTimer = CreateTimer()
 			set thistype.m_refreshTimerStarted = false
 		endmethod
