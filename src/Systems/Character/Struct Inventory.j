@@ -1,4 +1,4 @@
-library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, ALibraryCoreGeneralUnit, AStructCoreStringFormat, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter, AStructSystemsCharacterItemType
+library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreGeneralUnit, AStructCoreStringFormat, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter, AStructSystemsCharacterItemType
 
 	/**
 	 * \brief This structure is used to store all item information of one slot in inventory.
@@ -304,6 +304,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * If this flag is true, the equipped items won't have any effect and items cannot be equipped.
 		 */
 		private boolean m_onlyRucksackIsEnabled
+		/*
+		 * A list of all currently pawned item handle IDs required by the drop trigger to not accidentelly refresh a pawned item.
+		 */
+		private AIntegerList m_pawnedItems
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AInventory\"")
 		
@@ -940,6 +944,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			
 			if (this.m_rucksackItemData[index] != 0) then
 
+				// TODO check if unit is dead, otherwise many items lay on the ground?
 				set result = this.unitAddItemToSlotById(this.character().unit(), this.m_rucksackItemData[index].itemTypeId(), slot)
 				
 				// successfully readded
@@ -2010,6 +2015,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		/**
 		 * All orders are recognized after they are done so this method is called by a 0 seconds timer.
+		 * TODO Check if unit is dead or paused (timer).
 		 */
 		private static method timerFunctionOrder takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
@@ -2315,6 +2321,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, "this", this)
 		endmethod
 		
+		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionShowPageItem takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local boolean left = AHashTable.global().handleBoolean(GetExpiredTimer(), "left")
@@ -2323,10 +2330,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
 		
+		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionDropItemWithAllCharges takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
 			local item whichItem = AHashTable.global().handleItem(GetExpiredTimer(), "item")
+			local integer itemHandleId = AHashTable.global().handleInteger(GetExpiredTimer(), "itemId")
+			
+			debug call Print("Item handle ID " + I2S(GetHandleId(whichItem)) + " and size of pawnedItems: " + I2S(this.m_pawnedItems.size()) + " and stored item ID: " + I2S(itemHandleId))
 			/*
 			 * If the item is already gone, it might have been pawned.
 			 * In this case do nothing.
@@ -2334,14 +2345,19 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			if (whichItem != null and thistype.itemIndex(whichItem) != -1) then
 				call this.dropItemWithAllCharges(whichItem)
 			// If the item is NOT pawned however, it has to be cleared since it might have been given to another unit (another character) which immediately removed the item for readding it
-			else
+			elseif (not this.m_pawnedItems.contains(itemHandleId)) then
 				call this.clearRucksackItem(index, false)
 				debug call this.print("Item is already gone.")
+			// Note that an item which has been created with the free handle ID could be dropped as well but it would take longer than 0 seconds to do that?
+			else
+				call this.m_pawnedItems.remove(itemHandleId)
+				debug call this.print("Item was pawned.")
 			endif
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
 		
+		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionClearEquipmentType takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
@@ -2402,6 +2418,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
 					call AHashTable.global().setHandleInteger(whichTimer, "index", index)
 					call AHashTable.global().setHandleItem(whichTimer, "item", GetManipulatedItem())
+					call AHashTable.global().setHandleInteger(whichTimer, "itemId", GetHandleId(GetManipulatedItem()))
+					debug call Print("Item handle ID on drop: " + I2S(GetHandleId(GetManipulatedItem())))
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionDropItemWithAllCharges)
 				debug else
 					debug call this.print("Item has no index. Doing nothing.")
@@ -2439,6 +2457,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return GetTriggerUnit() == this.character().unit() and this.rucksackIsEnabled()
 		endmethod
 
+		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionPawnOneCharge takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
@@ -2457,9 +2476,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local integer index = this.itemIndex(GetSoldItem())
 			local timer whichTimer
-			// prevent drop action from firing
-			call DisableTrigger(this.m_dropTrigger)
-
+			
+			call this.m_pawnedItems.pushBack(GetHandleId(GetSoldItem())) // make sure it will be recognized by the drop trigger as pawned item
 			/*
 			 * Tests showed that the unit still has the item when this event is triggered.
 			 * Therefore a 0 timer has to be used to run code after the pawning.
@@ -2469,9 +2487,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(whichTimer, "this", this)
 			call AHashTable.global().setHandleInteger(whichTimer, "index", index)
 			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionPawnOneCharge)
-
-			// reanable drop trigger
-			call EnableTrigger(this.m_dropTrigger)
 		endmethod
 
 		private method createPawnTrigger takes nothing returns nothing
@@ -2487,6 +2502,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return GetTriggerUnit() == this.character().unit() and this.m_rucksackIsEnabled
 		endmethod
 		
+		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionRefreshCharges takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
@@ -2546,6 +2562,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_rucksackPage = 0
 			set this.m_rucksackIsEnabled = false
 			set this.m_onlyRucksackIsEnabled = false
+			set this.m_pawnedItems = AIntegerList.create()
 
 			/*
 			 * Make sure that the character's unit has the rucksack ability. Otherwise it cannot change to the rucksack.
@@ -2633,6 +2650,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 				set i = i + 1
 			endloop
+			call this.m_pawnedItems.destroy()
 			call UnitRemoveAbility(this.character().unit(), thistype.m_openRucksackAbilityId)
 
 			call this.destroyOpenTrigger()
