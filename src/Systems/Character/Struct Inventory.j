@@ -805,6 +805,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call super.disable()
 			if (this.m_rucksackIsEnabled) then
 				call this.disableRucksack()
+				// store that the rucksack would be still enabled when reenabling again
+				set this.m_rucksackIsEnabled = true
 			else
 				call this.disableEquipment(false)
 			endif
@@ -1069,7 +1071,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		public stub method enable takes nothing returns nothing
 			call super.enable()
-			if (this.m_rucksackIsEnabled) then
+			if (this.m_rucksackIsEnabled or this.m_onlyRucksackIsEnabled) then
+				set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
 				call this.enableRucksack()
 			else
 				call this.enableEquipment()
