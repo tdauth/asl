@@ -20,13 +20,15 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 	 * without extending AClassSelection in a custom struct.
 	 *
 	 * \sa AClass
-	 * \todo Instead of firstClass and lastClass use a vector with available classes.
 	 * \todo Some of the construction members could be dynamic.
 	 */
 	struct AClassSelection
 		// static members
 		private static thistype array m_playerClassSelection[12] /// \todo \ref bj_MAX_PLAYERS, JassHelper bug
 		private static integer m_stack //required for the start game action
+		// static dynamic members
+		private static timer m_selectionTimer
+		private static timerdialog m_selectionTimerDialog
 		// dynamic members
 		private real m_infoSheetWidth
 		private real m_startX
@@ -35,8 +37,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private boolean m_showAttributes
 		private AClassSelectionSelectClassAction m_selectClassAction
 		private AClassSelectionCharacterCreationAction m_characterCreationAction
-		private static timer m_selectionTimer
-		private static timerdialog m_selectionTimerDialog
 		// construction members
 		private player m_user
 		private camerasetup m_cameraSetup
@@ -46,8 +46,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private real m_facing
 		private real m_refreshRate
 		private real m_rotationAngle
-		private AClass m_firstClass
-		private AClass m_lastClass
 		private string m_strengthIconPath
 		private string m_agilityIconPath
 		private string m_intelligenceIconPath
@@ -63,11 +61,12 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private trigger m_changeNextTrigger
 		private trigger m_selectTrigger
 		private multiboard m_infoSheet
+		private AIntegerVector m_classes
 		/**
 		 * This trigger prevents move or smart orders which would corrupt the automatic rotation.
 		 */
 		private trigger m_moveTrigger
-		private AClass m_class
+		private integer m_classIndex
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AClassSelection\"")
 
@@ -164,13 +163,42 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 		
 		/**
-		 * \return Returns the currently selected class.
+		 * \return Returns the index of the currently selected class.
 		 */
-		public method class takes nothing returns AClass
-			return this.m_class
+		public method classIndex takes nothing returns integer
+			return this.m_classIndex
 		endmethod
 
 		// methods
+		
+		/**
+		 * \return Returns the available class at index \p index.
+		 */
+		public method class takes integer index returns AClass
+			return AClass(this.m_classes[index])
+		endmethod
+		
+		/**
+		 * \return Returns the total number of classes available in the class slection.
+		 */
+		public method classCount takes nothing returns integer
+			return this.m_classes.size()
+		endmethod
+		
+		/**
+		 * \return Returns the currentl selected class.
+		 */
+		public method currentClass takes nothing returns AClass
+			return this.class(this.classIndex())
+		endmethod
+		
+		/**
+		 * Adds a new class to the current class selection.
+		 * \param class The class which is added to the class selection.
+		 */
+		public method addClass takes AClass class returns nothing
+			call this.m_classes.pushBack(class)
+		endmethod
 		
 		/**
 		 * Is called via .evaluate() whenever a class is being selected.
@@ -217,7 +245,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method selectClass takes nothing returns nothing
 			local integer i
 			local ACharacter character = 0
-			local unit whichUnit = this.m_class.generateUnit(this.m_user, this.startX(), this.startY(), this.startFacing())
+			local unit whichUnit = this.currentClass().generateUnit(this.m_user, this.startX(), this.startY(), this.startFacing())
 			
 			set character = this.onCharacterCreation.evaluate(this, whichUnit)
 			call ACharacter.setPlayerCharacterByCharacter(character)
@@ -238,8 +266,8 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				call SetUserInterfaceForPlayer(this.m_user, true, true)
 			endif
 			call ResetToGameCameraForPlayer(this.m_user, 0.0)
-			call character.setClass(this.m_class)
-			call this.onSelectClass.evaluate(character, this.class(), thistype.m_stack == 1)
+			call character.setClass(this.currentClass())
+			call this.onSelectClass.evaluate(character, this.currentClass(), thistype.m_stack == 1)
 			debug call Print("Destroy it!")
 			call this.destroy()
 		endmethod
@@ -269,10 +297,50 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 
 		private method selectRandomClass takes nothing returns nothing
-			set this.m_class = GetRandomInt(this.m_firstClass, this.m_lastClass)
+			set this.m_classIndex = GetRandomInt(0, this.classCount() - 1)
 			call this.selectClass()
 		endmethod
 
+		private method createUnit takes nothing returns nothing
+			if (this.m_classUnit != null) then
+				call RemoveUnit(this.m_classUnit)
+				set this.m_classUnit = null
+			endif
+			set this.m_classUnit = CreateUnit(this.m_user, this.currentClass().unitType(), this.m_x, this.m_y, this.m_facing)
+			call SetUnitInvulnerable(this.m_classUnit, true)
+			// make sure that the unit does not move or do anything else
+			call SetUnitMoveSpeed(this.m_classUnit, 0.0) // should not be moved but be rotatable, the map Azeroth Grandprix uses a movement speed of 0.0 but a rotation rate of 0.10 for the selectable cars
+			// do not block units from other players by the unit's pathing
+			call SetUnitPathing(this.m_classUnit, false)
+			
+			/*
+			 * Make the character invisible for all other players since all class selections share the same rect.
+			 */
+			if (GetLocalPlayer() != this.player()) then
+				call SetUnitVertexColor(this.m_classUnit, 255, 255, 255, 0)
+			endif
+			
+			/// \todo Has to be set although unit is being paused?!
+			if (IsUnitType(this.m_classUnit, UNIT_TYPE_HERO)) then
+				call SuspendHeroXP(this.m_classUnit, true)
+			endif
+			// refresh position
+			call SetUnitPosition(this.m_classUnit, this.m_x, this.m_y)
+			call SetUnitAnimation(this.m_classUnit, this.currentClass().animation())
+			call PlaySoundFileForPlayer(this.m_user, this.currentClass().soundPath())
+			if (not this.m_hideUserInterface) then
+				call SelectUnitForPlayerSingle(this.m_classUnit, this.m_user)
+			endif
+
+			// refresh OpLimit
+			call this.refreshInfoSheet.evaluate()
+			
+			call this.onCreate.evaluate(this.m_classUnit)
+		endmethod
+		
+		/**
+		 * Refreshes the info sheet (multiboard). If it does not exist it creates one and updates it with information fo the currently displayed character class.
+		 */
 		private method refreshInfoSheet takes nothing returns nothing
 			local integer count = 0
 			local integer i
@@ -284,24 +352,26 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 
 			if (this.showAttributes()) then
 				set count = 3
-				set strengthText = RWArg(this.m_textStrength, this.class().strPerLevel(), 0, 2)
-				set agilityText = RWArg(this.m_textAgility, this.class().agiPerLevel(), 0, 2)
-				set intelligenceText = RWArg(this.m_textIntelligence, this.class().intPerLevel(), 0, 2)
+				set strengthText = RWArg(this.m_textStrength, this.currentClass().strPerLevel(), 0, 2)
+				set agilityText = RWArg(this.m_textAgility, this.currentClass().agiPerLevel(), 0, 2)
+				set intelligenceText = RWArg(this.m_textIntelligence, this.currentClass().intPerLevel(), 0, 2)
 			endif
 
 			//call MultiboardClear(this.m_infoSheet) // clears not everything?!
-			call DestroyMultiboard(this.m_infoSheet)
-			set this.m_infoSheet = null
+			if (this.m_infoSheet != null) then
+				call DestroyMultiboard(this.m_infoSheet)
+				set this.m_infoSheet = null
+			endif
 			set this.m_infoSheet = CreateMultiboard()
 			call MultiboardSetItemsWidth(this.m_infoSheet, this.m_infoSheetWidth)
 			call MultiboardSetColumnCount(this.m_infoSheet, 1)
 
-			if (this.m_class.descriptionLines() > 0) then
-				set count = count + this.m_class.descriptionLines()
+			if (this.currentClass().descriptionLines() > 0) then
+				set count = count + this.currentClass().descriptionLines()
 			endif
 
 			call MultiboardSetRowCount(this.m_infoSheet, count)
-			call MultiboardSetTitleText(this.m_infoSheet, IntegerArg(IntegerArg(StringArg(this.m_textTitle, GetUnitName(this.m_classUnit)), this.m_class), this.m_lastClass - this.m_firstClass + 1))
+			call MultiboardSetTitleText(this.m_infoSheet, IntegerArg(IntegerArg(StringArg(this.m_textTitle, GetUnitName(this.m_classUnit)), this.currentClass()), this.classCount()))
 			if (this.showAttributes()) then
 				// strength
 				set multiboardItem = MultiboardGetItem(this.m_infoSheet, 0, 0)
@@ -327,14 +397,14 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				set index = 3
 			endif
 
-			if (this.m_class.descriptionLines() > 0) then
+			if (this.currentClass().descriptionLines() > 0) then
 
 				set i = 0
 				loop
-					exitwhen(i == this.m_class.descriptionLines())
+					exitwhen(i == this.currentClass().descriptionLines())
 					set multiboardItem = MultiboardGetItem(this.m_infoSheet, index, 0)
 					call MultiboardSetItemStyle(multiboardItem, true, false)
-					call MultiboardSetItemValue(multiboardItem, this.m_class.descriptionLine(i))
+					call MultiboardSetItemValue(multiboardItem, this.currentClass().descriptionLine(i))
 					call MultiboardReleaseItem(multiboardItem)
 					set multiboardItem = null
 					set i = i + 1
@@ -342,43 +412,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				endloop
 			endif
 			call ShowMultiboardForPlayer(this.m_user, this.m_infoSheet, true)
-		endmethod
-
-		private method createUnit takes nothing returns nothing
-			if (this.m_classUnit != null) then
-				call RemoveUnit(this.m_classUnit)
-				set this.m_classUnit = null
-			endif
-			set this.m_classUnit = CreateUnit(this.m_user, this.m_class.unitType(), this.m_x, this.m_y, this.m_facing)
-			call SetUnitInvulnerable(this.m_classUnit, true)
-			// make sure that the unit does not move or do anything else
-			call SetUnitMoveSpeed(this.m_classUnit, 0.0) // should not be moved but be rotatable, the map Azeroth Grandprix uses a movement speed of 0.0 but a rotation rate of 0.10 for the selectable cars
-			// do not block units from other players by the unit's pathing
-			call SetUnitPathing(this.m_classUnit, false)
-			
-			/*
-			 * Make the character invisible for all other players since all class selections share the same rect.
-			 */
-			if (GetLocalPlayer() != this.player()) then
-				call SetUnitVertexColor(this.m_classUnit, 255, 255, 255, 0)
-			endif
-			
-			/// \todo Has to be set although unit is being paused?!
-			if (IsUnitType(this.m_classUnit, UNIT_TYPE_HERO)) then
-				call SuspendHeroXP(this.m_classUnit, true)
-			endif
-			// refresh position
-			call SetUnitPosition(this.m_classUnit, this.m_x, this.m_y)
-			call SetUnitAnimation(this.m_classUnit, this.m_class.animation())
-			call PlaySoundFileForPlayer(this.m_user, this.m_class.soundPath())
-			//call SetCameraTargetControllerNoZForPlayer(this.user, this.classUnit, 0.0, 0.0, false)
-			if (not this.m_hideUserInterface) then
-				call SelectUnitForPlayerSingle(this.m_classUnit, this.m_user)
-			endif
-
-			call this.refreshInfoSheet()
-			
-			call this.onCreate.evaluate(this.m_classUnit)
 		endmethod
 
 		public method show takes nothing returns nothing
@@ -393,13 +426,16 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			endif
 		endmethod
 		
+		/**
+		 * Minimizes or maximizes the multiboard with information about the currently displayed class.
+		 * \param minimize If this value is true the multiboard is minimized. If this value is false the multiboard is maximized.
+		 */
 		public method minimize takes boolean minimize returns nothing
 			 call MultiboardMinimize(this.m_infoSheet, minimize)
 		endmethod
 
 		private static method triggerActionPlayerLeaves takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			local player whichPlayer
 			local integer i
 			if (ACharacter.shareOnPlayerLeaves()) then
@@ -423,7 +459,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			else
 				call this.selectClass()
 			endif
-			set triggeringTrigger = null
 		endmethod
 
 		private method createLeaveTrigger takes nothing returns nothing
@@ -434,8 +469,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 
 		private static method triggerActionRefresh takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
 			debug if (this.m_cameraSetup != null) then
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, 0.0)
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, this.m_refreshRate)
@@ -443,7 +477,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				debug call this.print("No camera object.")
 			debug endif
 			call SetUnitFacingTimed(this.m_classUnit, GetUnitFacing(this.m_classUnit) + this.m_rotationAngle, this.m_refreshRate)
-			set triggeringTrigger = null
 		endmethod
 
 		private method createRefreshTrigger takes nothing returns nothing
@@ -459,10 +492,10 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		 * Changes to the previous class in selection.
 		 */
 		public method changeToPrevious takes nothing returns nothing
-			if (this.m_class == this.m_firstClass) then
-				set this.m_class = this.m_lastClass
+			if (this.classIndex() == 0) then
+				set this.m_classIndex = this.classCount() - 1
 			else
-				set this.m_class = this.m_class - 1
+				set this.m_classIndex = this.m_classIndex - 1
 			endif
 			call this.createUnit()
 		endmethod
@@ -471,10 +504,10 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		 * Changes to the next class in selection.
 		 */
 		public method changeToNext takes nothing returns nothing
-			if (this.m_class == this.m_lastClass) then
-				set this.m_class = this.m_firstClass
+			if (this.classIndex() == this.classCount() - 1) then
+				set this.m_classIndex = 0
 			else
-				set this.m_class = this.m_class + 1
+				set this.m_classIndex = this.m_classIndex + 1
 			endif
 			call this.createUnit()
 		endmethod
@@ -545,12 +578,14 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		/**
 		 * Creates a new class selection for player \p user.
 		 * \param user The player for who the class selection is for.
+		 * \param cameraSetup This camera setup is applied periodically for the player \p user to change his view to the class selection.
+		 * \param hideUserInterface If this value is true the user interface is hidden from the player. Otherwise it is still available.
 		 * \param x The start coordinate X for the selected class.
 		 * \param y The start coordinate Y for the selected class.
-		 * \param firstClass The ID of the first class.
-		 * \param lastClass The ID of the last class.
+		 * \param facing The start facing of the selected class.
+		 * \note Set the classes before showing the class selection with \ref addClass().
 		 */
-		public static method create takes player user, camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, AClass firstClass, AClass lastClass, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence returns thistype
+		public static method create takes player user, camerasetup cameraSetup, boolean hideUserInterface, real x, real y, real facing, real refreshRate, real rotationAngle, string strengthIconPath, string agilityIconPath, string intelligenceIconPath, string textTitle, string textStrength, string textAgility, string textIntelligence returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
 			set this.m_infoSheetWidth = 0.35
@@ -569,8 +604,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			set this.m_facing = facing
 			set this.m_refreshRate = refreshRate
 			set this.m_rotationAngle = rotationAngle
-			set this.m_firstClass = firstClass
-			set this.m_lastClass = lastClass
 			set this.m_strengthIconPath = strengthIconPath
 			set this.m_agilityIconPath = agilityIconPath
 			set this.m_intelligenceIconPath = intelligenceIconPath
@@ -579,7 +612,10 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			set this.m_textAgility = textAgility
 			set this.m_textIntelligence = textIntelligence
 			// members
-			set this.m_class = this.m_firstClass
+			set this.m_classUnit = null
+			set this.m_infoSheet = null
+			set this.m_classIndex = 0
+			set this.m_classes = AIntegerVector.create()
 			// static members
 			set thistype.m_playerClassSelection[GetPlayerId(user)] = this
 			set thistype.m_stack = thistype.m_stack + 1
@@ -638,6 +674,9 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			local player user = this.m_user
 			// construction members
 			set this.m_user = null
+			// members
+			call this.m_classes.destroy()
+			set this.m_classes = 0
 			// static members
 			set thistype.m_playerClassSelection[GetPlayerId(user)] = 0
 			set user = null
@@ -662,11 +701,11 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				endif
 				set i = i + 1
 			endloop
+			call DestroyTimerDialog(thistype.m_selectionTimerDialog)
+			set thistype.m_selectionTimerDialog = null
 			call PauseTimer(GetExpiredTimer())
 			call DestroyTimer(GetExpiredTimer())
 			set thistype.m_selectionTimer = null
-			call DestroyTimerDialog(thistype.m_selectionTimerDialog)
-			set thistype.m_selectionTimerDialog = null
 		endmethod
 		
 		/**
@@ -691,20 +730,20 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		 * Ends the limitation timer.
 		 */
 		public static method endTimer takes nothing returns nothing
+			if (thistype.m_selectionTimerDialog != null) then
+				call DestroyTimerDialog(thistype.m_selectionTimerDialog)
+				set thistype.m_selectionTimerDialog = null
+			endif
 			if (thistype.m_selectionTimer != null) then
 				call PauseTimer(thistype.m_selectionTimer)
 				call DestroyTimer(thistype.m_selectionTimer)
 				set thistype.m_selectionTimer = null
 			endif
-			if (thistype.m_selectionTimerDialog != null) then
-				call DestroyTimerDialog(thistype.m_selectionTimerDialog)
-				set thistype.m_selectionTimerDialog = null
-			endif
 		endmethod
 
 		private static method onInit takes nothing returns nothing
 			local integer i
-			//static members
+			// static members
 			set thistype.m_selectionTimer = null
 			set thistype.m_selectionTimerDialog = null
 			set i = 0

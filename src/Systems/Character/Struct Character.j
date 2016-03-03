@@ -771,6 +771,9 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			return thistype.getCharacterByUnit(usedUnit) != 0
 		endmethod
 
+		/**
+		 * \return Returns the first existing character starting with the lowest player ID. If no character exists it returns 0.
+		 */
 		public static method getFirstCharacter takes nothing returns thistype
 			local integer i
 			local player user
@@ -791,6 +794,8 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		public static method displayMessageByUser takes player user, integer messageType, string message returns nothing
 			call thistype.playerCharacter(user).displayMessage(messageType, message)
 		endmethod
+		
+		// the following methods are for convience to call methods for all characters
 
 		public static method setAllMovable takes boolean movable returns nothing
 			local integer i
