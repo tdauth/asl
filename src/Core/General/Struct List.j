@@ -434,8 +434,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 				loop
 					set iterator = this.find(value)
 					exitwhen (iterator == 0)
-					call this.erase(iterator)
-					call iterator.destroy()
+					call this.erase(iterator).destroy()
 				endloop
 			endmethod
 
