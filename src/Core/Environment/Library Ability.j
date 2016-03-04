@@ -2,7 +2,7 @@
 * \link http://www.wc3c.net/showthread.php?t=105279
 * \author grim001
 */
-library ALibraryCoreEnvironmentAbility requires ALibraryCoreDebugMisc
+library ALibraryCoreEnvironmentAbility initializer Init requires ALibraryCoreDebugMisc
 
 	globals
 		private constant integer PreloadUnitRawcode = 'zsmc'
@@ -54,7 +54,7 @@ endif
 		endloop
 	endfunction
 
-	private function onInit takes nothing returns nothing
+	private function Init takes nothing returns nothing
 		set PreloadUnit = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), PreloadUnitRawcode, 0., 0., 0.)
 		call UnitApplyTimedLife(PreloadUnit, 0, .001)
 		call ShowUnit(PreloadUnit, false)
