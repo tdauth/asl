@@ -1070,10 +1070,27 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * Usually you do not have to call this method. The system handles itself.
 		 */
 		public stub method enable takes nothing returns nothing
+			local integer i
+			local AItemType itemType
 			call super.enable()
 			if (this.m_rucksackIsEnabled or this.m_onlyRucksackIsEnabled) then
 				set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
 				call this.enableRucksack()
+				
+				/*
+				 * Add permanent abilities of equipment when only rucksack is shown. Otherwise they are missing.
+				 */
+				set i = 0
+				loop
+					exitwhen (i == thistype.maxEquipmentTypes)
+					if (this.equipmentItemData(i) != 0) then
+						set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+						if (itemType != 0) then
+							call itemType.addPermanentAbilities(this.character().unit())
+						endif
+					endif
+					set i = i + 1
+				endloop
 			else
 				call this.enableEquipment()
 			endif
