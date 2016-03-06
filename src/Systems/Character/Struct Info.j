@@ -1,4 +1,4 @@
-library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, ALibraryCoreGeneralPlayer, ALibraryCoreInterfaceTextTag, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk, AStructSystemsCharacterVideo
+library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentSound, AStructCoreGeneralList, ALibraryCoreGeneralPlayer, ALibraryCoreInterfaceTextTag, AStructCoreInterfaceThirdPersonCamera, ALibraryCoreInterfaceCinematic, ALibraryCoreInterfaceMisc, ALibraryCoreMathsUnit, AStructSystemsCharacterCharacter, AStructSystemsCharacterTalk, AStructSystemsCharacterVideo
 
 	/**
 	 * The interface for functions whiche are used as conditions for infos.
@@ -36,9 +36,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	 * \internal Don't move around any info's since they are refered by their indices!
 	 */
 	struct AInfo
-		// static members
-		private static trigger m_skipTrigger
-		public static boolean array m_playerHasSkipped[12] /// \todo bj_MAX_PLAYERS Do not use.
 		// dynamic members
 		private boolean m_permanent
 		private boolean m_important
@@ -295,50 +292,53 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		private real skipCheckInterval
 		private boolean array playerHasSkipped[12] /// \todo bj_MAX_PLAYERS, vJass bug.
 		private trigger skipTrigger = null
+		/// Lists of \ref PlayerSpeechData instances
+		private AIntegerList array playerSpeechData[12] /// \todo bj_MAX_PLAYERS, vJass bug.
 	endglobals
-
-	private function triggerConditionSkip takes nothing returns boolean
-		return ACharacter.playerCharacter(GetTriggerPlayer()).talk() != 0 and not playerHasSkipped[GetPlayerId(GetTriggerPlayer())]
-	endfunction
-
-	// skipping actions are handled in speech function itself
-	private function triggerActionSkip takes nothing returns nothing
-		set playerHasSkipped[GetPlayerId(GetTriggerPlayer())] = true
-	endfunction
-
+	
 	/**
-	 * Call this function before using \ref speech() to provide skipable talks.
-	 * Whenenver the talk's listening player presses \p key one single \ref speech() call will be skipped.
-	 * As functions cannot be interrupted immediately it needs \p checkInterval for a periodic time interval whenever it's checked if the player has skipped the speech.
-	 * \sa speech()
-	 * \sa speech2()
-	 * \sa ATalk
-	 * \sa AInfo
+	 * \brief Stores sound, texttag and player of a speech call and is used for skipping.
+	 * Skips everything on its destruction.
 	 */
-	function initSpeechSkip takes integer key, real checkInterval returns nothing
-		local integer i
-		if (not KeyIsValid(key)) then
-			debug call PrintFunctionError("initSpeechSkip", "Invalid key " + I2S(key))
-			set key = AKeyEscape
-		endif
-		set skipKey = key
-		set skipCheckInterval = checkInterval
-		if (skipTrigger != null) then
-			return
-		endif
-		set skipTrigger = CreateTrigger()
-		set i = 0
-		loop
-			exitwhen (i == bj_MAX_PLAYERS)
-			set playerHasSkipped[i] = false
-			if (IsPlayerPlayingUser(Player(i))) then
-				call TriggerRegisterKeyEventForPlayer(Player(i), skipTrigger, key, true)
+	private struct PlayerSpeechData
+		private player m_player
+		private texttag m_texttag
+		private sound m_sound
+		
+		public method player takes nothing returns player
+			return this.m_player
+		endmethod
+		
+		public method textTag takes nothing returns texttag
+			return this.m_texttag
+		endmethod
+		
+		public method sound takes nothing returns sound
+			return this.m_sound
+		endmethod
+		
+		public static method create takes player whichPlayer, texttag textTag, sound whichSound returns thistype
+			local thistype this = thistype.allocate()
+			set this.m_player = whichPlayer
+			set this.m_texttag = textTag
+			set this.m_sound = whichSound
+			
+			return this
+		endmethod
+		
+		/**
+		 * Skips the sound and removes the texttag for the player.
+		 */
+		public method onDestroy takes nothing returns nothing
+			if (this.m_sound != null) then
+				call StopSound(this.m_sound, false, false) // stop sound since speech could have been skipped by player
+				set this.m_sound = null
 			endif
-			set i = i + 1
-		endloop
-		call TriggerAddCondition(skipTrigger, Condition(function triggerConditionSkip))
-		call TriggerAddAction(skipTrigger, function triggerActionSkip)
-	endfunction
+			call DestroyTextTag(this.m_texttag)
+			set this.m_texttag = null
+			set this.m_player = null
+		endmethod
+	endstruct
 	
 	private function SetSpeechVolumeGroupsImmediateForPlayer takes player whichPlayer returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
@@ -375,6 +375,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		local player speakerOwner = null
 		local boolean useThirdPerson = info.talk().useThirdPerson(character)
 		local timer whichTimer = null
+		local boolean wasSkipped = false
+		local PlayerSpeechData playerSpeechData = 0
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
 			set speaker = info.talk().unit()
@@ -401,7 +403,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call AThirdPersonCamera.playerThirdPersonCamera(user).enable(character.unit(), 0.0)
 		endif
 
-		//call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
 		// transmissions become annoying when using the chat
 		set whichTextTag = CreateTextTag()
 		call SetTextTagTextBJ(whichTextTag, "|cffffcc00" + name + ":|r " + text, 10.0)
@@ -409,20 +410,9 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		call SetTextTagVisibility(whichTextTag, false)
 		call SetTextTagPermanent(whichTextTag, true)
 		call ShowTextTagForPlayer(character.player(), whichTextTag, true)
-					
-		
-		// TODO Showing a transmission when the interface is not hidden during a talk overlays with the chat messages by other players. Therefore the subtitle of the transmission should be placeed somewhere else on the screen
-		// DisplayTimedTextToPlayer     takes player toPlayer, real x, real y, real duration, string message returns nothing
-		// x = 0.50 -> center
-		// y = 0.0 -> top
-		/*
-		if (GetLocalPlayer() == user) then
-			call ClearTextMessages()
-			call DisplayTimedTextToPlayer(user, 0.50, 0.0, duration, "")
-		endif
-		call SetCinematicSceneForPlayer(user, GetUnitTypeId(speaker), speakerOwner, name, text, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
-		*/
-		
+		set playerSpeechData = PlayerSpeechData.create(character.player(), whichTextTag, usedSound)
+		call playerSpeechData[GetPlayerId(character.player())].pushBack(playerSpeechData)
+
 		if (skipTrigger == null) then
 			call PolledWait(duration)
 		else
@@ -438,12 +428,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				set duration = TimerGetRemaining(whichTimer)
 				exitwhen (duration <= 0.0)
 				if (playerHasSkipped[GetPlayerId(user)]) then
-					set playerHasSkipped[GetPlayerId(user)] = false
-					// TODO stop sound for player only
-					if (usedSound != null) then
-						call StopSound(usedSound, false, false) // stop sound since speech could have been skipped by player
-					endif
-					call EndCinematicSceneForPlayer(user)
+					set wasSkipped = true
 					exitwhen (true)
 				endif
 				
@@ -461,8 +446,11 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set whichTimer = null
 		endif
 		
-		call DestroyTextTag(whichTextTag)
-		set whichTextTag = null
+		// only clear data in this function if it has not already been cleared by the skip function
+		if (not wasSkipped) then
+			call playerSpeechData[GetPlayerId(character.player())].remove(playerSpeechData)
+			call playerSpeechData.destroy()
+		endif
 		
 		call waitForVideo(1.0) // do not show any speeches during video
 
@@ -494,6 +482,60 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		call speech(info, character, toCharacter, text, whichSound)
 		call KillSoundWhenDone(whichSound)
 		set whichSound = null
+	endfunction
+	
+	private function triggerConditionSkip takes nothing returns boolean
+		return ACharacter.playerCharacter(GetTriggerPlayer()).talk() != 0 and not playerHasSkipped[GetPlayerId(GetTriggerPlayer())]
+	endfunction
+
+	/**
+	 * Sets the skip flag to true that the waiting is skipped in the \ref speech() function.
+	 * But clears all texttags and sounds immediately.
+	 */
+	private function triggerActionSkip takes nothing returns nothing
+		local AIntegerListIterator iterator = playerSpeechData[GetPlayerId(GetTriggerPlayer())].begin()
+		loop
+			exitwhen (not iterator.isValid())
+			call PlayerSpeechData(iterator.data()).destroy()
+			set iterator = playerSpeechData[GetPlayerId(GetTriggerPlayer())].erase(iterator)
+		endloop
+		call iterator.destroy()
+		set playerHasSkipped[GetPlayerId(GetTriggerPlayer())] = true
+	endfunction
+
+	/**
+	 * Call this function before using \ref speech() to provide skipable talks.
+	 * Whenenver the talk's listening player presses \p key one single \ref speech() call will be skipped.
+	 * As functions cannot be interrupted immediately it needs \p checkInterval for a periodic time interval whenever it's checked if the player has skipped the speech.
+	 * \sa speech()
+	 * \sa speech2()
+	 * \sa ATalk
+	 * \sa AInfo
+	 */
+	function initSpeechSkip takes integer key, real checkInterval returns nothing
+		local integer i
+		if (not KeyIsValid(key)) then
+			debug call PrintFunctionError("initSpeechSkip", "Invalid key " + I2S(key))
+			set key = AKeyEscape
+		endif
+		set skipKey = key
+		set skipCheckInterval = checkInterval
+		if (skipTrigger != null) then
+			return
+		endif
+		set skipTrigger = CreateTrigger()
+		set i = 0
+		loop
+			exitwhen (i == bj_MAX_PLAYERS)
+			set playerHasSkipped[i] = false
+			set playerSpeechData[i] = AIntegerList.create()
+			if (IsPlayerPlayingUser(Player(i))) then
+				call TriggerRegisterKeyEventForPlayer(Player(i), skipTrigger, key, true)
+			endif
+			set i = i + 1
+		endloop
+		call TriggerAddCondition(skipTrigger, Condition(function triggerConditionSkip))
+		call TriggerAddAction(skipTrigger, function triggerActionSkip)
 	endfunction
 
 endlibrary
