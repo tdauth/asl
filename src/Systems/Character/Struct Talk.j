@@ -53,6 +53,11 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		// members
 		private AIntegerVector m_infos
 		private AIntegerVector m_characters
+		/**
+		 * The characters get special effects as well when they are in talks to indicate for other players that they are talking to an NPC.
+		 * This is only done if the effect path is not null.
+		 */
+		private effect array m_characterEffects[12] // TODO bj_MAX_PLAYERS
 		private boolean m_isEnabled
 		private trigger m_orderTrigger
 		private effect m_effect
@@ -427,6 +432,9 @@ endif
 			
 			call character.setTalk(this)
 			call character.setMovable(false)
+			if (this.effectPath() != null) then
+				set this.m_characterEffects[GetPlayerId(character.player())] = AddSpecialEffectTarget(this.effectPath(), character.unit(), "overhead") 
+			endif
 			call PauseUnit(this.m_unit, true) // disables routines or something else of NPC
 			call SetUnitFacing(character.unit(), GetAngleBetweenUnits(character.unit(), this.m_unit))
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
@@ -469,6 +477,10 @@ endif
 			call character.setTalk(0)
 			call character.setMovable(true)
 			call this.m_characters.remove(character)
+			if (this.m_characterEffects[GetPlayerId(character.player())] != null) then
+				call DestroyEffect(this.m_characterEffects[GetPlayerId(character.player())])
+				set this.m_characterEffects[GetPlayerId(character.player())] = null
+			endif
 			/*
 			 * When there is no character left to talk to the NPC can go on working on anything.
 			 */
@@ -604,16 +616,35 @@ endif
 		endmethod
 
 		private method updateEffect takes boolean disabledInCinematicsBefore returns nothing
+			local integer i
 			if (this.m_effect != null) then
 				call DestroyEffect(this.m_effect)
 				set this.m_effect = null
 			endif
+			set i = 0
+			loop
+				exitwhen (i == bj_MAX_PLAYERS)
+				if (this.m_characterEffects[i] != null) then
+					call DestroyEffect(this.m_characterEffects[i])
+					set this.m_characterEffects[i] = null
+				endif
+				set i = i + 1
+			endloop
 			if (disabledInCinematicsBefore and not this.disableEffectInCinematicMode() and this.hasEffect()) then
 				call thistype.m_cinematicTalks.remove(this)
 			endif
 			if (this.hasEffect()) then
 				if (this.isEnabled()) then
 					set this.m_effect = AddSpecialEffectTarget(this.effectPath(), this.unit(), "overhead")
+					
+					set i = 0
+					loop
+						exitwhen (i == bj_MAX_PLAYERS)
+						if (ACharacter.playerCharacter(Player(i)) != 0 and this.m_characters.contains(ACharacter.playerCharacter(Player(i)))) then
+							set this.m_characterEffects[i] = AddSpecialEffectTarget(this.effectPath(), ACharacter.playerCharacter(Player(i)).unit(), "overhead")
+						endif
+						set i = i + 1
+					endloop
 				endif
 				if (not disabledInCinematicsBefore and this.disableEffectInCinematicMode()) then
 					if (thistype.m_cinematicTalks == 0) then
