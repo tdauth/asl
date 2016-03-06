@@ -14,7 +14,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 	 * Each character's current talk can be refered by \ref ACharacter.talk().
 	 * Here's a list of additional features provided by ATalk:
 	 * <ul>
-	 * <li>activation on player order - \ref setOrderId(), \ref setMaxOrderDistance(), \ref setOrderErrorMessage()</li>
+	 * <li>activation on player order - \ref setOrderId(), \ref setMaxOrderDistance()</li>
 	 * <li>talk effect which can be disabled during cinematic sequences - \ref setEffectPath(), \ref setDisableEffectInCinematicMode()</li>
 	 * <li>hiding user interface during talk - \ref setHideUserInterface()</li>
 	 * </ul>
@@ -34,20 +34,19 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		public static constant string defaultEffectPath = "Abilities\\Spells\\Other\\TalkToMe\\TalkToMe.mdl"
 		public static constant boolean defaultDisableEffectInCinematicMode = true
 		public static constant boolean defaultHideUserInterface = false
-		// static construction members
-		private static string m_textExit
-		private static string m_textBack
-		private static string m_textTargetTalksAlready
+		public static constant string defaultTextExit = "Exit"
+		public static constant string defaultTextBack = "Back"
 		// static members
 		private static AIntegerList m_cinematicTalks = 0 /// \note allocated on request, not in \ref thistype.init() anymore!
 		// dynamic members
 		private integer m_orderId
 		private real m_maxOrderDistance
-		private string m_orderErrorMessage
 		private string m_effectPath
 		private boolean m_disableEffectInCinematicMode
 		private boolean m_hideUserInterface
 		private ATalkStartAction m_startAction
+		private string m_textExit
+		private string m_textBack
 		private string m_name
 		// construction members
 		private unit m_unit
@@ -86,7 +85,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 * If order-based activation is present you can define a distance in which the character's unit has to be when the order is being issued.
 		 * \param distance If this value is 0 or smaller, distance check is ignored.
 		 * Use \ref setOrderId() to enable order-based activation.
-		 * Use \ref setOrderErrorMessage() to specify an error message in case of talks which are already in use.
 		 * \sa defaultMaxOrderDistance
 		 * \sa maxOrderDistance()
 		 * \sa hasMaxOrderDistance()
@@ -114,33 +112,6 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		 */
 		public method hasMaxOrderDistance takes nothing returns boolean
 			return this.maxOrderDistance() > 0.0
-		endmethod
-
-		/**
-		 * This message is send to a character's owner when he would enable a talk through order-based activation but fails because the talk is already in use by another player's character.
-		 * It's send using \ref ACharacter.messageTypeError.
-		 * \param message If this value is null there won't be any message.
-		 * \sa orderErrorMessage()
-		 * \sa hasOrderErrorMessage()
-		 */
-		public method setOrderErrorMessage takes string message returns nothing
-			set this.m_orderErrorMessage = message
-		endmethod
-
-		/**
-		 * \sa setOrderErrorMessage()
-		 * \sa hasOrderErrorMessage()
-		 */
-		public method orderErrorMessage takes nothing returns string
-			return this.m_orderErrorMessage
-		endmethod
-
-		/**
-		 * \sa setOrderErrorMessage()
-		 * \sa orderErrorMessage()
-		 */
-		public method hasOrderErrorMessage takes nothing returns boolean
-			return this.orderErrorMessage() != null
 		endmethod
 
 		/**
@@ -189,6 +160,36 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 
 		public method startAction takes nothing returns ATalkStartAction
 			return this.m_startAction
+		endmethod
+		
+		/**
+		 * Sets the text which shows up when \ref addExitButton() is called.
+		 * \param textExit The text of the exit button.
+		 */
+		public method setTextExit takes string textExit returns nothing
+			set this.m_textExit = textExit
+		endmethod
+		
+		/**
+		 * \return Returns the text which shows up in an exit button.
+		 */
+		public method textExit takes nothing returns string
+			return this.m_textExit
+		endmethod
+		
+		/**
+		 * Sets the text which shows up when \ref addBackButton() is used.
+		 * \param textBack The text of the back button.
+		 */
+		public method setTextBack takes string textBack returns nothing
+			set this.m_textBack = textBack
+		endmethod
+		
+		/**
+		 * \return Returns the text which shows up in a back button.
+		 */
+		public method textBack takes nothing returns string
+			return this.m_textBack
 		endmethod
 		
 		/**
@@ -355,8 +356,13 @@ endif
 		endmethod
 
 		/// \todo Use translated string from Warcraft III.
+		/**
+		 * Adds a permanent, non-important button without condition and the action \p action using the text from \ref textBack().
+		 * This button is usually used to return to a previous page.
+		 * \return Returns the corresponding created info object.
+		 */
 		public method addBackButton takes AInfoAction action returns AInfo
-			return AInfo.create.evaluate(this, true, false, 0, action, thistype.m_textBack)
+			return AInfo.create.evaluate(this, true, false, 0, action, this.textBack())
 		endmethod
 
 		private static method infoActionBackToStartPage takes AInfo info, ACharacter character returns nothing
@@ -365,7 +371,7 @@ endif
 
 		/// \todo Use translated string from Warcraft III.
 		public method addBackToStartPageButton takes nothing returns AInfo
-			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionBackToStartPage, thistype.m_textBack)
+			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionBackToStartPage, this.textBack())
 		endmethod
 		
 		/**
@@ -414,6 +420,11 @@ endif
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(character.player(), true)
 			endif
+			if (character.talk() != 0) then
+				call character.talk().close.evaluate(character)
+				debug call this.print("Character " + I2S(character) + " has already a talk which is now closed.")
+			endif
+			
 			call character.setTalk(this)
 			call character.setMovable(false)
 			call PauseUnit(this.m_unit, true) // disables routines or something else of NPC
@@ -498,7 +509,6 @@ endif
 		/**
 		 * \param orderId If this value is not equal to 0 the talk is enabled for a player's character if the player orders his character unit the given order with the talk's NPC as target (for example "smart"). Otherwise, talk activation on order is disabled.
 		 * Use \ref setOrderDistance() to specify the character's required distance to the NPC when order is being issued.
-		 * Use \ref setOrderErrorMessage() to specify an error message in case of talks which are already in use.
 		 * \sa orderId()
 		 * \sa hasOrder()
 		 */
@@ -521,7 +531,7 @@ endif
 		 * \todo Use translated string from Warcraft III.
 		 */
 		public method addExitButton takes nothing returns AInfo
-			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionExit, thistype.m_textExit)
+			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionExit, this.textExit())
 		endmethod
 
 		/**
@@ -672,10 +682,11 @@ endif
 			// dynamic members
 			set this.m_orderId = thistype.defaultOrderId
 			set this.m_maxOrderDistance = thistype.defaultMaxOrderDistance
-			set this.m_orderErrorMessage = thistype.m_textTargetTalksAlready
 			set this.m_effectPath = thistype.defaultEffectPath
 			set this.m_disableEffectInCinematicMode = thistype.defaultDisableEffectInCinematicMode
 			set this.m_hideUserInterface = thistype.defaultHideUserInterface
+			set this.m_textExit = thistype.defaultTextExit
+			set this.m_textBack = thistype.defaultTextBack
 			set this.m_name = GetUnitName(whichUnit)
 			// construction members
 			set this.m_unit = whichUnit
@@ -781,12 +792,6 @@ endif
 				call iterator.next()
 			endloop
 			call iterator.destroy()
-		endmethod
-		
-		public static method init takes string textExit, string textBack, string textTargetTalksAlready returns nothing
-			set thistype.m_textExit = textExit
-			set thistype.m_textBack = textBack
-			set thistype.m_textTargetTalksAlready = textTargetTalksAlready
 		endmethod
 	endstruct
 
