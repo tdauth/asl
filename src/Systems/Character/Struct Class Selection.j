@@ -359,10 +359,12 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 
 			//call MultiboardClear(this.m_infoSheet) // clears not everything?!
 			if (this.m_infoSheet != null) then
+				debug call Print("Destroy old info sheet")
 				call DestroyMultiboard(this.m_infoSheet)
 				set this.m_infoSheet = null
 			endif
 			set this.m_infoSheet = CreateMultiboard()
+			debug call Print("Create Info sheet")
 			call MultiboardSetItemsWidth(this.m_infoSheet, this.m_infoSheetWidth)
 			call MultiboardSetColumnCount(this.m_infoSheet, 1)
 
@@ -411,6 +413,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 					set index = index + 1
 				endloop
 			endif
+			debug call Print("Show info sheet to player " + GetPlayerName(this.m_user))
 			call ShowMultiboardForPlayer(this.m_user, this.m_infoSheet, true)
 		endmethod
 
@@ -473,6 +476,9 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			debug if (this.m_cameraSetup != null) then
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, 0.0)
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, this.m_refreshRate)
+				// this call should prevent any scrolling or moving with the cursor
+				call PanCameraToTimedForPlayer(this.m_user, GetUnitX(this.classUnit()), GetUnitY(this.classUnit()), this.m_refreshRate)
+				
 			debug else
 				debug call this.print("No camera object.")
 			debug endif
@@ -560,8 +566,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			if (GetTriggerUnit() == this.m_classUnit and (GetIssuedOrderId() == OrderId("move") or GetIssuedOrderId() == OrderId("smart"))) then
 				debug call Print("Stop class unit " + GetUnitName(GetTriggerUnit()))
 				call IssueImmediateOrder(GetTriggerUnit(), "stop")
-			debug else
-				debug call Print("Dont stop class unit")
 			endif
 			
 			return false

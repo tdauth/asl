@@ -9,7 +9,7 @@ library AStructCoreInterfaceThirdPersonCamera requires AStructCoreInterfaceArrow
 	 * Note that you have to initialize \ref AArrowKeys before initializing this structure.
 	 * Thanks to Wc3C.net user Opossum for this great system!
 	 * \author Opossum
-	 * \author Tamino Dauth
+	 * \author Tamino Dauth (only the adaption for the ASL)
 	 * <a href="http://www.wc3c.net/showthread.php?t=104786">Wc3C.net thread</a>
 	 */
 	struct AThirdPersonCamera

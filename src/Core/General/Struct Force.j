@@ -156,7 +156,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -171,7 +171,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -186,7 +186,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -201,7 +201,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -216,7 +216,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -231,7 +231,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -246,7 +246,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -283,7 +283,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		public method isSetHuman takes nothing returns boolean
@@ -315,6 +315,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
+		 * Sets the name of every player in the force to \p name.
 		 * \sa SetPlayerName
 		 */
 		public method setName takes string name returns nothing
@@ -327,6 +328,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
+		 * \return Returns true if all players in the force have the name \p name. Otherwise it returns false.
 		 * \sa GetPlayerName
 		 */
 		public method hasName takes string name returns boolean
@@ -338,10 +340,11 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
+		 * \return Returns true if the whole force is allied to player \p whichPlayer. Otherwise it returns false.
 		 * \sa IsPlayerAlly
 		 */
 		public method isAlliedToPlayer takes player whichPlayer returns boolean
@@ -353,10 +356,11 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
+		 * \return Returns true if the whole force is hostile to player \p whichPlayer. Otherwise it returns false.
 		 * \sa IsPlayerEnemy
 		 */
 		public method isHostileToPlayer takes player whichPlayer returns boolean
@@ -368,7 +372,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -383,7 +387,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -398,7 +402,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -413,7 +417,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -428,7 +432,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -443,7 +447,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -458,7 +462,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
@@ -488,10 +492,11 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**
+		 * \return Returns true all players in the force have the race \p whichRace. Otherwise it returns false.
 		 * \sa GetPlayerRace
 		 */
 		public method hasRace takes race whichRace returns boolean
@@ -503,7 +508,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		public method isHuman takes nothing returns boolean
@@ -531,7 +536,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 		endmethod
 
 		/**
-		 * \return Returns true if player with \p id belongs to force. Otherwise it returns false.
+		 * \return Returns true if all players in the force have the ID \p id. Otherwise it returns false.
 		 * \sa GetPlayerId
 		 */
 		public method hasId takes integer id returns boolean
@@ -543,7 +548,7 @@ library AStructCoreGeneralForce requires AStructCoreGeneralVector
 				endif
 				set i = i + 1
 			endloop
-			return false
+			return true
 		endmethod
 
 		/**

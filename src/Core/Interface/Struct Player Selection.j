@@ -35,6 +35,7 @@ library AStructCoreInterfacePlayerSelection requires optional ALibraryCoreDebugM
 			call this.m_group.units().clear()
 			call SyncSelections()
 			call this.m_group.addUnitsSelected(this.m_player, null)
+			debug call Print("Store selected: " + I2S(this.m_group.units().size()))
 		endmethod
 
 		/**
@@ -42,6 +43,7 @@ library AStructCoreInterfacePlayerSelection requires optional ALibraryCoreDebugM
 		 * \sa store()
 		 */
 		public method restore takes nothing returns nothing
+			debug call Print("Restore selected: " + I2S(this.m_group.units().size()))
 			call this.m_group.selectOnlyForPlayer(this.m_player)
 		endmethod
 

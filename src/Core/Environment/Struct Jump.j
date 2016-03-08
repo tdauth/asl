@@ -4,6 +4,8 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 	function interface AJumpAlightAction takes unit usedUnit returns nothing
 
 	/**
+	 * \brief Allows creating jump movements for units with a parabola curve.
+	 *
 	 * \todo Test and fix \ref AMissile first and use vectors for this struct, too afterwards.
 	 */
 	struct AJump
@@ -30,6 +32,10 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 
 		// dynamic members
 
+		/**
+		 * Sets the distance the unit is moved in its target direction per second.
+		 * \param speed The distance per second the unit is moved.
+		 */
 		public method setSpeed takes real speed returns nothing
 			set this.m_speed = speed * thistype.m_refreshRate
 		endmethod
@@ -101,6 +107,10 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			call iterator.destroy()
 		endmethod
 
+		/**
+		 * Initializes the whole AJump system. This method should be called before any AJump instance is created or used.
+		 * \param refreshRate The periodic interval in seconds which is used to update all jumps positions.
+		 */
 		public static method init takes real refreshRate returns nothing
 			// static construction members
 			set thistype.m_refreshRate = refreshRate
@@ -121,10 +131,16 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 			call thistype.m_jumps.destroy()
 		endmethod
 
+		/**
+		 * Resumes all jumps again after they have been disabled.
+		 */
 		public static method enable takes nothing returns nothing
 			call ResumeTimer(thistype.m_timer)
 		endmethod
 
+		/**
+		 * Pauses all jumps.
+		 */
 		public static method disable takes nothing returns nothing
 			call PauseTimer(thistype.m_timer)
 		endmethod

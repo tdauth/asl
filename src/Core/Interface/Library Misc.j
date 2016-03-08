@@ -95,10 +95,16 @@ library ALibraryCoreInterfaceMisc initializer init requires ALibraryCoreStringCo
 		return null
 	endfunction
 	
+	/**
+	 * \return Returns the player's name in the color of the player.
+	 */
 	function GetColoredPlayerName takes player whichPlayer returns string
 		return "|c00" + PlayerColorToString(GetPlayerColor(whichPlayer)) + GetPlayerName(whichPlayer) + "|r"
 	endfunction
 
+	/**
+	 * \return Returns the colored player's name with the players number in brackets.
+	 */
 	function GetModifiedPlayerName takes player whichPlayer returns string
 		return GetColoredPlayerName(whichPlayer) + " |c00ffffff[" + I2S(GetPlayerId(whichPlayer) + 1) + "]|r"
 	endfunction
