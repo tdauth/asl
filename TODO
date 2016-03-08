@@ -6,6 +6,7 @@
 * FIXED: AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
 * FIXED: AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
 * AInventory: More public methods: showRucksackPage(integer pageNumber)
+* AInventory: 0 timer functions might fail when the character dies at that moment. When he is dead the items might land on the ground.
 * FIXED: AInventory: Allow giving owned item to another character. Detect giving order!
 * FIXED: AInventory: Allow picking up items with full inventory page: http://www.hiveworkshop.com/forums/spells-569/easy-item-stack-n-split-v2-7-4-a-153287/?prev=search%3Dstack%26d%3Dlist%26r%3D20
 * FIXED: AInventory: When adding item fails the AInventoryItemData should not be set. It duplicates the items!
