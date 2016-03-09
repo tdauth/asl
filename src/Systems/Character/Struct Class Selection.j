@@ -476,9 +476,6 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			debug if (this.m_cameraSetup != null) then
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, 0.0)
 				call CameraSetupApplyForPlayer(true, this.m_cameraSetup, this.m_user, this.m_refreshRate)
-				// this call should prevent any scrolling or moving with the cursor
-				call PanCameraToTimedForPlayer(this.m_user, GetUnitX(this.classUnit()), GetUnitY(this.classUnit()), this.m_refreshRate)
-				
 			debug else
 				debug call this.print("No camera object.")
 			debug endif
