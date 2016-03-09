@@ -1,4 +1,4 @@
-library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector, ALibraryCoreInterfaceMisc, ALibraryCoreMathsHandle, AStructSystemsCharacterCharacter
+library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector, ALibraryCoreInterfaceMisc, ALibraryCoreMathsHandle, AStructSystemsCharacterCharacter, AStructSystemsWorldRoutine
 
 	/// \todo Should be a part of \ref ATalk, vJass bug.
 	function interface ATalkStartAction takes ATalk talk, ACharacter character returns nothing
@@ -435,7 +435,10 @@ endif
 			if (this.effectPath() != null) then
 				set this.m_characterEffects[GetPlayerId(character.player())] = AddSpecialEffectTarget(this.effectPath(), character.unit(), "overhead") 
 			endif
-			call PauseUnit(this.m_unit, true) // disables routines or something else of NPC
+			// stopping the routines prevents the NPC from walking away.
+			call AUnitRoutine.disableAll(this.m_unit)
+			// don't pause, otherwise the NPC cannot sell anything
+			//call PauseUnit(this.m_unit, true) // disables routines or something else of NPC
 			call SetUnitFacing(character.unit(), GetAngleBetweenUnits(character.unit(), this.m_unit))
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
 			call ResetUnitAnimation(this.m_unit) // make sure he stops routines etc.
@@ -485,7 +488,10 @@ endif
 			 * When there is no character left to talk to the NPC can go on working on anything.
 			 */
 			if (this.m_characters.empty()) then
-				call PauseUnit(this.m_unit, false) // Enables routines or something else
+				// stopping the routines prevents the NPC from walking away.
+				call AUnitRoutine.enableAll(this.m_unit)
+				// don't pause, otherwise the NPC cannot sell anything
+				//call PauseUnit(this.m_unit, false) // Enables routines or something else
 			endif
 		endmethod
 
