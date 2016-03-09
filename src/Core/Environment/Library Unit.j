@@ -304,7 +304,7 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	 * \sa GetHeroLevelMaxXP()
 	 */
 	function GetHeroMaxXP takes unit hero returns integer
-		return GetHeroLevelMaxXP(GetHeroLevel(hero))
+		return GetHeroLevelMaxXP(GetHeroLevel(hero) + 1)
 	endfunction
 
 	/// \sa FlushUnitTypeCollisionSize, GetUnitCollisionSizeEx, GetUnitCollisionSize
