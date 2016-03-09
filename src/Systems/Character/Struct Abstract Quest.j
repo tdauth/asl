@@ -280,7 +280,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 				if (this.m_state == state) then
 					return true
 				endif
-				if (not this.onStateCondition(state)) then
+				if (not this.onStateCondition.evaluate(state)) then
 					debug call this.print("State condition is false.")
 					return false
 				endif
