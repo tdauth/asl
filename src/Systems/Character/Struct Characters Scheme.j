@@ -506,16 +506,6 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			endloop
 			call iterator.destroy()
 		endmethod
-
-		public method maximize takes nothing returns nothing
-			call EnableTrigger(this.m_refreshTrigger)
-			call MultiboardMinimize(this.m_multiboard, false)
-		endmethod
-
-		public method minimize takes nothing returns nothing
-			call MultiboardMinimize(this.m_multiboard, true)
-			call DisableTrigger(this.m_refreshTrigger)
-		endmethod
 		
 		// internal methods
 		
@@ -549,7 +539,6 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		private static method triggerActionRefresh takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), "this"))
 			local AIntegerListIterator iterator = this.m_playerData.begin()
-			debug call this.print("Refresh " + I2S(this.m_playerData.size()) + " items")
 			loop
 				exitwhen (not iterator.isValid())
 				// renew OpLimit with .evaluate() since the method call is quite long.
