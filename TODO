@@ -12,6 +12,8 @@
 * FIXED: AInventory: When adding item fails the AInventoryItemData should not be set. It duplicates the items!
 * DONE: ALayer: Remove since deprecated and not used.
 * AJump: Remove init() and disable timer if no AJump instance exists.
+* DONE: Remove APvp since it has not been used nor tested.
+* ACharactersScheme: Improve performance by removing many .evaluate() calls in PlayerData.
 * DONE: ATalk should work with multiple characters at the same time. Required feature from "Die Macht des Feuers". It is very annoying to use a talk for only one player at once.
 * Test CreateTrackableForPlayer() (sync?, crash?)!
 * Improve merge() of A_VECTOR.
