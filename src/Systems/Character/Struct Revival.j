@@ -130,7 +130,7 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 
 		private static method timerFunctionRevival takes nothing returns nothing
 			local timer expiredTimer = GetExpiredTimer()
-			local thistype this = AHashTable.global().handleInteger(expiredTimer, "this")
+			local thistype this = AHashTable.global().handleInteger(expiredTimer, 0)
 			set this.m_runs = false
 			call this.revive()
 			call this.end()
@@ -147,16 +147,16 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 
 		private method createTimer takes nothing returns nothing
 			set this.m_timer = CreateTimer()
-			call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_timer, 0, this)
 		endmethod
 		
 		private static method triggerConditionIsCharacter takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() == this.character().unit()
 		endmethod
 
 		private static method triggerActionDeath takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			if (this.m_time > 0.0) then
 				call this.start()
 			else
@@ -172,11 +172,11 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			call TriggerRegisterAnyUnitEventBJ(this.m_deathTrigger, EVENT_PLAYER_UNIT_DEATH)
 			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionIsCharacter))
 			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
-			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_deathTrigger, 0, this)
 		endmethod
 		
 		private static method triggerActionRevival takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			if (this.m_runs) then
 				debug call Print("Hero has been revived by something else.")
 				call this.end()
@@ -188,7 +188,7 @@ library AStructSystemsCharacterRevival requires optional ALibraryCoreDebugMisc, 
 			 call TriggerRegisterAnyUnitEventBJ(this.m_revivalTrigger, EVENT_PLAYER_HERO_REVIVE_FINISH)
 			 call TriggerAddCondition(this.m_revivalTrigger, Condition(function thistype.triggerConditionIsCharacter))
 			call TriggerAddAction(this.m_revivalTrigger, function thistype.triggerActionRevival)
-			call AHashTable.global().setHandleInteger(this.m_revivalTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_revivalTrigger, 0, this)
 		endmethod
 
 		public static method create takes ACharacter character returns thistype

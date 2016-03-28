@@ -301,7 +301,7 @@ endif
 					debug call Print(A_TEXT_NO_HERO)
 				endif
 			elseif (IsUnitType(selectedUnit, UNIT_TYPE_HERO)) then
-				debug call Print(Format(A_TEXT_HERO_XP_PART).i(GetHeroXP(selectedUnit)).i(GetHeroMaxXP(selectedUnit)).result())
+				debug call Print(Format(A_TEXT_HERO_XP_PART).i(GetHeroXP(selectedUnit)).i(GetHeroLevelMaxXP(GetHeroLevel(selectedUnit))).result())
 				debug call Print(Format(A_TEXT_UNIT_XP).i(GetUnitXP(selectedUnit)).result())
 			else
 				debug call Print(Format(A_TEXT_UNIT_XP).i(GetUnitXP(selectedUnit)).result())

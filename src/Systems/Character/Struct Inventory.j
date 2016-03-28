@@ -477,7 +477,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		/// Just required for the move order and for item dropping.
 		private static method hasItemIndex takes item usedItem returns boolean
-			return AHashTable.global().hasHandleInteger(usedItem, "AInventory_index")
+			return AHashTable.global().hasHandleInteger(usedItem, A_HASHTABLE_KEY_INVENTORYINDEX)
 		endmethod
 
 		/// Just required for the move order and for item dropping.
@@ -485,12 +485,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			debug if (not thistype.hasItemIndex(usedItem)) then
 			debug call Print("Item " + GetItemName(usedItem) + " has no item index on removal.")
 			debug endif
-			call AHashTable.global().removeHandleInteger(usedItem, "AInventory_index")
+			call AHashTable.global().removeHandleInteger(usedItem, A_HASHTABLE_KEY_INVENTORYINDEX)
 		endmethod
 
 		/// Just required for the move order and for item dropping.
 		private static method setItemIndex takes item usedItem, integer index returns nothing
-			call AHashTable.global().setHandleInteger(usedItem, "AInventory_index", index)
+			call AHashTable.global().setHandleInteger(usedItem, A_HASHTABLE_KEY_INVENTORYINDEX, index)
 		endmethod
 
 		/// Just required for the move order and for item dropping.
@@ -499,7 +499,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				return -1
 				debug call Print("Item " + GetItemName(usedItem) + " has no item index on getting it.")
 			endif
-			return AHashTable.global().handleInteger(usedItem, "AInventory_index")
+			return AHashTable.global().handleInteger(usedItem, A_HASHTABLE_KEY_INVENTORYINDEX)
 		endmethod
 		
 		/**
@@ -1977,12 +1977,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return this.character().unit() == GetTriggerUnit() and GetSpellAbilityId() == thistype.m_openRucksackAbilityId
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			
 			call this.setRucksackIsEnabled(not this.rucksackIsEnabled())
 		endmethod
@@ -1996,11 +1996,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_openTrigger, EVENT_PLAYER_UNIT_SPELL_CAST)
 			call TriggerAddCondition(this.m_openTrigger, Condition(function thistype.triggerConditionOpen))
 			call TriggerAddAction(this.m_openTrigger, function thistype.triggerActionOpen)
-			call AHashTable.global().setHandleInteger(this.m_openTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_openTrigger, 0, this)
 		endmethod
 
 		private static method triggerConditionOrder takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() >= A_ORDER_ID_MOVE_SLOT_0 and GetIssuedOrderId() <= A_ORDER_ID_MOVE_SLOT_5
 		endmethod
 		
@@ -2040,9 +2040,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * TODO Check if unit is dead or paused (timer).
 		 */
 		private static method timerFunctionOrder takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
-			local item usedItem = AHashTable.global().handleItem(GetExpiredTimer(), "item")
-			local integer newSlot = AHashTable.global().handleInteger(GetExpiredTimer(), "slot")
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
+			local item usedItem = AHashTable.global().handleItem(GetExpiredTimer(), 1)
+			local integer newSlot = AHashTable.global().handleInteger(GetExpiredTimer(), 2)
 			local integer oldSlot
 			local integer index = -1
 			local integer charges = 0
@@ -2117,14 +2117,14 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionOrder takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer newSlot = GetIssuedOrderId() - A_ORDER_ID_MOVE_SLOT_0
 			local item usedItem = GetOrderTargetItem()
 			local timer whichTimer = CreateTimer()
 			debug call Print("move item " + GetItemName(usedItem))
-			call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-			call AHashTable.global().setHandleItem(whichTimer, "item", usedItem)
-			call AHashTable.global().setHandleInteger(whichTimer, "slot", newSlot)
+			call AHashTable.global().setHandleInteger(whichTimer, 0, this)
+			call AHashTable.global().setHandleItem(whichTimer, 1, usedItem)
+			call AHashTable.global().setHandleInteger(whichTimer, 2, newSlot)
 			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionOrder)
 		endmethod
 
@@ -2138,7 +2138,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_orderTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
 			call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOrder))
 			call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOrder)
-			call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_orderTrigger, 0, this)
 		endmethod
 		
 		/**
@@ -2158,7 +2158,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 		
 		private static method triggerConditionPickupOrder takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			//debug call Print("Maybe pickup order with trigger unit " + GetUnitName(GetTriggerUnit()) + " and item " + GetItemName(GetOrderTargetItem()) + " and target unit " + GetUnitName(GetOrderTargetUnit()))
 			return this.character().unit() == GetTriggerUnit() and GetIssuedOrderId() == A_ORDER_ID_SMART and GetOrderTargetItem() != null and not IsItemPowerup(GetOrderTargetItem()) and thistype.inventoryIsFull(GetTriggerUnit())
 		endmethod
@@ -2210,7 +2210,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 		
 		private static method triggerActionPickupOrder takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			set thistype.m_targetItem[GetPlayerId(GetOwningPlayer(GetTriggerUnit()))] = GetOrderTargetItem()
 			// TODO check if there is a stackable or free slot in the rucksack/equipment
 			if (not thistype.m_pickupTimerHasStarted) then
@@ -2226,16 +2226,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_pickupOrderTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
 			call TriggerAddCondition(this.m_pickupOrderTrigger, Condition(function thistype.triggerConditionPickupOrder))
 			call TriggerAddAction(this.m_pickupOrderTrigger, function thistype.triggerActionPickupOrder)
-			call AHashTable.global().setHandleInteger(this.m_pickupOrderTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_pickupOrderTrigger, 0, this)
 		endmethod
 		
 		private static method triggerConditionIsShop takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() != this.character().unit() and this.character().isMovable() and GetUnitAbilityLevel(GetTriggerUnit(), 'Aneu') > 0 and this.m_shop == null
 		endmethod
 		
 		private static method triggerActionSelectShop takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer i
 			set this.m_shop = GetTriggerUnit()
 			debug call Print("Selected shop " + GetUnitName(this.m_shop))
@@ -2270,16 +2270,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterPlayerUnitEvent(this.m_shopSelectionTrigger, this.character().player(), EVENT_PLAYER_UNIT_SELECTED, null)
 			call TriggerAddCondition(this.m_shopSelectionTrigger, Condition(function thistype.triggerConditionIsShop))
 			call TriggerAddAction(this.m_shopSelectionTrigger, function thistype.triggerActionSelectShop)
-			call AHashTable.global().setHandleInteger(this.m_shopSelectionTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_shopSelectionTrigger, 0, this)
 		endmethod
 		
 		private static method triggerConditionIsCurrentShop takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() == this.m_shop
 		endmethod
 		
 		private static method triggerActionDeselectShop takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer i
 			debug call Print("Deselecting shop")
 			set this.m_shop = null
@@ -2313,16 +2313,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterPlayerUnitEvent(this.m_shopDeselectionTrigger, this.character().player(), EVENT_PLAYER_UNIT_DESELECTED, null)
 			call TriggerAddCondition(this.m_shopDeselectionTrigger, Condition(function thistype.triggerConditionIsCurrentShop))
 			call TriggerAddAction(this.m_shopDeselectionTrigger, function thistype.triggerActionDeselectShop)
-			call AHashTable.global().setHandleInteger(this.m_shopDeselectionTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_shopDeselectionTrigger, 0, this)
 		endmethod
 
 		private static method triggerConditionIsNoPowerup takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() == this.character().unit() and not IsItemIdPowerup(GetItemTypeId(GetManipulatedItem()))
 		endmethod
 
 		private static method triggerActionPickup takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			/*
 			 * Tests have shown the the unit has the item without any trigger sleep.
 			 * UnitHasItem() returns always true. There is no need of a 0 timer here.
@@ -2340,13 +2340,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_pickupTrigger, EVENT_PLAYER_UNIT_PICKUP_ITEM)
 			call TriggerAddCondition(this.m_pickupTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
 			call TriggerAddAction(this.m_pickupTrigger, function thistype.triggerActionPickup)
-			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, 0, this)
 		endmethod
 		
 		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionShowPageItem takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
-			local boolean left = AHashTable.global().handleBoolean(GetExpiredTimer(), "left")
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
+			local boolean left = AHashTable.global().handleBoolean(GetExpiredTimer(), 1)
 			call this.showPageItem(left)
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
@@ -2354,10 +2354,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionDropItemWithAllCharges takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
-			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
-			local item whichItem = AHashTable.global().handleItem(GetExpiredTimer(), "item")
-			local integer itemHandleId = AHashTable.global().handleInteger(GetExpiredTimer(), "itemId")
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
+			local item whichItem = AHashTable.global().handleItem(GetExpiredTimer(), 2)
+			local integer itemHandleId = AHashTable.global().handleInteger(GetExpiredTimer(), 3)
 			
 			debug call Print("Item handle ID " + I2S(GetHandleId(whichItem)) + " and size of pawnedItems: " + I2S(this.m_pawnedItems.size()) + " and stored item ID: " + I2S(itemHandleId))
 			/*
@@ -2381,15 +2381,15 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		
 		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionClearEquipmentType takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
-			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
 			call this.clearEquipmentType(index)
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
 
 		private static method triggerActionDrop takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer index = this.itemIndex(GetManipulatedItem())
 			local boolean left
 			local timer whichTimer
@@ -2423,8 +2423,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					 * Adding a new item immediately does not work.
 					 */
 					set whichTimer = CreateTimer()
-					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-					call AHashTable.global().setHandleBoolean(whichTimer, "left", left)
+					call AHashTable.global().setHandleInteger(whichTimer, 0, this)
+					call AHashTable.global().setHandleBoolean(whichTimer, 1, left)
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionShowPageItem)
 				// usual item from the rucksack
 				elseif (index != -1) then
@@ -2437,10 +2437,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					 * Wait 0 seconds until the item is actually dropped and clear the item.
 					 */
 					set whichTimer = CreateTimer()
-					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-					call AHashTable.global().setHandleInteger(whichTimer, "index", index)
-					call AHashTable.global().setHandleItem(whichTimer, "item", GetManipulatedItem())
-					call AHashTable.global().setHandleInteger(whichTimer, "itemId", GetHandleId(GetManipulatedItem()))
+					call AHashTable.global().setHandleInteger(whichTimer, 0, this)
+					call AHashTable.global().setHandleInteger(whichTimer, 1, index)
+					call AHashTable.global().setHandleItem(whichTimer, 2, GetManipulatedItem())
+					call AHashTable.global().setHandleInteger(whichTimer, 3, GetHandleId(GetManipulatedItem()))
 					debug call Print("Item handle ID on drop: " + I2S(GetHandleId(GetManipulatedItem())))
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionDropItemWithAllCharges)
 				debug else
@@ -2456,8 +2456,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					
 					// clear after the item has been dropped, otherwise the placeholder cannot be shown
 					set whichTimer = CreateTimer()
-					call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-					call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+					call AHashTable.global().setHandleInteger(whichTimer, 0, this)
+					call AHashTable.global().setHandleInteger(whichTimer, 1, index)
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionClearEquipmentType)
 				debug else
 					debug call this.print("Item has no index. Doing nothing.")
@@ -2471,18 +2471,18 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_dropTrigger, EVENT_PLAYER_UNIT_DROP_ITEM)
 			call TriggerAddCondition(this.m_dropTrigger, Condition(function thistype.triggerConditionIsNoPowerup))
 			call TriggerAddAction(this.m_dropTrigger, function thistype.triggerActionDrop)
-			call AHashTable.global().setHandleInteger(this.m_dropTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_dropTrigger, 0, this)
 		endmethod
 		
 		private static method triggerConditionIsCharacterAndRucksackIsEnabled takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() == this.character().unit() and this.rucksackIsEnabled()
 		endmethod
 
 		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionPawnOneCharge takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
-			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
 			local integer charges = this.m_rucksackItemData[index].charges() - 1
 			debug call Print("Charges are now " + I2S(charges))
 			if (charges <= 0) then
@@ -2495,7 +2495,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionPawn takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer index = this.itemIndex(GetSoldItem())
 			local timer whichTimer
 			
@@ -2506,8 +2506,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			 */
 			call SetItemCharges(GetSoldItem(), 1) // only sell 1 charge
 			set whichTimer = CreateTimer()
-			call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-			call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+			call AHashTable.global().setHandleInteger(whichTimer, 0, this)
+			call AHashTable.global().setHandleInteger(whichTimer, 1, index)
 			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionPawnOneCharge)
 		endmethod
 
@@ -2516,18 +2516,18 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_pawnTrigger, EVENT_PLAYER_UNIT_PAWN_ITEM)
 			call TriggerAddCondition(this.m_pawnTrigger, Condition(function thistype.triggerConditionIsCharacterAndRucksackIsEnabled))
 			call TriggerAddAction(this.m_pawnTrigger, function thistype.triggerActionPawn)
-			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, 0, this)
 		endmethod
 
 		private static method triggerConditionUse takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() == this.character().unit() and this.m_rucksackIsEnabled
 		endmethod
 		
 		// TODO Check if unit is dead or paused (timer).
 		private static method timerFunctionRefreshCharges takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), "this"))
-			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), "index")
+			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
+			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
 			// if an item is used but the character is being stopped since the spell condition doesn't work, the charges become 0! this refresh prevents this error
 			call this.refreshRucksackItemCharges(index)
 			call PauseTimer(GetExpiredTimer())
@@ -2535,7 +2535,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerActionUse takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer itemTypeId = GetItemTypeId(GetManipulatedItem())
 			local integer index
 			local timer whichTimer
@@ -2560,8 +2560,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				// if an item is used but the character is being stopped since the spell condition doesn't work, the charges become 0! this refresh prevents this error
 				// wait until the item is actually used and the charges change
 				set whichTimer = CreateTimer()
-				call AHashTable.global().setHandleInteger(whichTimer, "this", this)
-				call AHashTable.global().setHandleInteger(whichTimer, "index", index)
+				call AHashTable.global().setHandleInteger(whichTimer, 0, this)
+				call AHashTable.global().setHandleInteger(whichTimer, 1, index)
 				call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionRefreshCharges)
 			endif
 		endmethod
@@ -2571,7 +2571,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterAnyUnitEventBJ(this.m_useTrigger, EVENT_PLAYER_UNIT_USE_ITEM)
 			call TriggerAddCondition(this.m_useTrigger, Condition(function thistype.triggerConditionUse))
 			call TriggerAddAction(this.m_useTrigger, function thistype.triggerActionUse)
-			call AHashTable.global().setHandleInteger(this.m_useTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_useTrigger, 0, this)
 		endmethod
 
 		/**

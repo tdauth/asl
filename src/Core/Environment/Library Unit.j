@@ -233,7 +233,6 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	 * \sa GetUnitXP()
 	 * \sa GetUnitHeroXP()
 	 * \sa GetHeroLevelMaxXP()
-	 * \sa GetHeroMaxXP()
 	 */
 	function GetUnitLevelXP takes integer unitLevel returns integer
 		local integer result = 25 // default XP
@@ -252,7 +251,6 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	 * \sa GetUnitLevelXP()
 	 * \sa GetUnitHeroXP()
 	 * \sa GetHeroLevelMaxXP()
-	 * \sa GetHeroMaxXP()
 	 */
 	function GetUnitXP takes unit whichUnit returns integer
 		return GetUnitLevelXP(GetUnitLevel(whichUnit))
@@ -265,7 +263,6 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	 * \sa GetUnitLevelXP()
 	 * \sa GetUnitXP()
 	 * \sa GetHeroLevelMaxXP()
-	 * \sa GetHeroMaxXP()
 	 */
 	function GetUnitHeroXP takes unit whichUnit, unit hero returns integer
 		if (GetOwningPlayer(whichUnit) == Player(PLAYER_NEUTRAL_AGGRESSIVE)) then
@@ -281,7 +278,6 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 	 * \sa GetUnitLevelXP()
 	 * \sa GetUnitXP()
 	 * \sa GetHeroXP()
-	 * \sa GetHeroMaxXP()
 	 */
 	function GetHeroLevelMaxXP takes integer heroLevel returns integer
 		local integer result = 0 // level 1 XP
@@ -294,27 +290,14 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		return result
 	endfunction
 
-	/**
-	 * \return Returns the maximum required experience which is required to pass the current level of \p hero and level up.
-	 * \note Considers default experience table.
-	 * \author HaiZhung, Tamino Dauth
-	 * \sa GetUnitLevelXP()
-	 * \sa GetUnitXP()
-	 * \sa GetHeroXP()
-	 * \sa GetHeroLevelMaxXP()
-	 */
-	function GetHeroMaxXP takes unit hero returns integer
-		return GetHeroLevelMaxXP(GetHeroLevel(hero) + 1)
-	endfunction
-
 	/// \sa FlushUnitTypeCollisionSize, GetUnitCollisionSizeEx, GetUnitCollisionSize
 	function FlushUnitCollisionSizes takes nothing returns nothing
-		call AHashTable.global().flushKey("UnitCollisionSizes")
+		call AHashTable.global().flushKey(A_HASHTABLE_KEY_UNITCOLLISIONSIZES)
 	endfunction
 
 	/// \sa FlushUnitCollisionSizes, GetUnitCollisionSizeEx, GetUnitCollisionSize
 	function FlushUnitTypeCollisionSize takes integer unitTypeId returns nothing
-		call AHashTable.global().removeReal("UnitCollisionSizes", I2S(unitTypeId))
+		call AHashTable.global().removeReal(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitTypeId)
 	endfunction
 
 	/**
@@ -332,9 +315,9 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		local real hi
 		local real lo
 		local real mid
-		local string unitType = I2S(GetUnitTypeId(u))
-		if (AHashTable.global().hasReal("UnitCollisionSizes", unitType)) then
-			return AHashTable.global().real("UnitCollisionSizes", unitType)
+		local integer unitType = GetUnitTypeId(u)
+		if (AHashTable.global().hasReal(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitType)) then
+			return AHashTable.global().real(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitType)
 		endif
 		set hi = maxCollisionSize
 		set lo = 0.0
@@ -348,7 +331,7 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 			endif
 			set i=i+1
 		endloop
-		call AHashTable.global().setReal("UnitCollisionSizes", unitType, mid)
+		call AHashTable.global().setReal(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitType, mid)
 		return mid
 	endfunction
 

@@ -51,7 +51,7 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			local boolean result = false
 			if (triggerUnit == ACharacter.playerCharacter(owner).unit()) then
 				set triggeringTrigger = GetTriggeringTrigger()
-				set this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+				set this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 				set result = ACharacter.playerCharacter(owner).shrine() != this
 				set triggeringTrigger = null
 			endif
@@ -64,7 +64,7 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			local trigger triggeringTrigger = GetTriggeringTrigger()
 			local unit triggerUnit = GetTriggerUnit()
 			local player owner = GetOwningPlayer(triggerUnit)
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.onEnter.evaluate(ACharacter.playerCharacter(owner))
 			set triggeringTrigger = null
 			set triggerUnit = null
@@ -80,7 +80,7 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			call TriggerRegisterEnterRegion(this.m_shrineTrigger, this.discoverRegion(), null)
 			call TriggerAddCondition(this.m_shrineTrigger, Condition(function thistype.triggerConditionEnable))
 			call TriggerAddAction(this.m_shrineTrigger, function thistype.triggerActionEnable)
-			call AHashTable.global().setHandleInteger(this.m_shrineTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_shrineTrigger, 0, this)
 		endmethod
 
 		/**

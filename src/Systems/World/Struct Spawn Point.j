@@ -229,15 +229,15 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 		
 		public static method spawnPointMember takes unit whichUnit returns ASpawnPointMember
-			return ASpawnPointMember(AHashTable.global().handleInteger(whichUnit, "member"))
+			return ASpawnPointMember(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_SPAWNPOINTMEMBER))
 		endmethod
 		
 		public static method setSpawnPointMember takes unit whichUnit, ASpawnPointMember member returns nothing
-			call AHashTable.global().setHandleInteger(whichUnit, "member", member)
+			call AHashTable.global().setHandleInteger(whichUnit, A_HASHTABLE_KEY_SPAWNPOINTMEMBER, member)
 		endmethod
 		
 		public static method clearSpawnPointMember takes unit whichUnit returns nothing
-			call AHashTable.global().removeHandleInteger(whichUnit, "member")
+			call AHashTable.global().removeHandleInteger(whichUnit, A_HASHTABLE_KEY_SPAWNPOINTMEMBER)
 		endmethod
 
 		// convenience methods
@@ -539,7 +539,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 
 		private static method timerFunctionSpawn takes nothing returns nothing
 			local timer expiredTimer = GetExpiredTimer()
-			local thistype this = AHashTable.global().handleInteger(expiredTimer, "this")
+			local thistype this = AHashTable.global().handleInteger(expiredTimer, 0)
 			call this.spawn()
 			set expiredTimer = null
 		endmethod
@@ -551,13 +551,13 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			debug endif
 			if (this.m_spawnTimer == null) then
 				set this.m_spawnTimer = CreateTimer()
-				call AHashTable.global().setHandleInteger(this.m_spawnTimer, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_spawnTimer, 0, this)
 			endif
 			call TimerStart(this.m_spawnTimer, this.time(), false, function thistype.timerFunctionSpawn)
 		endmethod
 
 		private static method triggerConditionDeath takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean result = this.m_group.units().contains(GetTriggerUnit())
 
 			return result
@@ -566,7 +566,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private static method triggerActionDeath takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
 			local unit triggerUnit = GetTriggerUnit()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local ASpawnPointMember member = thistype.spawnPointMember(triggerUnit)
 			call this.dropItem(triggerUnit, member, GetUnitX(triggerUnit), GetUnitY(triggerUnit)) // drop before removing member
 			call this.removeUnit(triggerUnit)
@@ -589,7 +589,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endloop
 			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionDeath))
 			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
-			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_deathTrigger, 0, this)
 		endmethod
 
 		public static method create takes nothing returns thistype

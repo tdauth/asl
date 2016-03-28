@@ -89,7 +89,7 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 		endmethod
 
 		private static method timerFunction takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), 0)
 			if (this.m_destroyOnDeath and (IsUnitDeadBJ(this.m_firstUnit) or IsUnitDeadBJ(this.m_secondUnit))) then
 				call this.destroy()
 			else
@@ -118,7 +118,7 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 			endif
 			set this.m_timer = CreateTimer()
 			call TimerStart(this.m_timer, interval, true, function thistype.timerFunction)
-			call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_timer, 0, this)
 
 			return this
 		endmethod

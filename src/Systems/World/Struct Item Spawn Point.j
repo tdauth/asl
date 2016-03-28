@@ -141,13 +141,13 @@ library AStructSystemsWorldItemSpawnPoint requires ALibraryCoreEnvironmentSound,
 		endmethod
 		
 		private static method triggerConditionDeath takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 	
 			return GetTriggerWidget() == this.m_item
 		endmethod
 		
 		private static method triggerActionDeath takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			
 			call this.respawn.evaluate()
 		endmethod
@@ -157,7 +157,7 @@ library AStructSystemsWorldItemSpawnPoint requires ALibraryCoreEnvironmentSound,
 			call TriggerRegisterDeathEvent(this.m_deathTrigger, this.m_item)
 			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionDeath))
 			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDeath)
-			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_deathTrigger, 0, this)
 		endmethod
 		
 		private method destroyDeathTrigger takes nothing returns nothing
@@ -198,7 +198,7 @@ library AStructSystemsWorldItemSpawnPoint requires ALibraryCoreEnvironmentSound,
 		endmethod
 		
 		private static method timerFunctionRespawn takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), 0)
 			call this.spawn()
 			set this.m_runs = false
 		endmethod
@@ -210,20 +210,20 @@ library AStructSystemsWorldItemSpawnPoint requires ALibraryCoreEnvironmentSound,
 			set this.m_item = null
 			if (this.m_timer == null) then
 				set this.m_timer = CreateTimer()
-				call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_timer, 0, this)
 			endif
 			call TimerStart(this.m_timer, this.time(), false, function thistype.timerFunctionRespawn)
 			set this.m_runs = true
 		endmethod
 		
 		private static method triggerConditionPickUp takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 	
 			return GetManipulatedItem() == this.m_item
 		endmethod
 		
 		private static method triggerActionPickUp takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			
 			call this.respawn()
 		endmethod
@@ -251,7 +251,7 @@ library AStructSystemsWorldItemSpawnPoint requires ALibraryCoreEnvironmentSound,
 			call TriggerRegisterAnyUnitEventBJ(this.m_pickUpTrigger, EVENT_PLAYER_UNIT_PICKUP_ITEM)
 			call TriggerAddCondition(this.m_pickUpTrigger, Condition(function thistype.triggerConditionPickUp))
 			call TriggerAddAction(this.m_pickUpTrigger, function thistype.triggerActionPickUp)
-			call AHashTable.global().setHandleInteger(this.m_pickUpTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_pickUpTrigger, 0, this)
 			
 			if (whichItem != null) then
 				call this.createDeathTrigger()

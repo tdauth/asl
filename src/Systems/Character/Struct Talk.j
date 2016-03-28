@@ -496,12 +496,12 @@ endif
 		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return (GetIssuedOrderId() == this.orderId()) and (GetTriggerPlayer() == GetOwningPlayer(GetTriggerUnit()) and GetPlayerController(GetOwningPlayer(GetTriggerUnit())) != MAP_CONTROL_COMPUTER and GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) and (GetOrderTargetUnit() == this.unit()) and (not this.hasMaxOrderDistance() or GetDistanceBetweenUnits(GetTriggerUnit(), GetOrderTargetUnit(), 0.0, 0.0) <= this.maxOrderDistance())
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call IssueImmediateOrder(ACharacter.playerCharacter(GetTriggerPlayer()).unit(), "stop")
 			debug call Print("Ordering player: " + GetPlayerName(GetTriggerPlayer()))
 			call this.openForCharacter(ACharacter.playerCharacter(GetTriggerPlayer()))
@@ -517,7 +517,7 @@ endif
 				call TriggerRegisterAnyUnitEventBJ(this.m_orderTrigger, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER)
 				call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOpen))
 				call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOpen)
-				call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_orderTrigger, 0, this)
 				if (not this.isEnabled()) then
 					call DisableTrigger(this.m_orderTrigger)
 				endif

@@ -241,7 +241,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 		endmethod
 
 		private static method triggerActionPreviousPage takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.changeToPreviousPage()
 		endmethod
 
@@ -250,11 +250,11 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			set this.m_previousPageTrigger = CreateTrigger()
 			call TriggerRegisterDialogButtonEvent(this.m_previousPageTrigger, this.m_previousPageButton)
 			call TriggerAddAction(this.m_previousPageTrigger, function thistype.triggerActionPreviousPage)
-			call AHashTable.global().setHandleInteger(this.m_previousPageTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_previousPageTrigger, 0, this)
 		endmethod
 
 		private static method triggerActionNextPage takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.changeToNextPage()
 		endmethod
 
@@ -269,7 +269,7 @@ library AStructSystemsGuiDialog requires optional ALibraryCoreDebugMisc, ALibrar
 			set this.m_nextPageTrigger = CreateTrigger()
 			call TriggerRegisterDialogButtonEvent(this.m_nextPageTrigger, this.m_nextPageButton)
 			call TriggerAddAction(this.m_nextPageTrigger, function thistype.triggerActionNextPage)
-			call AHashTable.global().setHandleInteger(this.m_nextPageTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_nextPageTrigger, 0, this)
 		endmethod
 
 		private method removeNextPageButton takes nothing returns nothing

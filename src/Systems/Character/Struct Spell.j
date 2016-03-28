@@ -155,7 +155,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 		private static method triggerConditionRightAbility takes nothing returns boolean
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local boolean result = (GetLearnedSkill() == this.m_ability)
 			set triggeringTrigger = null
 			return result
@@ -163,7 +163,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 		private static method triggerActionUpgrade takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.onUpgradeAction.execute()
 			set triggeringTrigger = null
 		endmethod
@@ -175,11 +175,11 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call TriggerRegisterUnitEvent(this.m_upgradeTrigger, this.character().unit(), EVENT_UNIT_HERO_SKILL)
 			call TriggerAddCondition(this.m_upgradeTrigger, Condition(function thistype.triggerConditionRightAbility))
 			call TriggerAddAction(this.m_upgradeTrigger, function thistype.triggerActionUpgrade)
-			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, 0, this)
 		endmethod
 		
 		private static method triggerConditionChannel takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
 			set this.m_canCast = result
 			if (result) then
@@ -201,11 +201,11 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			// never use ENDCAST since GetSpellTargetX() etc. won't work anymore
 			call TriggerRegisterAnyUnitEventBJ(this.m_channelTrigger, EVENT_PLAYER_UNIT_SPELL_CHANNEL)
 			call TriggerAddCondition(this.m_channelTrigger, Condition(function thistype.triggerConditionChannel))
-			call AHashTable.global().setHandleInteger(this.m_channelTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_channelTrigger, 0, this)
 		endmethod
 		
 		private static method triggerConditionCast takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
 			if (result) then
 				debug if (this.m_canCast) then
@@ -219,7 +219,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		private static method triggerActionCast takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.onCastAction.execute()
 		endmethod
 
@@ -229,7 +229,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call TriggerRegisterAnyUnitEventBJ(this.m_castTrigger, castEvent)
 			call TriggerAddCondition(this.m_castTrigger, Condition(function thistype.triggerConditionCast))
 			call TriggerAddAction(this.m_castTrigger, function thistype.triggerActionCast)
-			call AHashTable.global().setHandleInteger(this.m_castTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_castTrigger, 0, this)
 		endmethod
 
 		/**

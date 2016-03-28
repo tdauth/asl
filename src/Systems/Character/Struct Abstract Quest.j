@@ -506,8 +506,8 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		private static method triggerConditionRunQuestState takes nothing returns boolean
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local integer state = AHashTable.global().handleInteger(triggeringTrigger, "state")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
+			local integer state = AHashTable.global().handleInteger(triggeringTrigger, 1)
 			local boolean result = this.onStateCondition(state)
 			set triggeringTrigger = null
 			return result
@@ -515,8 +515,8 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		private static method triggerActionRunQuestState takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
-			local integer state = AHashTable.global().handleInteger(triggeringTrigger, "state")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
+			local integer state = AHashTable.global().handleInteger(triggeringTrigger, 1)
 			/*
 			if (this.getType() == AQuest.typeid) then
 				call AQuest(this).setState(state)
@@ -537,8 +537,8 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			set this.m_stateTrigger[state] = CreateTrigger()
 			call TriggerAddCondition(this.m_stateTrigger[state], Condition(function thistype.triggerConditionRunQuestState))
 			call TriggerAddAction(this.m_stateTrigger[state], function thistype.triggerActionRunQuestState)
-			call AHashTable.global().setHandleInteger(this.m_stateTrigger[state], "this", this)
-			call AHashTable.global().setHandleInteger(this.m_stateTrigger[state], "state", state)
+			call AHashTable.global().setHandleInteger(this.m_stateTrigger[state], 0, this)
+			call AHashTable.global().setHandleInteger(this.m_stateTrigger[state], 1, state)
 			if ((this.m_state != thistype.stateNew and state != thistype.stateNew) or (this.m_state == thistype.stateFailed or this.m_state == thistype.stateCompleted)) then /// new should be enable by default
 				call DisableTrigger(this.m_stateTrigger[state])
 			endif

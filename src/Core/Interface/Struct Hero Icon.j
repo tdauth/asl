@@ -78,7 +78,7 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 		endmethod
 
 		private static method triggerConditionSelection takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			if (GetTriggerUnit() == this.unitCopy()) then
 				return GetTriggerPlayer() == GetOwningPlayer(this.unitCopy())
 			endif
@@ -89,7 +89,7 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 		endmethod
 
 		private static method triggerActionSelection takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			set this.m_selectionCounter = this.m_selectionCounter + 1
 			call this.onSelect.evaluate()
 			if (this.m_selectionCounter == 2) then
@@ -99,17 +99,17 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 		endmethod
 
 		private static method triggerConditionOrder takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetOrderTarget() == this.unitCopy()
 		endmethod
 
 		private static method triggerActionOrder takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.onOrder.evaluate()
 		endmethod
 
 		private static method triggerConditionAlliance takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return IsUnitType(this.unitCopy(), UNIT_TYPE_HERO) and this.recognizeAllianceChanges()
 		endmethod
 
@@ -118,7 +118,7 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 		endmethod
 
 		private static method triggerActionAlliance takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.enableByRecognition()
 		endmethod
 
@@ -150,19 +150,19 @@ library AStructCoreInterfaceHeroIcon requires ALibraryCoreDebugMisc, ALibraryCor
 			call TriggerRegisterAnyUnitEventBJ(this.m_selectionTrigger, EVENT_PLAYER_UNIT_SELECTED)
 			call TriggerAddCondition(this.m_selectionTrigger, Condition(function thistype.triggerConditionSelection))
 			call TriggerAddAction(this.m_selectionTrigger, function thistype.triggerActionSelection)
-			call AHashTable.global().setHandleInteger(this.m_selectionTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_selectionTrigger, 0, this)
 
 			set this.m_orderTrigger = CreateTrigger()
 			call TriggerRegisterAnyUnitEventBJ(this.m_orderTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
 			call TriggerAddCondition(this.m_orderTrigger, Condition(function thistype.triggerConditionOrder))
 			call TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOrder)
-			call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_orderTrigger, 0, this)
 
 			set this.m_allianceTrigger = CreateTrigger()
 			call TriggerRegisterPlayerAllianceChange(this.m_allianceTrigger, GetOwningPlayer(whichUnit), ALLIANCE_SHARED_CONTROL)
 			call TriggerAddCondition(this.m_allianceTrigger, Condition(function thistype.triggerConditionAlliance))
 			call TriggerAddAction(this.m_allianceTrigger, function thistype.triggerActionAlliance)
-			call AHashTable.global().setHandleInteger(this.m_allianceTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_allianceTrigger, 0, this)
 
 			if (this.m_recognizeAllianceChanges) then
 				call this.enableByRecognition()

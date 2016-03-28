@@ -95,7 +95,7 @@ library AStructSystemsGuiVote
 		endmethod
 
 		private static method triggerActionPlayerLeaves takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.removePlayer(GetTriggerPlayer())
 		endmethod
 
@@ -111,7 +111,7 @@ library AStructSystemsGuiVote
 					set i = i + 1
 				endloop
 				call TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionPlayerLeaves)
-				call AHashTable.global().setHandleInteger(this.m_leaveTrigger, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_leaveTrigger, 0, this)
 			elseif (not flag and this.m_leaveTrigger != null) then
 				call AHashTable.global().destroyTrigger(this.m_leaveTrigger)
 				set this.m_leaveTrigger = null
@@ -227,7 +227,7 @@ library AStructSystemsGuiVote
 				debug if (thistype.playerVote(AVotePlayer(this.m_players[i]).player()) != 0) then
 					debug call this.print("Player " + GetPlayerName(AVotePlayer(this.m_players[i]).player()) + " does already have a running vote.")
 				debug endif
-				call AHashTable.global().setHandleInteger(AVotePlayer(this.m_players[i]).player(), "AVote", this)
+				call AHashTable.global().setHandleInteger(AVotePlayer(this.m_players[i]).player(), A_HASHTABLE_KEY_VOTE, this)
 				call AGui.playerGui(AVotePlayer(this.m_players[i]).player()).dialog().clear()
 				call AGui.playerGui(AVotePlayer(this.m_players[i]).player()).dialog().setMessage(this.m_message)
 				set j = 0

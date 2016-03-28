@@ -68,13 +68,13 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 		endmethod
 
 		private static method triggerConditionCheat takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			debug call this.print("Checking cheat with string: " + GetEventPlayerChatString())
 			return (this.findCheat(GetEventPlayerChatString()) != -1)
 		endmethod
 
 		private static method triggerActionCheat takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			if (this.m_action != 0) then
 				call this.m_action.execute(this)
 			debug else
@@ -95,7 +95,7 @@ library AStructCoreDebugCheat requires ALibraryCoreDebugMisc, AStructCoreGeneral
 			endloop
 			call TriggerAddCondition(this.m_cheatTrigger, Condition(function thistype.triggerConditionCheat))
 			call TriggerAddAction(this.m_cheatTrigger, function thistype.triggerActionCheat)
-			call AHashTable.global().setHandleInteger(this.m_cheatTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_cheatTrigger, 0, this)
 		endmethod
 
 		/**

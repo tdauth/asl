@@ -348,14 +348,14 @@ library AStructCoreInterfaceMultiboardBar requires AInterfaceCoreInterfaceBarInt
 		endmethod
 
 		private static method timerFunctionRefresh takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), 0)
 			call this.refresh()
 		endmethod
 
 		private method createRefreshTimer takes nothing returns nothing
 			if (this.m_refreshRate > 0.0) then
 				set this.m_refreshTimer = CreateTimer()
-				call AHashTable.global().setHandleInteger(this.m_refreshTimer, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_refreshTimer, 0, this)
 				call TimerStart(this.m_refreshTimer, this.m_refreshRate, true, function thistype.timerFunctionRefresh)
 			endif
 		endmethod

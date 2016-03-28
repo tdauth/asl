@@ -1394,7 +1394,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionOpen takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			if (this.m_rucksackIsEnabled) then
 				call this.disableRucksack()
 				call this.enableEquipment()
@@ -1415,7 +1415,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set conditionFunction = Condition(function thistype.triggerConditionOpen)
 			set triggerCondition = TriggerAddCondition(this.m_openTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_openTrigger, function thistype.triggerActionOpen)
-			call AHashTable.global().setHandleInteger(this.m_openTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_openTrigger, 0, this)
 			set triggerEvent = null
 			set conditionFunction = null
 			set triggerCondition = null
@@ -1428,7 +1428,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionOrder takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local integer newSlot = GetIssuedOrderId() - 852002
 			local item usedItem = GetOrderTargetItem()
 			local integer oldSlot
@@ -1482,7 +1482,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set conditionFunction = Condition(function thistype.triggerConditionOrder)
 			set triggerCondition = TriggerAddCondition(this.m_orderTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_orderTrigger, function thistype.triggerActionOrder)
-			call AHashTable.global().setHandleInteger(this.m_orderTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_orderTrigger, 0, this)
 			set triggerEvent = null
 			set conditionFunction = null
 			set triggerCondition = null
@@ -1498,7 +1498,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionPickup takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local item usedItem = GetManipulatedItem()
 			call this.equipItem(usedItem, false, false, true) // try always equipment first!
 			set triggeringTrigger = null
@@ -1515,7 +1515,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set conditionFunction = Condition(function thistype.triggerConditionIsNoPowerup)
 			set triggerCondition = TriggerAddCondition(this.m_pickupTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_pickupTrigger, function thistype.triggerActionPickup)
-			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_pickupTrigger, 0, this)
 			set triggerEvent = null
 			set conditionFunction = null
 			set triggerCondition = null
@@ -1524,7 +1524,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		private static method triggerActionDrop takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local item usedItem = GetManipulatedItem()
 			local integer index = this.itemIndex(usedItem)
 			local unit triggerUnit = GetTriggerUnit()
@@ -1591,7 +1591,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set conditionFunction = Condition(function thistype.triggerConditionIsNoPowerup)
 			set triggerCondition = TriggerAddCondition(this.m_dropTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_dropTrigger, function thistype.triggerActionDrop)
-			call AHashTable.global().setHandleInteger(this.m_dropTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_dropTrigger, 0, this)
 			set triggerEvent = null
 			set conditionFunction = null
 			set triggerCondition = null
@@ -1599,13 +1599,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private static method triggerConditionUse takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return this.m_rucksackIsEnabled
 		endmethod
 
 		private static method triggerActionUse takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local item usedItem = GetManipulatedItem()
 			local integer itemTypeId = GetItemTypeId(usedItem)
 			local integer index
@@ -1635,7 +1635,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call TriggerRegisterUnitEvent(this.m_useTrigger, this.character().unit(), EVENT_UNIT_USE_ITEM)
 			call TriggerAddCondition(this.m_useTrigger, Condition(function thistype.triggerConditionUse))
 			call TriggerAddAction(this.m_useTrigger, function thistype.triggerActionUse)
-			call AHashTable.global().setHandleInteger(this.m_useTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_useTrigger, 0, this)
 		endmethod
 
 		public static method create takes ACharacter character returns thistype

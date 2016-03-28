@@ -168,7 +168,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 
 		private static method triggerActionOnHit takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.m_onHitAction.execute(this)
 			if (thistype.m_onHitSoundPath != null) then
 				call PlaySoundFileForPlayer(this.m_mainWindow.gui().player(), thistype.m_onHitSoundPath)
@@ -183,7 +183,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 				set this.m_onHitTrigger = CreateTrigger()
 				set triggerEvent = TriggerRegisterTrackableHitEvent(this.m_onHitTrigger, this.m_trackable)
 				set triggerAction = TriggerAddAction(this.m_onHitTrigger, function thistype.triggerActionOnHit)
-				call AHashTable.global().setHandleInteger(this.m_onHitTrigger, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_onHitTrigger, 0, this)
 				set triggerEvent = null
 				set triggerAction = null
 			endif
@@ -191,7 +191,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 
 		private static method triggerActionOnTrack takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.m_onTrackAction.execute(this)
 			if (thistype.m_onTrackSoundPath != null) then
 				call PlaySoundFileForPlayer(this.m_mainWindow.gui().player(), thistype.m_onTrackSoundPath)
@@ -206,7 +206,7 @@ library AStructSystemsGuiWidget requires ALibraryCoreInterfaceTrackable, ALibrar
 				set this.m_onTrackTrigger = CreateTrigger()
 				set triggerEvent = TriggerRegisterTrackableTrackEvent(this.m_onTrackTrigger, this.m_trackable)
 				set triggerAction = TriggerAddAction(this.m_onTrackTrigger, function thistype.triggerActionOnTrack)
-				call AHashTable.global().setHandleInteger(this.m_onTrackTrigger, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_onTrackTrigger, 0, this)
 				set triggerEvent = null
 				set triggerAction = null
 			endif

@@ -113,15 +113,9 @@ library ALibrarySystemsBonusModBonusMod requires AStructCoreGeneralHashTable, op
 		debug return false
 	debug endfunction
 
-	function ABonusModLabel takes integer bonusType returns string
-		return "ABonusMod" + I2S(bonusType)
+	function ABonusModLabel takes integer bonusType returns integer
+		return A_HASHTABLE_KEY_BONUSTYPE_DAMAGE + bonusType
 	endfunction
-
-	/*
-	function ABonusModLeftLabel takes integer bonusType returns string
-		return "ABonusModLeft" + I2S(bonusType)
-	endfunction
-	*/
 
 	/**
 	 * \param whichUnit Unit which is checked for bonus.

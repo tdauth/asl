@@ -491,6 +491,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	/**
 	 * Sets the skip flag to true that the waiting is skipped in the \ref speech() function.
 	 * But clears all texttags and sounds immediately.
+	 * TODO double free of iterator?!
 	 */
 	private function triggerActionSkip takes nothing returns nothing
 		local AIntegerListIterator iterator = playerSpeechData[GetPlayerId(GetTriggerPlayer())].begin()

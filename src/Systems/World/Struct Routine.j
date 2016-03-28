@@ -164,8 +164,8 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 	 * \sa AUnitRoutine
 	 */
 	struct ARoutinePeriod
-		private static constant string hashTableKeyCurrent = "ARoutinePeriod:current"
-		private static constant string hashTableKeyNext = "ARoutinePeriod:next"
+		private static constant integer hashTableKeyCurrent = A_HASHTABLE_KEY_ROUTINE_CURRENT
+		private static constant integer hashTableKeyNext = A_HASHTABLE_KEY_ROUTINE_NEXT
 		// static members
 		private static AIntegerList m_routinePeriods // required for manual time changes using SetFloatGameState(GAME_STATE_TIME_OF_DAY, <>) or SetTimeOfDay()
 		// dynamic members
@@ -301,14 +301,14 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		private static method triggerConditionTarget takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean result = GetTriggerUnit() == this.unit()
 			//debug call this.print("Target condition, entering unit: " + GetUnitName(GetTriggerUnit()) + " and name of required unit: " + GetUnitName(this.unit()))
 			return result
 		endmethod
 
 		private static method triggerActionTarget takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call DisableTrigger(GetTriggeringTrigger())
 			//debug call this.print("Routine is " + I2S(this.routine()))
 			call this.routine().onTarget.execute(this)
@@ -325,7 +325,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call TriggerRegisterEnterRegion(this.m_targetTrigger, this.m_targetRegion, null)
 			call TriggerAddCondition(this.m_targetTrigger, Condition(function thistype.triggerConditionTarget))
 			call TriggerAddAction(this.m_targetTrigger, function thistype.triggerActionTarget)
-			call AHashTable.global().setHandleInteger(this.m_targetTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_targetTrigger, 0, this)
 			call IssueRectOrder(this.unit(), "move", this.targetRect())
 			//debug call this.print("Created target trigger for " + GetUnitName(this.unit()))
 		endmethod
@@ -393,7 +393,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		endmethod
 
 		private static method triggerActionStart takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			//debug call this.print("Starting for unit " + GetUnitName(this.unit()))
 			call this.start()
 		endmethod
@@ -402,11 +402,11 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			set this.m_startTrigger = CreateTrigger()
 			call TriggerRegisterGameStateEvent(this.m_startTrigger, GAME_STATE_TIME_OF_DAY, EQUAL, this.m_startTimeOfDay)
 			call TriggerAddAction(this.m_startTrigger, function thistype.triggerActionStart)
-			call AHashTable.global().setHandleInteger(this.m_startTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_startTrigger, 0, this)
 		endmethod
 
 		private static method triggerActionEnd takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.end()
 		endmethod
 
@@ -414,7 +414,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			set this.m_endTrigger = CreateTrigger()
 			call TriggerRegisterGameStateEvent(this.m_endTrigger, GAME_STATE_TIME_OF_DAY, EQUAL, this.m_endTimeOfDay)
 			call TriggerAddAction(this.m_endTrigger, function thistype.triggerActionEnd)
-			call AHashTable.global().setHandleInteger(this.m_endTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_endTrigger, 0, this)
 		endmethod
 
 		/// \note Expects to be in time (use \ref isInTime() to verify)!
@@ -730,7 +730,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 	 * \sa ARoutinePeriod
 	 */
 	struct AUnitRoutine extends ARoutinePeriod
-		private static constant string hashTableKey = "AUnitRoutine:Routines"
+		private static constant integer hashTableKey = A_HASHTABLE_KEY_ROUTINES
 
 		/**
 		 * \return Returns list of \ref thistype instances. If unit \p whichUnit has no routines it returns 0.

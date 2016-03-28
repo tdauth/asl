@@ -330,61 +330,6 @@ endif
 	endfunction
 
 	/// \ingroup nativedebug
-	/// \todo Should be private, vJass bug.
-	function DebugDestroyTrigger takes trigger whichTrigger returns nothing
-		/// \todo CHECK IF TRIGGER RUNS
-	endfunction
-
-	/// \ingroup nativedebug
-	private function FlushTimer takes timer whichTimer returns nothing
-		call AHashTable.global().removeHandleBoolean(whichTimer, "DebugTimerIsPeriodic")
-		call AHashTable.global().removeHandleBoolean(whichTimer, "DebugTimerRuns")
-		call AHashTable.global().removeHandleTrigger(whichTimer, "DebugTimerTrigger")
-	endfunction
-
-	/// \ingroup nativedebug
-	private function TriggerActionTimerExpires takes nothing returns nothing
-		if (not AHashTable.global().handleBoolean(GetExpiredTimer(), "DebugTimerIsPeriodic")) then
-			call FlushTimer(GetExpiredTimer()) // do not flush everything!
-			call DestroyTrigger(GetTriggeringTrigger())
-		endif
-	endfunction
-
-	/// \ingroup nativedebug
-	function DebugTimerStart takes timer whichTimer, real timeout, boolean periodic, code handlerFunc returns nothing
-		local trigger whichTrigger = CreateTrigger()
-		call TriggerRegisterTimerExpireEvent(whichTrigger, whichTimer)
-		call TriggerAddAction(whichTrigger, function TriggerActionTimerExpires)
-		call AHashTable.global().setHandleBoolean(whichTimer, "DebugTimerIsPeriodic", periodic)
-		call AHashTable.global().setHandleBoolean(whichTimer, "DebugTimerRuns", true)
-		call AHashTable.global().setHandleTrigger(whichTimer, "DebugTimerTrigger", whichTrigger)
-		set whichTrigger = null
-	endfunction
-
-	/// \ingroup nativedebug
-	function DebugPauseTimer takes timer whichTimer returns nothing
-		call AHashTable.global().setHandleBoolean(whichTimer, "DebugTimerRuns", false)
-	endfunction
-
-	/// \ingroup nativedebug
-	function DebugResumeTimer takes timer whichTimer returns nothing
-		call AHashTable.global().setHandleBoolean(whichTimer, "DebugTimerRuns", true)
-	endfunction
-
-	/// \ingroup nativedebug
-	/// \todo Should be private, vJass bug.
-	/// Destroyed timer will continue running until finished. You have to stop it manually before its destruction!
-	function DebugDestroyTimer takes timer whichTimer returns nothing
-		if (AHashTable.global().handleBoolean(whichTimer, "DebugTimerRuns")) then
-			debug call Print("Timer with id " + I2S(GetHandleId(whichTimer)) + " has not been stopped before destroying it.")
-			call PauseTimer(whichTimer)
-			call DestroyTrigger(AHashTable.global().handleTrigger(whichTimer, "DebugTimerTrigger"))
-		endif
-
-		call AHashTable.global().flushHandle(whichTimer)
-	endfunction
-
-	/// \ingroup nativedebug
 	function DebugShowInterface takes boolean flag, real fadeDuration returns nothing
 		if (fadeDuration == 0.0 and flag) then
 			debug call PrintFunctionError("ShowInterface", "Don't use 0.0 for fade duration when enabling flag since it will prevent unit portraits from working correctly.")
@@ -407,16 +352,6 @@ static if (DEBUG_MODE and A_DEBUG_NATIVES) then
 	hook RestoreUnit DebugRestoreUnit
 	/// \ingroup nativedebug
 	hook SetImageRender DebugSetImageRender
-	/// \ingroup nativedebug
-	hook DestroyTrigger DebugDestroyTrigger
-	/// \ingroup nativedebug
-	hook TimerStart DebugTimerStart
-	/// \ingroup nativedebug
-	hook PauseTimer DebugPauseTimer
-	/// \ingroup nativedebug
-	hook ResumeTimer DebugResumeTimer
-	/// \ingroup nativedebug
-	hook DestroyTimer DebugDestroyTimer
 	/// \ingroup nativedebug
 	hook ShowInterface DebugShowInterface
 endif

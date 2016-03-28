@@ -3,7 +3,7 @@ library ALibraryCoreGeneralTimer requires AStructCoreGeneralHashTable
 	/**
 	 * Waits \p seconds game-time seconds (synchronous), checking condition \p condition by using \ref PolledWait polling method.
 	 * \param condition If this condition becomes true, wait is canceled immediately and function returns true. Otherwise it returns false after wait has finished normally.
-	 * \param hashTable If this value is not 0 hash table is attached to trigger handle (stored with key "HashTable") usable for custom condition parameters.
+	 * \param hashTable If this value is not 0 hash table is attached to trigger handle (stored with key 0) usable for custom condition parameters.
 	 * \sa PolledWait
 	 */
 	function WaitCheckingCondition takes real seconds, code condition, AHashTable hashTable returns boolean
@@ -13,7 +13,7 @@ library ALibraryCoreGeneralTimer requires AStructCoreGeneralHashTable
 		local boolean result = false
 		call TriggerAddCondition(whichTrigger, triggerCondition)
 		if (hashTable != 0) then
-			call AHashTable.global().setHandleInteger(whichTrigger, "HashTable", hashTable)
+			call AHashTable.global().setHandleInteger(whichTrigger, 0, hashTable)
 		endif
 		call TimerStart(whichTimer, seconds, false, null)
 		loop

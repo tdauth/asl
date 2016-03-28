@@ -102,7 +102,7 @@ static if (DEBUG_MODE) then
 		endmethod
 
 		private static method timerFunction takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), 0)
 			call this.removeUnit()
 			set this.m_unit = this.createUnit()
 			if (this.m_unit != null) then
@@ -119,7 +119,7 @@ static if (DEBUG_MODE) then
 			if (this.m_timer == null) then
 				set this.m_timer = CreateTimer()
 				call TimerStart(this.m_timer, 2.0, true, function thistype.timerFunction)
-				call AHashTable.global().setHandleInteger(this.m_timer, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_timer, 0, this)
 			endif
 		endmethod
 

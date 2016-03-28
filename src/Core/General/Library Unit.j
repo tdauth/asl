@@ -613,10 +613,10 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 			set whichUnit = unitGroup.units.evaluate().at.evaluate(i)
 			if (pause and not IsUnitPaused(whichUnit)) then
 				call PauseUnit(whichUnit, true)
-				call AHashTable.global().setHandleBoolean(whichUnit, "PauseAllUnits:IsPaused", true)
-			elseif (not pause and AHashTable.global().hasHandleBoolean(whichUnit, "PauseAllUnits:IsPaused")) then
+				call AHashTable.global().setHandleBoolean(whichUnit, A_HASHTABLE_KEY_UNITPAUSE, true)
+			elseif (not pause and AHashTable.global().hasHandleBoolean(whichUnit, A_HASHTABLE_KEY_UNITPAUSE)) then
 				call PauseUnit(whichUnit, false)
-				call AHashTable.global().removeHandleBoolean(whichUnit, "PauseAllUnits:IsPaused")
+				call AHashTable.global().removeHandleBoolean(whichUnit, A_HASHTABLE_KEY_UNITPAUSE)
 			endif
 			set whichUnit = null
 			set i = i + 1
@@ -625,8 +625,8 @@ library ALibraryCoreGeneralUnit requires AStructCoreGeneralHashTable, ALibraryCo
 	endfunction
 
 	private function hookFunctionRemoveUnit takes unit whichUnit returns nothing
-		if (AHashTable.global().hasHandleBoolean(whichUnit, "PauseAllUnits:IsPaused")) then
-			call AHashTable.global().removeHandleBoolean(whichUnit, "PauseAllUnits:IsPaused")
+		if (AHashTable.global().hasHandleBoolean(whichUnit, A_HASHTABLE_KEY_UNITPAUSE)) then
+			call AHashTable.global().removeHandleBoolean(whichUnit, A_HASHTABLE_KEY_UNITPAUSE)
 		endif
 	endfunction
 

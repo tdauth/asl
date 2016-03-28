@@ -177,7 +177,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 			set iterator = this.m_players.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call AHashTable.global().removeHandleInteger(AVotePlayer(iterator.data()).player(), "AVote")
+				call AHashTable.global().removeHandleInteger(AVotePlayer(iterator.data()).player(), A_HASHTABLE_KEY_VOTE)
 				call DisplayTimedTextToPlayer(AVotePlayer(iterator.data()).player(), 0.0, 0.0, thistype.m_messageDuration, Format(thistype.m_resultMessage).s(AVoteChoice(this.m_choices[result]).message()).i(AVoteChoice(this.m_choices[result]).votes()).result())
 				call iterator.next()
 			endloop
@@ -189,7 +189,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 
 		/// \return Returns player's \p whichPlayer running vote. If there is no running vote for player whichPlayer it returns 0.
 		public static method playerVote takes player whichPlayer returns thistype
-			return AHashTable.global().handleInteger(whichPlayer, "AVote")
+			return AHashTable.global().handleInteger(whichPlayer, A_HASHTABLE_KEY_VOTE)
 		endmethod
 
 		private static method dialogButtonActionVote takes ADialogButton dialogButton returns nothing
@@ -208,7 +208,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 				debug if (thistype.playerVote(AVotePlayer(iterator.data()).player()) != 0) then
 					debug call this.print("Player " + GetPlayerName(AVotePlayer(iterator.data()).player()) + " does already have a running vote.")
 				debug endif
-				call AHashTable.global().setHandleInteger(AVotePlayer(iterator.data()).player(), "AVote", this)
+				call AHashTable.global().setHandleInteger(AVotePlayer(iterator.data()).player(), A_HASHTABLE_KEY_VOTE, this)
 				call AGui.playerGui(AVotePlayer(iterator.data()).player()).dialog().clear()
 				call AGui.playerGui(AVotePlayer(iterator.data()).player()).dialog().setMessage(this.m_message)
 				set j = 0
@@ -257,7 +257,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 		endmethod
 
 		private static method triggerActionPlayerLeaves takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.removePlayer(GetTriggerPlayer())
 		endmethod
 
@@ -274,7 +274,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 				endloop
 				call iterator.destroy()
 				call TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionPlayerLeaves)
-				call AHashTable.global().setHandleInteger(this.m_leaveTrigger, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_leaveTrigger, 0, this)
 			elseif (not flag and this.m_leaveTrigger != null) then
 				call AHashTable.global().destroyTrigger(this.m_leaveTrigger)
 				set this.m_leaveTrigger = null
@@ -329,7 +329,7 @@ library AStructSystemsGuiVote requires optional ALibraryCoreDebugMisc, AStructCo
 				set iterator = this.m_players.begin()
 				loop
 					exitwhen (not iterator.isValid())
-					call AHashTable.global().removeHandleInteger(AVotePlayer(iterator.data()).player(), "AVote")
+					call AHashTable.global().removeHandleInteger(AVotePlayer(iterator.data()).player(), A_HASHTABLE_KEY_VOTE)
 					call iterator.next()
 				endloop
 				call iterator.destroy()

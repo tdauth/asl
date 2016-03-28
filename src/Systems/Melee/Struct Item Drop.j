@@ -50,7 +50,7 @@ static if (DEBUG_MODE) then
 endif
 
 		private static method triggerActionUnit takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean canDrop = true
 			local AIntegerList itemTypeIds
 			local AIntegerListIterator iterator
@@ -80,7 +80,7 @@ endif
 		endmethod
 
 		private static method triggerActionWidget takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local AIntegerList itemTypeIds = 0
 			local AIntegerListIterator iterator
 
@@ -108,7 +108,7 @@ endif
 			set this.m_widget = whichWidget
 			set this.m_table = 0
 			set this.m_trigger = CreateTrigger()
-			call AHashTable.global().setHandleInteger(this.m_trigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_trigger, 0, this)
 			debug set this.m_effect = null
 
 			return this

@@ -100,7 +100,7 @@ library AStructSystemsGuiDialogButton requires optional ALibraryCoreDebugMisc, A
 
 		private static method triggerActionRunDialogButtonAction takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local ADialogButton this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local ADialogButton this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.dialog().setDisplayedByButton.evaluate(false) // Do not clear the dialog automatically (dialog().clear()) since it can be shown again with same buttons.
 			call this.onAction()
 			set triggeringTrigger = null
@@ -114,7 +114,7 @@ library AStructSystemsGuiDialogButton requires optional ALibraryCoreDebugMisc, A
 				set this.m_trigger = CreateTrigger()
 				set triggerEvent = TriggerRegisterDialogButtonEvent(this.m_trigger, this.m_button)
 				set triggerAction = TriggerAddAction(this.m_trigger, function thistype.triggerActionRunDialogButtonAction)
-				call AHashTable.global().setHandleInteger(this.m_trigger, "this", this)
+				call AHashTable.global().setHandleInteger(this.m_trigger, 0, this)
 				set triggerEvent = null
 				set triggerAction = null
 			//endif

@@ -59,7 +59,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set this.m_actor = null
 			endif
 			set this.m_actor = CopyUnit(this.unit(), GetUnitX(this.unit()), GetUnitY(this.unit()), GetUnitFacing(this.unit()), bj_UNIT_STATE_METHOD_MAXIMUM)
-			call AHashTable.global().setHandleInteger(this.m_actor, "actor", this)
+			call AHashTable.global().setHandleInteger(this.m_actor, A_HASHTABLE_KEY_ACTOR, this)
 			call PauseUnit(this.m_actor, false) // unpause before adding items!
 			// remove copied items of rucksack and add equipment
 			// TODO would be better performance when not copying items in CopyUnit in case rucksack is displayed
@@ -176,7 +176,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set this.m_actor = null
 			endif
 			set this.m_actor = CreateUnit(this.owner(), this.unitTypeId(), this.x(), this.y(), this.face())
-			call AHashTable.global().setHandleInteger(this.m_actor, "actor", this)
+			call AHashTable.global().setHandleInteger(this.m_actor, A_HASHTABLE_KEY_ACTOR, this)
 			call SetUnitInvulnerable(this.m_actor, true)
 			call IssueImmediateOrder(this.m_actor, "stop") // cancel orders.
 			call IssueImmediateOrder(this.m_actor, "halt") // make sure it runs not away
@@ -1072,11 +1072,11 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		// static methods
 		
 		public static method unitIsActor takes unit whichUnit returns boolean
-			return AHashTable.global().hasHandleInteger(whichUnit, "actor")
+			return AHashTable.global().hasHandleInteger(whichUnit, A_HASHTABLE_KEY_ACTOR)
 		endmethod
 		
 		public static method actorByUnit takes unit whichUnit returns AActorInterface
-			return AActorInterface(AHashTable.global().handleInteger(whichUnit, "actor"))
+			return AActorInterface(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_ACTOR))
 		endmethod
 	 endstruct
 

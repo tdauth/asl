@@ -537,7 +537,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		endmethod
 
 		private static method triggerActionRefresh takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), "this"))
+			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), 0))
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
@@ -580,7 +580,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		
 		private method createRefreshTrigger takes nothing returns nothing
 			set this.m_refreshTrigger = CreateTrigger()
-			call AHashTable.global().setHandleInteger(this.m_refreshTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_refreshTrigger, 0, this)
 			call TriggerRegisterTimerEvent(this.m_refreshTrigger, this.m_refreshRate, true)
 			call TriggerAddAction(this.m_refreshTrigger, function thistype.triggerActionRefresh)
 			call DisableTrigger(this.m_refreshTrigger)

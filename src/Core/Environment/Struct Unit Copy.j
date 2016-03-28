@@ -163,7 +163,7 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 		endmethod
 
 		private static method timerFunctionRefresh takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), 0)
 			call this.onCopy.evaluate()
 		endmethod
 
@@ -255,7 +255,7 @@ library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, 
 				call SuspendHeroXP(this.m_unitCopy, true)
 			endif
 			set this.m_refreshTimer = CreateTimer()
-			call AHashTable.global().setHandleInteger(this.m_refreshTimer, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_refreshTimer, 0, this)
 			set this.m_isPaused = false
 
 			return this

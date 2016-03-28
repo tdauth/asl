@@ -191,7 +191,7 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 		endmethod
 
 		private static method triggerActionPressShortcut takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger( GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger( GetTriggeringTrigger(), 0)
 			if (not this.isShown.evaluate()) then
 				call this.show.evaluate()
 			else
@@ -203,7 +203,7 @@ library AStructSystemsGuiMainWindow requires optional ALibraryCoreDebugMisc, ASt
 			set this.m_shortcutTrigger = CreateTrigger()
 			call TriggerRegisterKeyEventForPlayer(this.gui.evaluate().player(), this.m_shortcutTrigger, this.shortcut(), true)
 			call TriggerAddAction(this.m_shortcutTrigger, function thistype.triggerActionPressShortcut)
-			call AHashTable.global().setHandleInteger(this.m_shortcutTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_shortcutTrigger, 0, this)
 		endmethod
 
 		private method destroyShortcutTrigger takes nothing returns nothing

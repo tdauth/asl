@@ -97,7 +97,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 
 		private static method triggerConditionRightAbility takes nothing returns boolean
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local boolean result = (GetLearnedSkill() == this.ability())
 			set triggeringTrigger = null
 			return result
@@ -105,7 +105,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 
 		private static method triggerActionUpgrade takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.onUpgradeAction.execute()
 			set triggeringTrigger = null
 		endmethod
@@ -120,7 +120,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 			set conditionFunction = Condition(function thistype.triggerConditionRightAbility)
 			set triggerCondition = TriggerAddCondition(this.m_upgradeTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_upgradeTrigger, function thistype.triggerActionUpgrade)
-			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, 0, this)
 			set conditionFunction = null
 			set triggerCondition = null
 			set triggerAction = null
@@ -128,7 +128,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 
 		private static method triggerConditionCast takes nothing returns boolean
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local boolean result = (GetSpellAbilityId() == this.m_ability)
 			if (result) then
 				set result = this.onCastCondition()
@@ -145,7 +145,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 
 		private static method triggerActionCast takes nothing returns nothing
 			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, "this")
+			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			call this.onCastAction.execute()
 			set triggeringTrigger = null
 		endmethod
@@ -159,7 +159,7 @@ library AStructCoreEnvironmentUnitSpell requires optional ALibraryCoreDebugMisc,
 			set conditionFunction = Condition(function thistype.triggerConditionCast)
 			set triggerCondition = TriggerAddCondition(this.m_castTrigger, conditionFunction)
 			set triggerAction = TriggerAddAction(this.m_castTrigger, function thistype.triggerActionCast)
-			call AHashTable.global().setHandleInteger(this.m_castTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_castTrigger, 0, this)
 			set conditionFunction = null
 			set triggerCondition = null
 			set triggerAction = null

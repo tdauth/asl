@@ -1,6 +1,34 @@
 library AStructCoreGeneralHashTable
 
 	/**
+	 * Every key used for a global handle such as a unit or player must be unique.
+	 * This list contains all unique keys which never should be used on any handle for storing a hashtable value.
+	 */
+	globals
+		constant integer A_HASHTABLE_KEY_SPAWNPOINTMEMBER = 1000
+		constant integer A_HASHTABLE_KEY_VOTE = 1001
+		constant integer A_HASHTABLE_KEY_ACTOR = 1002
+		constant integer A_HASHTABLE_KEY_INVENTORYINDEX = 1003
+		constant integer A_HASHTABLE_KEY_BUFFCOUNTER = 1004
+		constant integer A_HASHTABLE_KEY_CHARACTER = 1005
+		constant integer A_HASHTABLE_KEY_GLOBALDAMAGERECORDER = 1006
+		constant integer A_HASHTABLE_KEY_UNITCOLLISIONSIZES = 1007
+		constant integer A_HASHTABLE_KEY_UNITPAUSE = 1008
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_DAMAGE = 1009
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_ARMOR = 1011
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_LIFE = 1012
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_MANA = 1013
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_SIGHT_RANGE = 1014
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_MANA_REGENERATION = 1015
+		constant integer A_HASHTABLE_KEY_BONUSTYPE_LIFE_REGENERATION = 1016
+		constant integer A_HASHTABLE_KEY_ROUTINE_CURRENT = 1017
+		constant integer A_HASHTABLE_KEY_ROUTINE_NEXT = 1018
+		constant integer A_HASHTABLE_KEY_ROUTINES = 1019
+		constant integer A_HASHTABLE_KEY_ITEMTYPES = 1020
+		constant integer A_HASHTABLE_KEY_MAX = 1021
+	endglobals
+
+	/**
 	 * Provides access to a single hashtable instance.
 	 * ASL internally uses \ref thistype.global() instance. Do not use this method to prevent conflicts with the ASL!
 	 * There are various methods which allow you to save values of different types or attach them on handles since handle objects do have an unique key (use \ref GetHandleId()).
@@ -17,68 +45,36 @@ library AStructCoreGeneralHashTable
 		private hashtable m_hashTable
 
 		//! textmacro AHashTableOperationMacro takes TYPE, TYPENAME, METHODTYPENAME, SAVELOADSUFFIX, HAVEREMOVESUFFIX
-			public method set$TYPENAME$ByInteger takes integer parentKey, integer childKey, $TYPE$ value returns nothing
+			public method set$TYPENAME$ takes integer parentKey, integer childKey, $TYPE$ value returns nothing
 				call Save$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, parentKey, childKey, value)
 			endmethod
-
-			public method set$TYPENAME$ takes string key, string label, $TYPE$ value returns nothing
-				call this. set$TYPENAME$ByInteger(StringHash(key), StringHash(label), value)
-			endmethod
-
-			public method $METHODTYPENAME$ByInteger takes integer parentKey, integer childKey returns $TYPE$
+			
+			public method $METHODTYPENAME$ takes integer parentKey, integer childKey returns $TYPE$
 				return Load$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod
 
-			public method $METHODTYPENAME$ takes string key, string label returns $TYPE$
-				return this.$METHODTYPENAME$ByInteger(StringHash(key), StringHash(label))
-			endmethod
-
-			public method has$TYPENAME$ByInteger takes integer parentKey, integer childKey returns boolean
+			public method has$TYPENAME$ takes integer parentKey, integer childKey returns boolean
 				return HaveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod
 
-			public method has$TYPENAME$ takes string key, string label returns boolean
-				return this.has$TYPENAME$ByInteger(StringHash(key), StringHash(label))
-			endmethod
-
-			public method remove$TYPENAME$ByInteger takes integer parentKey, integer childKey returns nothing
+			public method remove$TYPENAME$ takes integer parentKey, integer childKey returns nothing
 				call RemoveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod
 
-			public method remove$TYPENAME$ takes string key, string label returns nothing
-				call this.remove$TYPENAME$ByInteger(StringHash(key), StringHash(label))
-			endmethod
-
-			public method setHandle$TYPENAME$ByInteger takes handle whichHandle, integer childKey, $TYPE$ value returns nothing
+			public method setHandle$TYPENAME$ takes handle whichHandle, integer childKey, $TYPE$ value returns nothing
 				call Save$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey, value)
 			endmethod
 
-			public method setHandle$TYPENAME$ takes handle whichHandle, string label, $TYPE$ value returns nothing
-				call this.setHandle$TYPENAME$ByInteger(whichHandle, StringHash(label), value)
-			endmethod
-
-			public method handle$TYPENAME$ByInteger takes handle whichHandle, integer childKey returns $TYPE$
+			public method handle$TYPENAME$ takes handle whichHandle, integer childKey returns $TYPE$
 				return Load$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey)
 			endmethod
 
-			public method handle$TYPENAME$ takes handle whichHandle, string label returns $TYPE$
-				return this.handle$TYPENAME$ByInteger(whichHandle, StringHash(label))
-			endmethod
-
-			public method hasHandle$TYPENAME$ByInteger takes handle whichHandle, integer childKey returns boolean
+			public method hasHandle$TYPENAME$ takes handle whichHandle, integer childKey returns boolean
 				return HaveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey)
 			endmethod
 
-			public method hasHandle$TYPENAME$ takes handle whichHandle, string label returns boolean
-				return this. hasHandle$TYPENAME$ByInteger(whichHandle, StringHash(label))
-			endmethod
-
-			public method removeHandle$TYPENAME$ByInteger takes handle whichHandle, integer childKey returns nothing
+			public method removeHandle$TYPENAME$ takes handle whichHandle, integer childKey returns nothing
 				call RemoveSaved$HAVEREMOVESUFFIX$(this.m_hashTable, GetHandleId(whichHandle), childKey)
-			endmethod
-
-			public method removeHandle$TYPENAME$ takes handle whichHandle, string label returns nothing
-				call this.removeHandle$TYPENAME$ByInteger(whichHandle, StringHash(label))
 			endmethod
 		//! endtextmacro
 
@@ -132,13 +128,8 @@ library AStructCoreGeneralHashTable
 			call FlushParentHashtable(this.m_hashTable)
 		endmethod
 
-		public method flushKeyByInteger takes integer key returns nothing
+		public method flushKey takes integer key returns nothing
 			call FlushChildHashtable(this.m_hashTable, key)
-		endmethod
-
-		/// Flushes all data of a hashtable key.
-		public method flushKey takes string key returns nothing
-			call this.flushKeyByInteger(StringHash(key))
 		endmethod
 
 		public method flushHandle takes handle whichHandle returns nothing

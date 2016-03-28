@@ -161,7 +161,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 		debug endmethod
 
 		private static method triggerActionDamaged takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			if (this.m_saveData) then
 				if (this.m_damageSources.size() == AIntegerVector.maxSize()) then
 					call this.m_damageSources.popFront()
@@ -178,7 +178,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			set this.m_damageTrigger = CreateTrigger()
 			call TriggerRegisterUnitEvent(this.m_damageTrigger, this.m_target, EVENT_UNIT_DAMAGED)
 			call TriggerAddAction(this.m_damageTrigger, function thistype.triggerActionDamaged)
-			call AHashTable.global().setHandleInteger(this.m_damageTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_damageTrigger, 0, this)
 		endmethod
 
 		public static method create takes unit target returns thistype
@@ -275,7 +275,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 				debug call thistype.staticPrintMethodError("isGlobalUnitRegistered", "Global damage detection is not enabled.")
 				debug return false
 			debug endif
-			return AHashTable.global().hasHandleInteger(whichUnit, "GlobalDamageRecorder")
+			return AHashTable.global().hasHandleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER)
 		endmethod
 
 		public static method registerGlobalUnit takes unit whichUnit returns thistype
@@ -290,7 +290,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			set this = thistype.create(whichUnit)
 			call this.setOnDamageAction(thistype.m_globalDamageDetectionOnDamageAction)
 			call this.setSaveData(thistype.m_saveDataByDefault)
-			call AHashTable.global().setHandleInteger(whichUnit, "GlobalDamageRecorder", this)
+			call AHashTable.global().setHandleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER, this)
 			return this
 		endmethod
 
@@ -302,8 +302,8 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			if (not thistype.isGlobalUnitRegistered(whichUnit)) then
 				return false
 			endif
-			call thistype(AHashTable.global().handleInteger(whichUnit, "GlobalDamageRecorder")).destroy()
-			call AHashTable.global().removeHandleInteger(whichUnit, "GlobalDamageRecorder")
+			call thistype(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER)).destroy()
+			call AHashTable.global().removeHandleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER)
 			return true
 		endmethod
 
@@ -312,7 +312,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 				debug call thistype.staticPrintMethodError("globalUnitDamageRecorder", "Global damage detection is not enabled.")
 				debug return 0
 			debug endif
-			return thistype(AHashTable.global().handleInteger(whichUnit, "GlobalDamageRecorder"))
+			return thistype(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER))
 		endmethod
 	endstruct
 

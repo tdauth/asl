@@ -519,17 +519,17 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		endmethod
 		
 		private static method triggerConditionIsCharacter takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return this.unit() == GetTriggerUnit()
 		endmethod
 
 		private static method triggerActionDestroyCharacter takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call thistype.destroy(this)
 		endmethod
 
 		private static method triggerActionShareControl takes nothing returns nothing
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), "this")
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.shareControl(true)
 		endmethod
 
@@ -541,7 +541,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			elseif (thistype.m_shareOnPlayerLeaves) then
 				call TriggerAddAction(this.m_leaveTrigger, function thistype.triggerActionShareControl)
 			endif
-			call AHashTable.global().setHandleInteger(this.m_leaveTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_leaveTrigger, 0, this)
 		endmethod
 
 		/// DON'T MAKE HIM UNMOVABLE, disables all systems!
@@ -550,7 +550,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			call TriggerRegisterAnyUnitEventBJ(this.m_deathTrigger, EVENT_PLAYER_UNIT_DEATH)
 			call TriggerAddCondition(this.m_deathTrigger, Condition(function thistype.triggerConditionIsCharacter))
 			call TriggerAddAction(this.m_deathTrigger, function thistype.triggerActionDestroyCharacter)
-			call AHashTable.global().setHandleInteger(this.m_deathTrigger, "this", this)
+			call AHashTable.global().setHandleInteger(this.m_deathTrigger, 0, this)
 		endmethod
 
 		private method createSystems takes nothing returns nothing
@@ -573,7 +573,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			//start members
 			set this.m_player = user
 			set this.m_unit = usedUnit
-			call AHashTable.global().setHandleInteger(usedUnit, "ACharacter", this)
+			call AHashTable.global().setHandleInteger(usedUnit, A_HASHTABLE_KEY_CHARACTER, this)
 			//dynamic members
 			set this.m_isMovable = true
 			//members
@@ -764,7 +764,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 
 		/// \todo You could also check it by only comparing with the units owner character unit.
 		public static method getCharacterByUnit takes unit usedUnit returns thistype
-			return AHashTable.global().handleInteger(usedUnit, "ACharacter")
+			return AHashTable.global().handleInteger(usedUnit, A_HASHTABLE_KEY_CHARACTER)
 		endmethod
 
 		public static method isUnitCharacter takes unit usedUnit returns boolean
