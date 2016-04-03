@@ -375,7 +375,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		local player speakerOwner = null
 		local boolean useThirdPerson = info.talk().useThirdPerson(character)
 		local timer whichTimer = null
-		local boolean wasSkipped = false
 		local PlayerSpeechData playerSpeechData = 0
 		call waitForVideo(1.0) // do not show any speeches during video
 		if (toCharacter) then
@@ -428,7 +427,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				set duration = TimerGetRemaining(whichTimer)
 				exitwhen (duration <= 0.0)
 				if (playerHasSkipped[GetPlayerId(user)]) then
-					set wasSkipped = true
 					exitwhen (true)
 				endif
 				
@@ -447,7 +445,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		endif
 		
 		// only clear data in this function if it has not already been cleared by the skip function
-		if (not wasSkipped) then
+		if (not playerHasSkipped[GetPlayerId(user)]) then
 			call playerSpeechData[GetPlayerId(character.player())].remove(playerSpeechData)
 			call playerSpeechData.destroy()
 		endif
@@ -484,24 +482,29 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		set whichSound = null
 	endfunction
 	
-	private function triggerConditionSkip takes nothing returns boolean
-		return ACharacter.playerCharacter(GetTriggerPlayer()).talk() != 0 and not playerHasSkipped[GetPlayerId(GetTriggerPlayer())]
-	endfunction
-
 	/**
 	 * Sets the skip flag to true that the waiting is skipped in the \ref speech() function.
 	 * But clears all texttags and sounds immediately.
 	 * TODO double free of iterator?!
 	 */
+	function playerSkipsInfo takes player whichPlayer returns nothing
+		local AIntegerListIterator iterator = 0
+		if (ACharacter.playerCharacter(whichPlayer).talk() != 0 and not playerHasSkipped[GetPlayerId(whichPlayer)]) then
+			set iterator = playerSpeechData[GetPlayerId(whichPlayer)].begin()
+			loop
+				exitwhen (not iterator.isValid())
+				call PlayerSpeechData(iterator.data()).destroy()
+				debug call Print("Erasing: " + I2S(iterator))
+				set iterator = playerSpeechData[GetPlayerId(whichPlayer)].erase(iterator)
+			endloop
+			debug call Print("Before destroy the iterator for the last time: " + I2S(iterator))
+			call iterator.destroy()
+			set playerHasSkipped[GetPlayerId(whichPlayer)] = true
+		endif
+	endfunction
+
 	private function triggerActionSkip takes nothing returns nothing
-		local AIntegerListIterator iterator = playerSpeechData[GetPlayerId(GetTriggerPlayer())].begin()
-		loop
-			exitwhen (not iterator.isValid())
-			call PlayerSpeechData(iterator.data()).destroy()
-			set iterator = playerSpeechData[GetPlayerId(GetTriggerPlayer())].erase(iterator)
-		endloop
-		call iterator.destroy()
-		set playerHasSkipped[GetPlayerId(GetTriggerPlayer())] = true
+		call playerSkipsInfo(GetTriggerPlayer())
 	endfunction
 
 	/**
@@ -535,7 +538,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			endif
 			set i = i + 1
 		endloop
-		call TriggerAddCondition(skipTrigger, Condition(function triggerConditionSkip))
 		call TriggerAddAction(skipTrigger, function triggerActionSkip)
 	endfunction
 
