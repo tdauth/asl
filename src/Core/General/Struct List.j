@@ -374,7 +374,9 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 				call result.setNode(oldNode.next())
 				call this.eraseNumberNode(first.node(), last.node())
 				call first.destroy()
-				call last.destroy()
+				if (first != last) then
+					call last.destroy()
+				endif
 				return result
 			endmethod
 
