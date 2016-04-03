@@ -485,7 +485,6 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 	/**
 	 * Sets the skip flag to true that the waiting is skipped in the \ref speech() function.
 	 * But clears all texttags and sounds immediately.
-	 * TODO double free of iterator?!
 	 */
 	function playerSkipsInfo takes player whichPlayer returns nothing
 		local AIntegerListIterator iterator = 0
@@ -494,10 +493,8 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			loop
 				exitwhen (not iterator.isValid())
 				call PlayerSpeechData(iterator.data()).destroy()
-				debug call Print("Erasing: " + I2S(iterator))
 				set iterator = playerSpeechData[GetPlayerId(whichPlayer)].erase(iterator)
 			endloop
-			debug call Print("Before destroy the iterator for the last time: " + I2S(iterator))
 			call iterator.destroy()
 			set playerHasSkipped[GetPlayerId(whichPlayer)] = true
 		endif
