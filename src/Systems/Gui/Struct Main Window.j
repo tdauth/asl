@@ -484,9 +484,9 @@ endif
 			set this.m_tooltip = null
 			set this.m_tooltipBackground = null
 			set this.m_isShown = false
-			set this.m_fogModifierRect = RectFromPointSize(this.m_x + this.m_sizeX / 2.0, this.m_y - this.m_sizeY / 2.0, this.m_sizeX, this.m_sizeY)
-			set this.m_visibilityModifier = CreateFogModifierRect(this.gui().player(), FOG_OF_WAR_VISIBLE, this.m_fogModifierRect, true, false)
-			set this.m_blackMaskModifier = CreateFogModifierRect(this.gui().player(), FOG_OF_WAR_MASKED, this.m_fogModifierRect, true, false)
+			set this.m_fogModifierRect = RectFromPointSize(this.m_x, this.m_y, this.m_sizeX, this.m_sizeY)
+			set this.m_visibilityModifier = CreateFogModifierRect(this.gui().player(), FOG_OF_WAR_VISIBLE, this.m_fogModifierRect, false, false)
+			set this.m_blackMaskModifier = CreateFogModifierRect(this.gui().player(), FOG_OF_WAR_MASKED, this.m_fogModifierRect, false, false)
 			call FogModifierStart(this.m_blackMaskModifier)
 			set this.m_shortcutTrigger = null
 
