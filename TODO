@@ -45,6 +45,7 @@
 	* effect functions
 	* environment functions
 	* group functions
+	* Action Button system: Selling units can be used to trigger actions. Therefore a system could be added to "Environment" which also generates the button using the ObjectMerger.
 
 WORKS:
 static if (DEBUG_MODE) then
