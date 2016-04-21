@@ -573,7 +573,9 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			//start members
 			set this.m_player = user
 			set this.m_unit = usedUnit
-			call AHashTable.global().setHandleInteger(usedUnit, A_HASHTABLE_KEY_CHARACTER, this)
+			if (usedUnit != null) then
+				call AHashTable.global().setHandleInteger(usedUnit, A_HASHTABLE_KEY_CHARACTER, this)
+			endif
 			//dynamic members
 			set this.m_isMovable = true
 			//members
