@@ -560,12 +560,11 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		
 		private static method triggerConditionMove takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			if (GetTriggerUnit() == this.m_classUnit and (GetIssuedOrderId() == OrderId("move") or GetIssuedOrderId() == OrderId("smart"))) then
-				debug call Print("Stop class unit " + GetUnitName(GetTriggerUnit()))
-				call IssueImmediateOrder(GetTriggerUnit(), "stop")
-			endif
-			
-			return false
+			return GetTriggerUnit() == this.m_classUnit and (GetIssuedOrderId() == OrderId("move") or GetIssuedOrderId() == OrderId("smart"))
+		endmethod
+		
+		private static method triggerActionMove takes nothing returns nothing
+			call IssueImmediateOrder(GetTriggerUnit(), "stop")
 		endmethod
 		
 		private method createMoveTrigger takes nothing returns nothing
@@ -573,6 +572,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call TriggerRegisterAnyUnitEventBJ(this.m_moveTrigger, EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER)
 			call TriggerRegisterAnyUnitEventBJ(this.m_moveTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)
 			call TriggerAddCondition(this.m_moveTrigger, Condition(function thistype.triggerConditionMove))
+			call TriggerAddAction(this.m_moveTrigger, function thistype.triggerActionMove)
 			call AHashTable.global().setHandleInteger(this.m_moveTrigger, 0, this)
 		endmethod
 
