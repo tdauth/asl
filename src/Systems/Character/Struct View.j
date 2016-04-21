@@ -24,7 +24,7 @@ library AStructSystemsCharacterView requires AStructCoreGeneralHashTable, AStruc
 
 		public static method create takes ACharacter character returns thistype
 			local thistype this = thistype.allocate(character)
-			call AThirdPersonCamera.playerThirdPersonCamera(this.character().player()).enable(character.unit(), 0.0)
+			// don't enable since it might be during the map initialization
 			return this
 		endmethod
 
