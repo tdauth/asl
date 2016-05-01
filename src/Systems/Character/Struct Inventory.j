@@ -2589,7 +2589,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			/*
 			 * Make sure that the character's unit has the rucksack ability. Otherwise it cannot change to the rucksack.
 			 */
-			if (GetUnitAbilityLevel(this.character().unit(), thistype.m_openRucksackAbilityId) == 0) then
+			if (this.character().unit() != null and GetUnitAbilityLevel(this.character().unit(), thistype.m_openRucksackAbilityId) == 0) then
 				call UnitAddAbility(this.character().unit(), thistype.m_openRucksackAbilityId)
 			endif
 

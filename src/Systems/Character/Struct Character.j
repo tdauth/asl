@@ -407,18 +407,18 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				set i = i + 1
 			endloop
 		endmethod
-
+		
 		/**
-		 * Call this method to restore the whole character data into game cache \p cache on key \p missionKey.
+		 * Restores a character unit from a gamecache.
 		 */
-		public method restore takes gamecache cache, string missionKey, real x, real y, real facing returns nothing
+		public static method restoreUnitFromCache takes gamecache cache, string missionKey, player whichPlayer, real x, real y, real facing returns unit
+			return RestoreUnit(cache, missionKey, "Unit", whichPlayer, x, y, facing)
+		endmethod
+		
+		public method restoreDataFromCache takes gamecache cache, string missionKey returns nothing
 			local integer i
 			local integer spellsCount
 			set this.m_class = AClass(GetStoredInteger(cache, missionKey, "Class"))
-			// don't restore is movable, talk, shrine and player
-			call RemoveUnit(this.m_unit)
-			set this.m_unit = null
-			set this.m_unit = RestoreUnit(cache, missionKey, "Unit", this.m_player, x, y, facing)
 			/// \todo call refresh unit actions
 			if (thistype.m_useViewSystem) then
 				call this.m_view.restore(cache, missionKey, "View")
@@ -445,6 +445,19 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				call this.m_spells.pushBack(ASpell.createRestored.evaluate(this, cache, missionKey, "Spell" + I2S(i)))
 				set i = i + 1
 			endloop
+		endmethod
+
+		/**
+		 * Call this method to restore the whole character data into game cache \p cache on key \p missionKey.
+		 */
+		public method restore takes gamecache cache, string missionKey, real x, real y, real facing returns nothing
+			// don't restore is movable, talk, shrine and player
+			if (this.m_unit != null) then
+				call RemoveUnit(this.m_unit)
+				set this.m_unit = null
+			endif
+			set this.m_unit = thistype.restoreUnitFromCache(cache, missionKey, this.m_player, x, y, facing)
+			call this.restoreDataFromCache(cache, missionKey)
 		endmethod
 		
 		/**
@@ -568,17 +581,17 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endif
 		endmethod
 
-		public static method create takes player user, unit usedUnit returns thistype
+		public static method create takes player whichPlayer, unit whichUnit returns thistype
 			local thistype this = thistype.allocate()
-			//start members
-			set this.m_player = user
-			set this.m_unit = usedUnit
-			if (usedUnit != null) then
-				call AHashTable.global().setHandleInteger(usedUnit, A_HASHTABLE_KEY_CHARACTER, this)
+			// construction members
+			set this.m_player = whichPlayer
+			set this.m_unit = whichUnit
+			if (whichUnit != null) then
+				call AHashTable.global().setHandleInteger(whichUnit, A_HASHTABLE_KEY_CHARACTER, this)
 			endif
-			//dynamic members
+			// dynamic members
 			set this.m_isMovable = true
-			//members
+			// members
 			set this.m_inventory = 0
 			set this.m_talkLog = 0
 			set this.m_spells = AIntegerVector.create()
@@ -592,6 +605,15 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			call this.createSystems()
 			return this
 		endmethod
+		
+		public static method createRestored takes player whichPlayer, gamecache cache, string missionKey, real x, real y, real facing returns thistype
+			local thistype this = thistype.create(whichPlayer, thistype.restoreUnitFromCache(cache, missionKey, whichPlayer, x, y, facing))
+			
+			call this.restoreDataFromCache(cache, missionKey)
+			
+			return this
+		endmethod
+			
 
 		private method removeUnit takes nothing returns nothing
 			if (thistype.m_removeUnitOnDestruction) then
