@@ -63,7 +63,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call PauseUnit(this.m_actor, false) // unpause before adding items!
 			// remove copied items of rucksack and add equipment
 			// TODO would be better performance when not copying items in CopyUnit in case rucksack is displayed
-			if (character != 0 and character.inventory() != 0 and character.inventory().rucksackIsEnabled()) then
+			// only show equipment if equipment is enabled, not if only rucksack is enabled and not if inventory has been disabled completely
+			if (character != 0 and character.inventory() != 0 and character.inventory().rucksackIsEnabled() and not character.inventory().onlyRucksackIsEnabled() and ((character.isMovable() and character.inventory().isEnabled()) or (not character.isMovable() and character.inventory().enableAgain()))) then
 				set i = 0
 				loop
 					exitwhen (i == AInventory.maxEquipmentTypes)
