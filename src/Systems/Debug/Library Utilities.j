@@ -168,7 +168,7 @@ endif
 static if (DEBUG_MODE) then
 				call Print(A_TEXT_HERO_DATA)
 				call Print(Format(A_TEXT_HERO_LEVEL).i(GetHeroLevel(selectedUnit)).result())
-				call Print(Format(A_TEXT_HERO_XP).i(GetHeroXP(selectedUnit)).result())
+				call Print(Format(A_TEXT_HERO_XP_PART).i(GetHeroXP(selectedUnit)).i(GetHeroLevelMaxXP(GetHeroLevel(selectedUnit))).result())
 				call Print(Format(A_TEXT_HERO_SKILL_POINTS).i(GetHeroSkillPoints(selectedUnit)).result())
 				call Print(Format(A_TEXT_HERO_STRENGTH).i(GetHeroStr(selectedUnit, false)).i(GetHeroStrBonus(selectedUnit)).result())
 				call Print(Format(A_TEXT_HERO_AGILITY).i(GetHeroAgi(selectedUnit, false)).i(GetHeroAgiBonus(selectedUnit)).result())

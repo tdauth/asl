@@ -13,7 +13,6 @@ globals
 	debug constant string A_TEXT_UNIT_CURRENT_ORDER = "Current Order: %1%"
 	debug constant string A_TEXT_HERO_DATA = "--------- Hero Data ---------"
 	debug constant string A_TEXT_HERO_LEVEL = "Level: %1%"
-	debug constant string A_TEXT_HERO_XP = "Experience: %1%"
 	debug constant string A_TEXT_HERO_SKILL_POINTS = "Skill points: %1%"
 	debug constant string A_TEXT_HERO_STRENGTH = "Strength: %1% + %2%"
 	debug constant string A_TEXT_HERO_AGILITY = "Agility: %1% + %2%"
