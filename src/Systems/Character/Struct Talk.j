@@ -421,6 +421,14 @@ endif
 			debug if (this.characters().contains(character)) then
 				debug call this.print("Character " + I2S(character) + " is already part of the talk.")
 			debug endif
+			// is the first talking character
+			if (this.m_characters.isEmpty()) then
+				// stopping the routines prevents the NPC from walking away.
+				call IssueImmediateOrder(this.unit(), "stop") // stop the unit if it is currently moving in routine
+				call AUnitRoutine.disableAll(this.m_unit)
+				// don't pause, otherwise the NPC cannot sell anything
+			endif
+			
 			call this.m_characters.pushBack(character)
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(character.player(), true)
@@ -435,10 +443,7 @@ endif
 			if (this.effectPath() != null) then
 				set this.m_characterEffects[GetPlayerId(character.player())] = AddSpecialEffectTarget(this.effectPath(), character.unit(), "overhead") 
 			endif
-			// stopping the routines prevents the NPC from walking away.
-			call AUnitRoutine.disableAll(this.m_unit)
-			// don't pause, otherwise the NPC cannot sell anything
-			//call PauseUnit(this.m_unit, true) // disables routines or something else of NPC
+			
 			call SetUnitFacing(character.unit(), GetAngleBetweenUnits(character.unit(), this.m_unit))
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
 			call ResetUnitAnimation(this.m_unit) // make sure he stops routines etc.
