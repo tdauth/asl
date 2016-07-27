@@ -383,7 +383,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		 * Call this method to store the whole character data into game cache \p cache on key \p missionKey.
 		 */
 		public method store takes gamecache cache, string missionKey returns nothing
-			local integer i
 			call StoreInteger(cache, missionKey, "Class", integer(this.m_class))
 			// don't store is movable, talk, shrine and player
 			call StoreUnit(cache, missionKey, "Unit", this.m_unit)
@@ -399,13 +398,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			if (thistype.m_useTalkLogSystem) then
 				call this.m_talkLog.store(cache, missionKey, "TalkLog")
 			endif
-			call StoreInteger(cache, missionKey, "SpellsCount", this.m_spells.size())
-			set i = 0
-			loop
-				exitwhen (i == this.m_spells.size())
-				call ASpell(this.m_spells[i]).store.evaluate(cache, missionKey, "Spell" + I2S(i))
-				set i = i + 1
-			endloop
 		endmethod
 		
 		/**
@@ -416,8 +408,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		endmethod
 		
 		public method restoreDataFromCache takes gamecache cache, string missionKey returns nothing
-			local integer i
-			local integer spellsCount
 			set this.m_class = AClass(GetStoredInteger(cache, missionKey, "Class"))
 			/// \todo call refresh unit actions
 			if (thistype.m_useViewSystem) then
@@ -432,19 +422,6 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			if (thistype.m_useTalkLogSystem) then
 				call this.m_talkLog.restore(cache, missionKey, "TalkLog")
 			endif
-			// clear old
-			loop
-				exitwhen (this.m_spells.empty())
-				call ASpell(this.m_spells.back()).destroy()
-				call this.m_spells.popBack()
-			endloop
-			set spellsCount = GetStoredInteger(cache, missionKey, "SpellsCount")
-			set i = 0
-			loop
-				exitwhen (i == spellsCount)
-				call this.m_spells.pushBack(ASpell.createRestored.evaluate(this, cache, missionKey, "Spell" + I2S(i)))
-				set i = i + 1
-			endloop
 		endmethod
 
 		/**

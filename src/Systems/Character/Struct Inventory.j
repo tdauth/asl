@@ -1197,21 +1197,26 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set i = 0
 			loop
 				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] != 0) then
-					call StoreBoolean(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i) + "Exists", true)
-					call this.m_rucksackItemData[i].store(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i))
-				endif
+				// use a new OpLimit
+				call this.storeRucksackItem.evaluate(cache, missionKey, labelPrefix, i)
 				set i = i + 1
 			endloop
 			call StoreInteger(cache, missionKey, labelPrefix + "RucksackPage", this.m_rucksackPage)
 			call StoreBoolean(cache, missionKey, labelPrefix + "RucksackIsEnabled", this.m_rucksackIsEnabled)
 		endmethod
+		
+		private method storeRucksackItem takes gamecache cache, string missionKey, string labelPrefix, integer i returns nothing
+			if (this.m_rucksackItemData[i] != 0) then
+				call StoreBoolean(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i) + "Exists", true)
+				call this.m_rucksackItemData[i].store(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i))
+			endif
+		endmethod
 
 		public stub method restore takes gamecache cache, string missionKey, string labelPrefix returns nothing
 			local integer i
 			call super.restore(cache, missionKey, labelPrefix)
-			set i = 0
 			call this.disable()
+			set i = 0
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.m_equipmentItemData[i] != 0) then // clear old
@@ -1226,18 +1231,23 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set i = 0
 			loop
 				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] != 0) then // clear old
-					call this.m_rucksackItemData[i].destroy()
-					set this.m_rucksackItemData[i] = 0
-				endif
-				if (HaveStoredBoolean(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i) + "Exists")) then
-					set this.m_rucksackItemData[i] = AInventoryItemData.createRestored(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i))
-				endif
+				// use a new OpLimit
+				call this.restoreRucksackItem.evaluate(cache, missionKey, labelPrefix, i)
 				set i = i + 1
 			endloop
 			set this.m_rucksackPage = GetStoredInteger(cache, missionKey, labelPrefix + "RucksackPage")
 			set this.m_rucksackIsEnabled = GetStoredBoolean(cache, missionKey, labelPrefix + "RucksackIsEnabled")
 			call this.enable()
+		endmethod
+		
+		private method restoreRucksackItem takes gamecache cache, string missionKey, string labelPrefix, integer i returns nothing
+			if (this.m_rucksackItemData[i] != 0) then // clear old
+				call this.m_rucksackItemData[i].destroy()
+				set this.m_rucksackItemData[i] = 0
+			endif
+			if (HaveStoredBoolean(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i) + "Exists")) then
+				set this.m_rucksackItemData[i] = AInventoryItemData.createRestored(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i))
+			endif
 		endmethod
 
 		private method setEquipmentItem takes integer equipmentType, AInventoryItemData inventoryItemData, boolean add returns nothing
