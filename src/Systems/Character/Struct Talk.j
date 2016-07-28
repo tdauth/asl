@@ -449,6 +449,10 @@ endif
 			call ResetUnitAnimation(this.m_unit) // make sure he stops routines etc.
 			call SetUnitLookAt(character.unit(), "bone_head", this.m_unit, 0.0, 0.0, GetUnitFlyHeight(this.m_unit) + 90.0)
 			call SetUnitLookAt(this.m_unit, "bone_head", character.unit(), 0.0, 0.0, GetUnitFlyHeight(character.unit()) + 90.0)
+			
+			// make sure the other is visible to the character during the talk
+			call UnitShareVision(this.m_unit, character.player(), true)
+			
 			if (this.useThirdPerson(character)) then
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamAoa()
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamRot()
@@ -473,6 +477,10 @@ endif
 			call AGui.playerGui(character.player()).dialog().clear()
 			call ResetUnitLookAt(character.unit())
 			call ResetUnitLookAt(this.m_unit)
+			
+			// talk partner was visible during the talk
+			call UnitShareVision(this.m_unit, character.player(), false)
+			
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(character.player(), false)
 			endif
