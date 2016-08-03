@@ -22,7 +22,7 @@
 * String misc unit test has still 2 errors and comments!
 * Implement AVolumeSet.setDefaultVolume()
 * Test EndCinematicSceneForPlayer() for desync!
-* Finish Character systems: APvp
+* DEPRECATED: Finish Character systems: APvp
 * DONE: Drop character systems: AFight, AFocus, AMovement (never been used, never worked)
 * No more @ comments, group parts, add \ref etc etc to get propper Doxygen comments.
 * Change tests for containers, strings and time of day functions to unit tests:

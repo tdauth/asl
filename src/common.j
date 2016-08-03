@@ -1752,6 +1752,7 @@ native          SetCampaignMenuRace takes race r returns nothing
 native          SetCampaignMenuRaceEx takes integer campaignIndex returns nothing
 native          ForceCampaignSelectScreen takes nothing returns nothing
 
+/// FIXME \p saveFileName The file name has several restrictions. It should not be too long, not contain additional dots or underscores. There should be no underscores in the campaign name as well which is used as prefix (folder). Otherwise the campaign screen will be shown.
 native          LoadGame            takes string saveFileName, boolean doScoreScreen returns nothing
 native          SaveGame            takes string saveFileName returns nothing
 native          RenameSaveDirectory takes string sourceDirName, string destDirName returns boolean
