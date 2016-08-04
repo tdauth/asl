@@ -376,7 +376,17 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		 * Only use this method when replacing the character's unit for some time.
 		 */
 		public method replaceUnit takes unit newUnit returns nothing
+			local unit oldUnit = this.m_unit
 			set this.m_unit = newUnit
+			call AHashTable.global().setHandleInteger(newUnit, A_HASHTABLE_KEY_CHARACTER, this)
+			call this.onReplaceUnit.evaluate(oldUnit, newUnit)
+		endmethod
+		
+		/**
+		 * Is called by .evaluate() when the unit is replaced by \ref replaceUnit(). At the time of the call the reference in this struct is already replaced.
+		 * Any references can be updated in this method.
+		 */
+		public stub method onReplaceUnit takes unit oldUnit, unit newUnit returns nothing
 		endmethod
 
 		/**
