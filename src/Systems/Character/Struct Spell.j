@@ -154,18 +154,13 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		private static method triggerConditionRightAbility takes nothing returns boolean
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
-			local boolean result = (GetLearnedSkill() == this.m_ability)
-			set triggeringTrigger = null
-			return result
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
+			return (GetLearnedSkill() == this.m_ability)
 		endmethod
 
 		private static method triggerActionUpgrade takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			call this.onUpgradeAction.execute()
-			set triggeringTrigger = null
 		endmethod
 
 		/// \todo upgradeAction won't be called correctly
@@ -260,11 +255,6 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		/// Use this constructor if you either don't any event response functions or you overwrite the stub methods.
 		public static method createSimple takes ACharacter character, integer whichAbility returns thistype
 			return thistype.create(character, whichAbility, 0, 0, 0, EVENT_PLAYER_UNIT_SPELL_CHANNEL)
-		endmethod
-
-		public static method createRestored takes ACharacter character, gamecache cache, string missionKey, string labelPrefix returns thistype
-			local thistype this = thistype.allocate(character)
-			return this
 		endmethod
 
 		private method destroyUpgradeTrigger takes nothing returns nothing
