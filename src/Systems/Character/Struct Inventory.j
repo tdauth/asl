@@ -581,7 +581,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set isBeingPaused = false
 			endif
 			
-			debug call Print("Disable pickup trigger in unitAddItemToSlotById()")
 			call DisableTrigger(this.m_pickupTrigger)
 			
 			if (UnitItemInSlot(whichUnit, slot) != null) then
@@ -711,7 +710,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call RemoveItem(slotItem)
 				call EnableTrigger(this.m_dropTrigger)
 			debug elseif (this.equipmentItemData(equipmentType) == 0) then
-				debug call this.print("Equipment type placeholder " + I2S(equipmentType) + " is not 0 but has no slot item with type " + GetObjectName(this.m_equipmentItemTypeId[equipmentType]))
+				//debug call this.print("Equipment type placeholder " + I2S(equipmentType) + " is not 0 but has no slot item with type " + GetObjectName(this.m_equipmentItemTypeId[equipmentType]))
 			endif
 			set slotItem = null
 		endmethod
@@ -1151,8 +1150,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			if (this.m_rucksackItemData[index].charges() <= 0) then // all items have charges starting at least with 1 in rucksack
 				debug call this.print("Clear rucksack item!")
 				call this.clearRucksackItem(index, false)
-			// only update charges if item is visible
-			elseif (this.m_rucksackIsEnabled and this.m_rucksackPage == this.itemRucksackPage(index)) then
+			// only update charges if item is visible, the item is not visible if a shop is selected!
+			elseif (this.m_rucksackIsEnabled and this.m_rucksackPage == this.itemRucksackPage(index) and this.m_shop == null) then
 				set characterUnit = this.character().unit()
 				set slot = this.rucksackItemSlot(index)
 				set slotItem = UnitItemInSlot(characterUnit, slot)
