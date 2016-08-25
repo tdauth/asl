@@ -481,6 +481,11 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endloop
 			return 0
 		endmethod
+		
+		/// \note Use this method with care. Make sure the spells are already destroyed.
+		public method clearSpells takes nothing returns nothing
+			call this.m_spells.clear()
+		endmethod
 
 		private method enableMovableSystems takes nothing returns nothing
 			if (thistype.m_useViewSystem and this.m_view.enableAgain()) then

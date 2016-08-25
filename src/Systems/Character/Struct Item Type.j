@@ -156,7 +156,6 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			loop
 				exitwhen (i == this.m_abilities.size())
 				if (this.m_permanent[i]) then
-					debug call this.print("Removing permanent ability " + GetObjectName(this.m_abilities[i]) + " from unit " + GetUnitName(who))
 					call UnitRemoveAbility(who, this.m_abilities[i])
 				endif
 				set i = i + 1

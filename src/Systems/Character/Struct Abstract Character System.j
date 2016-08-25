@@ -59,8 +59,6 @@ library AStructSystemsCharacterAbstractCharacterSystem
 		 * This method is called when \ref ACharacter.store is called.
 		 */
 		public stub method store takes gamecache cache, string missionKey, string labelPrefix returns nothing
-			call StoreBoolean(cache, missionKey, labelPrefix + "EnableAgain", this.m_enableAgain)
-			call StoreBoolean(cache, missionKey, labelPrefix + "IsEnabled", this.m_isEnabled)
 		endmethod
 
 		/**
@@ -68,8 +66,6 @@ library AStructSystemsCharacterAbstractCharacterSystem
 		 * This method is called when \ref ACharacter.restore is called.
 		 */
 		public stub method restore takes gamecache cache, string missionKey, string labelPrefix returns nothing
-			set this.m_enableAgain = GetStoredBoolean(cache, missionKey, labelPrefix + "EnableAgain")
-			set this.m_isEnabled = GetStoredBoolean(cache, missionKey, labelPrefix + "IsEnabled")
 		endmethod
 
 		public static method create takes ACharacter character returns thistype

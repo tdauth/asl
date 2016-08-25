@@ -6,8 +6,6 @@ library AStructSystemsCharacterView requires AStructCoreGeneralHashTable, AStruc
 	 */
 	struct AView extends AAbstractCharacterSystem
 
-		//methods
-
 		public method enable takes nothing returns nothing
 			call super.enable()
 			if (AThirdPersonCamera.playerThirdPersonCamera(this.character().player()).unit() != this.character().unit()) then

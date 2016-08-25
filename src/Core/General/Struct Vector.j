@@ -266,7 +266,7 @@ endif
 				loop
 					exitwhen (i == this.m_size)
 					set this.m_element[i - number] = this.m_element[i]
-					set this.m_element[i] = $NULLVALUE$ //clear
+					set this.m_element[i] = $NULLVALUE$ // clear
 					set i = i + 1
 				endloop
 				set this.m_size = this.m_size - number
@@ -420,7 +420,7 @@ endif
 			 * A similar method, \ref thistype.removeIf, exists, which allows for a condition other than a plain value comparison to be performed on each element in order to determine the elements to be removed.
 			 */
 			public method remove takes $ELEMENTTYPE$ value returns nothing
-				//backwards should be faster
+				// backwards should be faster
 				local integer i = this.m_size - 1
 				loop
 					exitwhen (i < 0)
