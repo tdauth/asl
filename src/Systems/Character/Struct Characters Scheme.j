@@ -16,41 +16,41 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		private AMultiboardBar m_experienceBar
 		private AMultiboardBar m_hitPointsBar
 		private AMultiboardBar m_manaBar
-		
+
 		/**
 		 * \return Returns the player of the row.
 		 */
 		public method player takes nothing returns player
 			return this.m_player
 		endmethod
-		
+
 		public method scheme takes nothing returns ACharactersScheme
 			return this.m_scheme
 		endmethod
-		
+
 		/**
 		 * \return Returns the row's index starting with 0.
 		 */
 		public method row takes nothing returns integer
 			return this.m_row
 		endmethod
-		
+
 		// members
-		
+
 		public method experienceBar takes nothing returns AMultiboardBar
 			return this.m_experienceBar
 		endmethod
-		
+
 		public method hitPointsBar takes nothing returns AMultiboardBar
 			return this.m_hitPointsBar
 		endmethod
-		
+
 		public method manaBar takes nothing returns AMultiboardBar
 			return this.m_manaBar
 		endmethod
-		
+
 		// methods
-		
+
 		/**
 		 * Refreshes the player row. If the character of the player is 0 it automatically destroys the row.
 		 * Otherwise it updates all columns of the row.
@@ -110,7 +110,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 						call this.m_manaBar.refresh.evaluate()
 					endif
 				endif
-				
+
 				if (this.scheme().showGold.evaluate()) then
 					set multiboardItem = MultiboardGetItem(this.scheme().multiboard.evaluate(), row, this.scheme().goldColumn.evaluate())
 					set columnString = I2S(GetPlayerState(this.player(), PLAYER_STATE_RESOURCE_GOLD))
@@ -123,7 +123,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 				call this.destroy()
 			endif
 		endmethod
-		
+
 		/**
 		 * Creates a new row for player \p whichPlayer in the multiboard of \p scheme at row \p row.
 		 * \return Returns the newly created row.
@@ -180,7 +180,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 				// renew OpLimit with .evaluate() since the method call is quite long.
 				set this.m_manaBar = AMultiboardBar.create.evaluate(scheme.multiboard.evaluate(), column, row, scheme.manaLength.evaluate(), 0.0, true)
 			endif
-			
+
 			if (scheme.showGold.evaluate()) then
 				if (scheme.manaLength.evaluate() > 0) then
 					set column = this.m_manaBar.firstFreeField()
@@ -201,10 +201,10 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 				call MultiboardReleaseItem(multiboardItem)
 				set multiboardItem = null
 			endif
-			
+
 			return this
 		endmethod
-		
+
 		/**
 		 * Clears the player row and removes the instance from the player data of the corresponding scheme since it should not be refreshed anymore.
 		 */
@@ -234,7 +234,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			endif
 
 			call this.scheme().removeRow.evaluate(this)
-			
+
 			set this.m_player = null
 		endmethod
 	endstruct
@@ -290,89 +290,89 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		private integer m_goldColumn
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ACharactersScheme\"")
-		
+
 		// construction members
-		
+
 		public method refreshRate takes nothing returns real
 			return this.m_refreshRate
 		endmethod
-		
+
 		public method showPlayerName takes nothing returns boolean
 			return this.m_showPlayerName
 		endmethod
-		
+
 		public method showUnitName takes nothing returns boolean
 			return this.m_showUnitName
 		endmethod
-		
+
 		public method showLevel takes nothing returns boolean
 			return this.m_showLevel
 		endmethod
-		
+
 		public method experienceLength takes nothing returns integer
 			return this.m_experienceLength
 		endmethod
-		
+
 		public method experienceFormula takes nothing returns ACharactersSchemeMaxExperience
 			return this.m_experienceFormula
 		endmethod
-		
+
 		public method hitPointsLength takes nothing returns integer
 			return this.m_hitPointsLength
 		endmethod
-		
+
 		public method manaLength takes nothing returns integer
 			return this.m_manaLength
 		endmethod
-		
+
 		public method showGold takes nothing returns boolean
 			return this.m_showGold
 		endmethod
-		
+
 		public method textTitle takes nothing returns string
 			return this.m_textTitle
 		endmethod
-		
+
 		public method textLevel takes nothing returns string
 			return this.m_textLevel
 		endmethod
-		
+
 		public method textLeftGame takes nothing returns string
 			return this.m_textLeftGame
 		endmethod
-		
+
 		public method iconGold takes nothing returns string
 			return this.m_iconGold
 		endmethod
-		
+
 		// dynamic members
-		
+
 		public method firstColumnWidth takes nothing returns real
 			return this.m_firstColumnWidth
 		endmethod
-		
+
 		public method goldColumWidth takes nothing returns real
 			return this.m_goldColumnWidth
 		endmethod
-		
+
 		// members
-		
+
 		/**
 		 * \return Returns the corresponding multiboard of the scheme.
 		 */
 		public method multiboard takes nothing returns multiboard
 			return this.m_multiboard
 		endmethod
-		
+
 		/**
 		 * \return Returns the column in the multiboard where the gold is shown.
 		 */
 		public method goldColumn takes nothing returns integer
 			return this.m_goldColumn
 		endmethod
-		
+
 		// methods
-		
+
 		/**
 		 * \return Returns the corresponding player data of a character's player.
 		 * Time complexity: O(n)
@@ -389,10 +389,10 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 				call iterator.next()
 			endloop
 			call iterator.destroy()
-			
+
 			return result
 		endmethod
-		
+
 		public method setExperienceBarValueIconForCharacter takes ACharacter character, integer length, string valueIcon returns nothing
 			local PlayerData playerData = this.characterPlayerData(character)
 			if (playerData != 0) then
@@ -494,7 +494,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			endloop
 			call iterator.destroy()
 		endmethod
-		
+
 		public method setBarWidths takes real width returns nothing
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
@@ -506,9 +506,9 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			endloop
 			call iterator.destroy()
 		endmethod
-		
+
 		// internal methods
-		
+
 		public method removeRow takes PlayerData row returns nothing
 			call this.m_playerData.remove(row)
 		endmethod
@@ -536,8 +536,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			return text
 		endmethod
 
-		private static method triggerActionRefresh takes nothing returns nothing
-			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), 0))
+		public method refresh takes nothing returns nothing
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
@@ -547,12 +546,17 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			endloop
 			call iterator.destroy()
 		endmethod
-		
+
+		private static method triggerActionRefresh takes nothing returns nothing
+			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), 0))
+			call this.refresh()
+		endmethod
+
 		/**
 		 * Shows the multiboard to all players and starts refreshing it.
 		 */
 		public method show takes nothing returns nothing
-			call this.triggerActionRefresh()
+			call this.refresh()
 			call EnableTrigger(this.m_refreshTrigger)
 			call MultiboardDisplay(this.m_multiboard, true)
 		endmethod
@@ -577,7 +581,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 		public method hideForPlayer takes player user returns nothing
 			call ShowMultiboardForPlayer(user, this.m_multiboard, false)
 		endmethod
-		
+
 		private method createRefreshTrigger takes nothing returns nothing
 			set this.m_refreshTrigger = CreateTrigger()
 			call AHashTable.global().setHandleInteger(this.m_refreshTrigger, 0, this)
@@ -611,7 +615,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 				set i = i + 1
 			endloop
 		endmethod
-		
+
 		/**
 		 * Call this method before you use this struct!
 		 * Call this after a trigger sleep action, multiboard is created!
@@ -657,10 +661,10 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			set this.m_playerData = AIntegerList.create()
 			call this.createRefreshTrigger()
 			call this.createMultiboard()
-			
+
 			return this
 		endmethod
-		
+
 		private method destroyRefreshTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_refreshTrigger)
 			set this.m_refreshTrigger = null
@@ -670,7 +674,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			call DestroyMultiboard(this.m_multiboard)
 			set this.m_multiboard = null
 		endmethod
-		
+
 		public method onDestroy takes nothing returns nothing
 			loop
 				exitwhen (this.m_playerData.empty())
