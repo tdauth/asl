@@ -199,6 +199,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		/**
 		 * Reimplement this method to use your custom condition or
 		 * define a custom function by using method \ref thistype.setStateCondition.
+		 * Called via .evaluate().
 		 */
 		public stub method onStateCondition takes integer state returns boolean
 			if (this.m_stateCondition[state] != 0 and not this.m_stateCondition[state].evaluate(this)) then
@@ -210,6 +211,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		/**
 		 * Reimplement this method to use your custom action or
 		 * define a custom function by using method \ref thistype.setStateAction.
+		 * Called via .execute().
 		 */
 		public stub method onStateAction takes integer state returns nothing
 			if (this.m_stateAction[state] != 0) then
@@ -270,7 +272,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 						call DisableTrigger(this.m_stateTrigger[thistype.stateFailed])
 					endif
 				endif
-				call this.onStateAction(state)
+				call this.onStateAction.execute(state)
 			endif
 		endmethod
 
@@ -365,7 +367,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		public method pingY takes nothing returns real
 			return this.m_pingY
 		endmethod
-		
+
 		public method setPingRect takes rect whichRect returns nothing
 			call this.setPingX(GetRectCenterX(whichRect))
 			call this.setPingY(GetRectCenterY(whichRect))
