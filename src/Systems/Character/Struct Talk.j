@@ -1,4 +1,4 @@
-library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector, ALibraryCoreInterfaceMisc, ALibraryCoreMathsHandle, AStructSystemsCharacterCharacter, AStructSystemsWorldRoutine
+library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector, ALibraryCoreInterfaceMisc, ALibraryCoreMathsHandle, AStructSystemsCharacterCharacter
 
 	/// \todo Should be a part of \ref ATalk, vJass bug.
 	function interface ATalkStartAction takes ATalk talk, ACharacter character returns nothing
@@ -166,7 +166,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		public method startAction takes nothing returns ATalkStartAction
 			return this.m_startAction
 		endmethod
-		
+
 		/**
 		 * Sets the text which shows up when \ref addExitButton() is called.
 		 * \param textExit The text of the exit button.
@@ -174,14 +174,14 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		public method setTextExit takes string textExit returns nothing
 			set this.m_textExit = textExit
 		endmethod
-		
+
 		/**
 		 * \return Returns the text which shows up in an exit button.
 		 */
 		public method textExit takes nothing returns string
 			return this.m_textExit
 		endmethod
-		
+
 		/**
 		 * Sets the text which shows up when \ref addBackButton() is used.
 		 * \param textBack The text of the back button.
@@ -189,14 +189,14 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		public method setTextBack takes string textBack returns nothing
 			set this.m_textBack = textBack
 		endmethod
-		
+
 		/**
 		 * \return Returns the text which shows up in a back button.
 		 */
 		public method textBack takes nothing returns string
 			return this.m_textBack
 		endmethod
-		
+
 		/**
 		 * Sets the name of the NPC to \p name. The name is shown as title in the dialog.
 		 * This can be useful if the name differs from the unit's name (for example if it is a hero).
@@ -205,7 +205,7 @@ library AStructSystemsCharacterTalk requires ALibraryCoreDebugMisc, AStructCoreG
 		public method setName takes string name returns nothing
 			set this.m_name = name
 		endmethod
-		
+
 		public method name takes nothing returns string
 			return this.m_name
 		endmethod
@@ -378,7 +378,7 @@ endif
 		public method addBackToStartPageButton takes nothing returns AInfo
 			return AInfo.create.evaluate(this, true, false, 0, thistype.infoActionBackToStartPage, this.textBack())
 		endmethod
-		
+
 		/**
 		 * \param whichPlayer Should be the owner of any character.
 		 * \sa infoHasBeenShown()
@@ -411,10 +411,25 @@ endif
 		endmethod
 
 		/**
+		 * This method is called after opening the talk for \p character.
+		 * The character is alreay in \ref characters().
+		 * It is called by .evaluate().
+		 */
+		public stub method onOpenForCharacter takes ACharacter character returns nothing
+		endmethod
+
+		/**
+		 * This method is called after closing everything for \p character and removing the character from \ref characters().
+		 * It is called by .evaluate().
+		 */
+		public stub method onCloseForCharacter takes ACharacter character returns nothing
+		endmethod
+
+		/**
 		 * Opens the talks initial dialog by running its start action for owner of \p character.
 		 * Both, the NPC and the character are paused and do face each other.
 		 * The owner's dialog is cleared automatically and its title is set to the name of the NPC.
-		 * 
+		 *
 		 * \note Usually you don't have to call this method since talks will be activated by a specific unit order.
 		 */
 		public method openForCharacter takes ACharacter character returns nothing
@@ -423,12 +438,9 @@ endif
 			debug endif
 			// is the first talking character
 			if (this.m_characters.isEmpty()) then
-				// stopping the routines prevents the NPC from walking away.
-				call IssueImmediateOrder(this.unit(), "stop") // stop the unit if it is currently moving in routine
-				call AUnitRoutine.disableAll(this.m_unit)
-				// don't pause, otherwise the NPC cannot sell anything
+				call IssueImmediateOrder(this.unit(), "stop") // stop the unit if it is currently moving from whatever like a daily routine
 			endif
-			
+
 			call this.m_characters.pushBack(character)
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(character.player(), true)
@@ -437,22 +449,22 @@ endif
 				call character.talk().close.evaluate(character)
 				debug call this.print("Character " + I2S(character) + " has already a talk which is now closed.")
 			endif
-			
+
 			call character.setTalk(this)
 			call character.setMovable(false)
 			if (this.effectPath() != null) then
-				set this.m_characterEffects[GetPlayerId(character.player())] = AddSpecialEffectTarget(this.effectPath(), character.unit(), "overhead") 
+				set this.m_characterEffects[GetPlayerId(character.player())] = AddSpecialEffectTarget(this.effectPath(), character.unit(), "overhead")
 			endif
-			
+
 			call SetUnitFacing(character.unit(), GetAngleBetweenUnits(character.unit(), this.m_unit))
 			call SetUnitFacing(this.m_unit, GetAngleBetweenUnits(this.m_unit, character.unit()))
 			call ResetUnitAnimation(this.m_unit) // make sure he stops routines etc.
 			call SetUnitLookAt(character.unit(), "bone_head", this.m_unit, 0.0, 0.0, GetUnitFlyHeight(this.m_unit) + 90.0)
 			call SetUnitLookAt(this.m_unit, "bone_head", character.unit(), 0.0, 0.0, GetUnitFlyHeight(character.unit()) + 90.0)
-			
+
 			// make sure the other is visible to the character during the talk
 			call UnitShareVision(this.m_unit, character.player(), true)
-			
+
 			if (this.useThirdPerson(character)) then
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamAoa()
 				call AThirdPersonCamera.playerThirdPersonCamera(character.player()).resetCamRot()
@@ -462,6 +474,7 @@ endif
 			call AGui.playerGui(character.player()).dialog().clear()
 			call AGui.playerGui(character.player()).dialog().setMessage(this.m_name)
 			call this.showStartPage(character) // create buttons
+			call this.onOpenForCharacter.evaluate(character)
 		endmethod
 
 		/**
@@ -477,10 +490,10 @@ endif
 			call AGui.playerGui(character.player()).dialog().clear()
 			call ResetUnitLookAt(character.unit())
 			call ResetUnitLookAt(this.m_unit)
-			
+
 			// talk partner was visible during the talk
 			call UnitShareVision(this.m_unit, character.player(), false)
-			
+
 			if (this.hideUserInterface()) then
 				call this.hideUserInterfaceForPlayer(character.player(), false)
 			endif
@@ -497,15 +510,7 @@ endif
 				call DestroyEffect(this.m_characterEffects[GetPlayerId(character.player())])
 				set this.m_characterEffects[GetPlayerId(character.player())] = null
 			endif
-			/*
-			 * When there is no character left to talk to the NPC can go on working on anything.
-			 */
-			if (this.m_characters.empty()) then
-				// stopping the routines prevents the NPC from walking away.
-				call AUnitRoutine.enableAll(this.m_unit)
-				// don't pause, otherwise the NPC cannot sell anything
-				//call PauseUnit(this.m_unit, false) // Enables routines or something else
-			endif
+			call this.onCloseForCharacter(character)
 		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
@@ -655,7 +660,7 @@ endif
 			if (this.hasEffect()) then
 				if (this.isEnabled()) then
 					set this.m_effect = AddSpecialEffectTarget(this.effectPath(), this.unit(), "overhead")
-					
+
 					set i = 0
 					loop
 						exitwhen (i == bj_MAX_PLAYERS)
@@ -783,7 +788,7 @@ endif
 			endloop
 			call this.m_infos.destroy()
 		endmethod
-		
+
 		/**
 		 * Closes the talk for all characters which still have it open.
 		 */
