@@ -36,9 +36,11 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 
 		public method show takes unit whichUnit returns nothing
 			if (this.isShown(whichUnit)) then
+				debug call Print("is shown ability: " + GetObjectName(this.spellbookAbilityId()))
 				return
 			endif
 
+			debug call Print("Show ability: " + GetObjectName(this.spellbookAbilityId()))
 			call UnitAddAbility(whichUnit, this.spellbookAbilityId())
 			call SetPlayerAbilityAvailable(GetOwningPlayer(whichUnit), this.spellbookAbilityId(), false)
 			call SetUnitAbilityLevel(whichUnit, this.abilityId(), 1)
@@ -63,7 +65,11 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 
 		private static method triggerConditionAction takes nothing returns boolean
 			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), 0))
-			return this.onCheck.evaluate()
+			if (GetSpellAbilityId() == this.abilityId()) then
+				return this.onCheck.evaluate()
+			endif
+
+			return false
 		endmethod
 
 		private static method triggerActionAction takes nothing returns nothing
@@ -77,7 +83,7 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			set this.m_abilityId = abilityId
 			set this.m_spellbookAbilityId = spellbookAbilityId
 			set this.m_actionTrigger = CreateTrigger()
-			call TriggerRegisterAnyUnitEventBJ(this.m_actionTrigger, EVENT_PLAYER_UNIT_SPELL_ENDCAST)
+			call TriggerRegisterAnyUnitEventBJ(this.m_actionTrigger, EVENT_PLAYER_UNIT_SPELL_CHANNEL)
 			call TriggerAddCondition(this.m_actionTrigger, Condition(function thistype.triggerConditionAction))
 			call TriggerAddAction(this.m_actionTrigger, function thistype.triggerActionAction)
 			call AHashTable.global().setHandleInteger(this.m_actionTrigger, 0, this)
@@ -159,13 +165,17 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			endloop
 			call this.m_shownEntries.clear()
 
+			debug call Print("Show entries: " + I2S(maxEntries))
 			loop
 				exitwhen (i == maxEntries)
-				set entry = AMultipageSpellbookAction(this.m_shownEntries[i])
+				set entry = AMultipageSpellbookAction(this.m_entries[i])
 				call entry.show(this.unit())
 				call this.m_shownEntries.pushBack(entry)
 				set i = i + 1
 			endloop
+
+			call this.m_nextPageAction.show(this.unit())
+			call this.m_previousPageAction.show(this.unit())
 		endmethod
 
 		public method setCurrentPage takes integer page returns nothing
@@ -200,6 +210,7 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 		 */
 		public method addEntry takes AMultipageSpellbookAction entry returns integer
 			call this.m_entries.pushBack(entry)
+			call this.updateUi()
 
 			return this.m_entries.backIndex()
 		endmethod
@@ -217,9 +228,7 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			set this.m_entries = AIntegerVector.create()
 			set this.m_shownEntries = AIntegerVector.create()
 			set this.m_nextPageAction = AMultipageSpellbookActionNextPage.create(this, nextPageAbility, nextPageSpellbookAbility)
-			call this.m_nextPageAction.show(whichUnit)
 			set this.m_previousPageAction = AMultipageSpellbookActionPreviousPage.create(this, previousPageAbility, previousPageSpellbookAbility)
-			call this.m_previousPageAction.show(whichUnit)
 			return this
 		endmethod
 
