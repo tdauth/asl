@@ -432,7 +432,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			 * \param value Value of the elements to be removed.
 			 */
 			public method remove takes $ELEMENTTYPE$ value returns nothing
-				local $NAME$Iterator iterator
+				local $NAME$Iterator iterator = 0
 				loop
 					set iterator = this.find(value)
 					exitwhen (iterator == 0)
@@ -558,6 +558,20 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 				return iterator
 			endmethod
 
+			/**
+			 * Calls user-defined function \p unaryFunction for each element.
+			 * Function \p unaryFunction is called like this: call unaryFunction.evaluate(x) where x is the current element of iteration.
+			 */
+			public method forEach takes $NAME$UnaryFunction unaryFunction returns nothing
+				local $NAME$Iterator iterator = this.begin()
+				loop
+					exitwhen (not iterator.isValid())
+					call unaryFunction.evaluate(iterator.data())
+					call iterator.next()
+				endloop
+				call iterator.destroy()
+			endmethod
+
 			public method operator< takes thistype other returns boolean
 				debug if (this == other) then
 					debug call BJDebugMsg("Same list.")
@@ -617,5 +631,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 	//! runtextmacro A_LIST("", "ARegionList", "region", "null", "150000", "150000", "150000")
 	//! runtextmacro A_LIST("", "AUnitList", "unit", "null", "150000", "150000", "150000")
 	//! runtextmacro A_LIST("", "AItemList", "item", "null", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "ATextTagList", "texttag", "null", "150000", "150000", "150000")
+	//! runtextmacro A_LIST("", "ASoundList", "sound", "null", "150000", "150000", "150000")
 
 endlibrary

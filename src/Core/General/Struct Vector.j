@@ -63,10 +63,10 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 				if (this.m_index == -1) then
 					return
 				endif
-				
+
 				if (not this.hasNext()) then
 					set this.m_index = -1
-					
+
 					return
 				endif
 
@@ -78,10 +78,10 @@ library AStructCoreGeneralVector requires AInterfaceCoreGeneralContainer, option
 				if (this.m_index == -1) then
 					return
 				endif
-				
+
 				if (not this.hasPrevious()) then
 					set this.m_index = -1
-					
+
 					return
 				endif
 
@@ -224,7 +224,7 @@ endif
 				local integer i = this.m_size - 1
 				local integer firstExitValue = position + number - 1
 				local integer secondExitValue = position + number
-				
+
 				debug call this.debugCheckPositionAndNumber.evaluate("insertNumber", position, number)
 				debug if (this.m_size + number > thistype.maxSize.evaluate()) then
 					debug call Print("Size would be too high: " + I2S(this.m_size + number) + ". Maximum size is: " + I2S(thistype.maxSize.evaluate()) + ".")
@@ -718,7 +718,7 @@ endif
 
 			/**
 			 * Calls user-defined function \p unaryFunction for each element in range beginning at position \p position and ending at position \p position + \p number - 1.
-			 *  Function \p unaryFunction is called like this: call unaryFunction.execute(x) where x is the current element of iteration.
+			 *  Function \p unaryFunction is called like this: call unaryFunction.evaluate(x) where x is the current element of iteration.
 			 */
 			public method forEachNumber takes integer position, integer number, $NAME$UnaryFunction unaryFunction returns nothing
 				local integer i = position
@@ -728,7 +728,7 @@ endif
 				debug endif
 				loop
 					exitwhen (i == exitValue)
-					call unaryFunction.execute(this.m_element[i])
+					call unaryFunction.evaluate(this.m_element[i])
 					set i = i + 1
 				endloop
 			endmethod
