@@ -17,7 +17,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method removeUnitType takes integer unitTypeId returns nothing
 			call UnitPoolRemoveUnitType(this.m_unitPool, unitTypeId)
 		endmethod
-		
+
 		/**
 		 * \return Returns the number of item pools.
 		 */
@@ -35,7 +35,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				debug call Print("Wrong index for adding item type: " + I2S(index))
 			endif
 		endmethod
-		
+
 		public method addNewItemType takes integer itemTypeId, real weight returns integer
 			local integer index = this.itemPoolsCount()
 			call this.addItemType(index, itemTypeId, weight)
@@ -87,7 +87,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			call UpdateStockAvailability(result)
 			return result
 		endmethod
-		
+
 		/**
 		 * Places all items from all item pools of the member.
 		 */
@@ -138,7 +138,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 	 * Item pools are supported as well and their items will be placed on the creeps deaths.
 	 * The items then could be distributed equally to players setting a player as the owner of the dropped item.
 	 * This can prevent players from collecting all items and leaving other players with no items.
-	 * 
+	 *
 	 * \sa AItemSpawnPoint
 	 */
 	struct ASpawnPoint extends ASpawnPointInterface
@@ -158,40 +158,40 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		private timer m_spawnTimer
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ASpawnPoint\"")
-		
+
 		/**
 		 * \param time Time which has to elapse before the units respawn.
 		 */
 		public method setTime takes real time returns nothing
 			set this.m_time = time
 		endmethod
-		
+
 		public method time takes nothing returns real
 			return this.m_time
 		endmethod
-		
+
 		/**
 		 * \param effectFilePath File fath of the effect which is shown when the units respawn. If this value is null there won't be shown any effect.
 		 */
 		public method setEffectFilePath takes string effectFilePath returns nothing
 			set this.m_effectFilePath = effectFilePath
 		endmethod
-		
+
 		public method effectFilePath takes nothing returns string
 			return this.m_effectFilePath
 		endmethod
-		
+
 		/**
 		 * \param soundFilePath File path of the sound which is played when the units respawn. If this value is null there won't be played any sound.
 		 */
 		public method setSoundFilePath takes string soundFilePath returns nothing
 			set this.m_soundFilePath = soundFilePath
 		endmethod
-	
+
 		public method soundFilePath takes nothing returns string
 			return this.m_soundFilePath
 		endmethod
-		
+
 		/**
 		 * If this value is set to true all dropped items will be distributed between the players equally.
 		 * Only human players are considered as owners.
@@ -200,22 +200,22 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method setDistributeItems takes boolean distributeItems returns nothing
 			set this.m_distributeItems = distributeItems
 		endmethod
-		
+
 		public method distributeItems takes nothing returns boolean
 			return this.m_distributeItems
 		endmethod
-		
+
 		/**
 		  * \param owner The player who owns all spawn point units.
 		  */
 		public method setOwner takes player owner returns nothing
 			set this.m_owner = owner
 		endmethod
-		
+
 		public method owner takes nothing returns player
 			return this.m_owner
 		endmethod
-		
+
 		/**
 		 * This text is displayed to all human players when distributing a dropped item.
 		 * It gets two arguments: The item name and the player name of the player who got the item.
@@ -223,19 +223,19 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method setTextDistributeItem takes string textDistributeItems returns nothing
 			set this.m_textDistributeItem = textDistributeItems
 		endmethod
-		
+
 		public method textDistributeItem takes nothing returns string
 			return this.m_textDistributeItem
 		endmethod
-		
+
 		public static method spawnPointMember takes unit whichUnit returns ASpawnPointMember
 			return ASpawnPointMember(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_SPAWNPOINTMEMBER))
 		endmethod
-		
+
 		public static method setSpawnPointMember takes unit whichUnit, ASpawnPointMember member returns nothing
 			call AHashTable.global().setHandleInteger(whichUnit, A_HASHTABLE_KEY_SPAWNPOINTMEMBER, member)
 		endmethod
-		
+
 		public static method clearSpawnPointMember takes unit whichUnit returns nothing
 			call AHashTable.global().removeHandleInteger(whichUnit, A_HASHTABLE_KEY_SPAWNPOINTMEMBER)
 		endmethod
@@ -253,7 +253,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		// methods
-		
+
 		public method countMembers takes nothing returns integer
 			return this.m_members.size()
 		endmethod
@@ -275,7 +275,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method removeUnitType takes integer memberIndex, integer unitTypeId returns nothing
 			call ASpawnPointMember(this.m_members[memberIndex]).removeUnitType(unitTypeId)
 		endmethod
-		
+
 		public method addItemType takes integer memberIndex, integer itemPoolIndex, integer itemTypeId, real weight returns nothing
 			call ASpawnPointMember(this.m_members[memberIndex]).addItemType(itemPoolIndex, itemTypeId, weight)
 		endmethod
@@ -370,7 +370,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endloop
 			return null
 		endmethod
-		
+
 		public method kill takes nothing returns nothing
 			loop
 				exitwhen (this.m_group.units().isEmpty())
@@ -384,7 +384,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method contains takes unit whichUnit returns boolean
 			return this.m_group.units().contains(whichUnit)
 		endmethod
-		
+
 		/**
 		 * Note that after unit \p whichUnit has died there will be spawned a new RANDOM unit from unit pool.
 		 * \param weight Weight of added unit type. This value has no effects if \p addType is false.
@@ -450,14 +450,30 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			call this.pause()
 		endmethod
 
+		/**
+		 * \return Returns true if the whole group is dead.
+		 */
+		public method isDead takes nothing returns boolean
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_group.units().size())
+				if (not IsUnitDeadBJ(this.m_group.units()[i])) then
+					return false
+				endif
+				set i = i + 1
+			endloop
+			return true
+		endmethod
+
 		public method spawn takes nothing returns boolean
 			local integer i
 			local effect whichEffect
 			local unit whichUnit
-			if (not this.m_group.units().empty()) then
+			if (not this.isDead()) then
 				debug call this.print("Warning: Unit group is not dead yet.")
 				return false
 			endif
+			call this.m_group.units().clear() // clear dead members
 			set i = 0
 			loop
 				exitwhen (i == this.m_members.size())
@@ -481,7 +497,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			endloop
 			return true
 		endmethod
-		
+
 		/**
 		 * This returns a new item owner using a uniform distribution.
 		 * It considers ownly playing users.
@@ -569,8 +585,8 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
 			local ASpawnPointMember member = thistype.spawnPointMember(triggerUnit)
 			call this.dropItem(triggerUnit, member, GetUnitX(triggerUnit), GetUnitY(triggerUnit)) // drop before removing member
-			call this.removeUnit(triggerUnit)
-			if (this.m_group.units().empty()) then
+			// NOTE dont remove the unit from the group. Some triggers might rely on the fact that the unit is part of the spawn point
+			if (this.isDead()) then
 				call this.startTimer()
 			endif
 			set triggeringTrigger = null
@@ -607,7 +623,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			set this.m_spawnTimer = null
 
 			call this.createDeathTrigger()
-	
+
 			return this
 		endmethod
 
