@@ -73,7 +73,6 @@ library AStructCoreDebugUnitTest requires AStructCoreGeneralVector, ALibraryCore
 	 * Each unit test can be run using \ref A_TEST_RUN and its given name as parameter. In the example above we declared the function "myTestFunction" which runs our unit test. This function could be called on any event.
 	 * \ref A_TEST_PRINT prints all test cases with error counts and messages.
 	 */
-
 	struct ATestCase
 		private AStringVector m_errors
 		private string m_name

@@ -10,11 +10,9 @@ library ALibraryCoreEnvironmentSound
 	 * \sa PlaySoundFileForPlayer()
 	 */
 	function PlaySoundForPlayer takes player whichPlayer, sound whichSound returns nothing
-		local player localPlayer = GetLocalPlayer()
-		if (whichPlayer == localPlayer) then
+		if (GetLocalPlayer() == whichPlayer) then
 			call StartSound(whichSound)
 		endif
-		set localPlayer = null
 	endfunction
 
 	/**
