@@ -1,5 +1,11 @@
 2011-11-24 Tamino Dauth <tamino@cdauth.eu>
 * 1.3 preparings:
+* DONE: Drop RtC support and japi completely. Is untested anyway.
+* DONE: Use GPLv2.
+* Test AMultipageSpellbook.
+* Fix ACharactersScheme.
+* ALibraryCoreEnvironmentSound is in Environment but Music is in Interface.
+* Add function StopSoundForPlayer and use it in TPoF.
 * Character/world systems: Replace all init() methods by dynamic members!
 * There is lots of erase() calls for AVector instances which might perform really really bad. Use AList instead! But only for the cases where really often something is erased.
 * FIXED: AHashTable with StringHash() functions is not necessarily safe. StringHash() might collide with another hash. Besides it is very slow. Remove methods with StringHash(). Replace everything by integer keys.
