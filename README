@@ -2,7 +2,7 @@ This is a huge collection of JASS and vJass scripts which is called "Advanced Sc
 It contains some useful systems which can be used for creating custom Warcraft III: The Frozen Throne projects.
 
 GIT repository:
-git://wc3lib.org/asl.git 
+git://wc3lib.org/asl.git
 
 Help me to find bugs and give me suggestions using my email:
 tamino at cdauth.eu
@@ -31,12 +31,9 @@ write a simple statement like //! import "Import Asl.j" into your own code or ma
 
 The following list shows you which global constants have to be specified in your custom code that ASL works properly:
 globals
-	constant boolean A_RTC = false
-	constant boolean A_JAPI = false
 	constant boolean A_SYSTEMS = true
 	constant boolean A_DEBUG_HANDLES = false // not usable yet!
 	constant boolean A_DEBUG_NATIVES = false
-	constant boolean A_FPS_MOVEMENT = false // not usable yet!
 	constant real A_MAX_COLLISION_SIZE = 500.0 // used by function GetUnitCollisionSize
 	constant integer A_MAX_COLLISION_SIZE_ITERATIONS = 10 // used by function GetUnitCollisionSize
 	constant integer A_SPELL_RESISTANCE_CREEP_LEVEL = 6 // used by function IsUnitSpellResistant
