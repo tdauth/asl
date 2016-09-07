@@ -2,8 +2,6 @@ library AStructCoreGeneralAsl requires optional ALibraryCoreDebugMisc, ALibraryC
 
 	struct Asl
 		public static constant string version = "1.3"
-		public static constant string rtcVersion = "1.0"
-		public static constant string japiVersion = "1.0"
 		public static constant string maintainer = "Tamino Dauth"
 		public static constant string website = "http://wc3lib.org/vjass.html"
 
@@ -22,14 +20,6 @@ endif
 
 		// static constant members
 
-		public static constant method useRtc takes nothing returns boolean
-			return A_RTC
-		endmethod
-
-		public static constant method useJapi takes nothing returns boolean
-			return A_JAPI
-		endmethod
-
 		public static constant method useDebugHandles takes nothing returns boolean
 			return A_DEBUG_HANDLES
 		endmethod
@@ -42,12 +32,6 @@ static if (DEBUG_MODE) then
 			call Print(StringArg(tr("Version: %s"), thistype.version))
 			call Print(StringArg(tr("Maintainer: %s"), thistype.maintainer))
 			call Print(StringArg(tr("Website: %s"), thistype.website))
-			if (thistype.useRtc()) then
-				call Print(StringArg(tr("* uses RtC %s"), thistype.rtcVersion))
-			endif
-			if (thistype.useJapi()) then
-				call Print(StringArg(tr("* uses jAPI %s"), thistype.japiVersion))
-			endif
 			if (thistype.useDebugHandles()) then
 				call Print(tr("* uses debug handles"))
 			endif

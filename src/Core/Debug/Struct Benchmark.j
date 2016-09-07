@@ -15,8 +15,6 @@ library AStructCoreDebugBenchmark requires AStructCoreGeneralAsl, AStructCoreGen
 	 * \todo Debugging handles doesn't work for handles which are created during map initialization since \ref thistype.onInit() and \ref thistype.init() are called later.
 	 */
 	struct ABenchmark
-		/// \todo static ifs do not support or expressions, vJass bug.
-		private static constant boolean workaround = (A_JAPI or A_RTC)
 		// static members
 		private static AIntegerVector m_benchmarks
 static if (A_DEBUG_HANDLES) then
@@ -31,11 +29,7 @@ endif
 		// members
 		private boolean m_isRunning
 		private real m_time
-static if workaround then
-		private integer m_stopWatch
-else
 		private timer m_timer
-endif
 		private integer m_index
 
 		// dynamic members
@@ -68,11 +62,7 @@ endif
 				set this.m_isRunning = true
 			endif
 			set this.m_time = 0.0
-static if workaround then
-			set this.m_stopWatch = StopWatchCreate()
-else
 			call TimerStart(this.m_timer, 99999.0, false, null)
-endif
 		endmethod
 
 		public method stop takes nothing returns nothing
@@ -80,14 +70,8 @@ endif
 				return
 			endif
 			set this.m_isRunning = false
-static if workaround then
-			set this.m_time = 1000 * StopWatchMark(this.m_stopWatch)
-			call StopWatchDestroy(this.m_stopWatch)
-			set this.m_stopWatch = -1
-else
 			set this.m_time = TimerGetElapsed(this.m_timer)
 			call PauseTimer(this.m_timer)
-endif
 		endmethod
 
 		public method show takes nothing returns nothing
