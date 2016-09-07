@@ -320,6 +320,11 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			call this.m_group.units().pushBack(whichUnit)
 		endmethod
 
+		public method setUnit takes unit whichUnit, integer memberIndex returns nothing
+			call thistype.setSpawnPointMember(whichUnit, this.m_members[memberIndex])
+			set this.m_group.units()[memberIndex] = whichUnit
+		endmethod
+
 		/**
 		* Note that this only works before the group was respawned first time since respawning
 		* units means that the old ones will be removed from game (not like hero revivals).
@@ -473,7 +478,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				debug call this.print("Warning: Unit group is not dead yet.")
 				return false
 			endif
-			call this.m_group.units().clear() // clear dead members
+			call this.clearUnits() // clear dead members
 			set i = 0
 			loop
 				exitwhen (i == this.m_members.size())
@@ -496,6 +501,35 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				set i = i + 1
 			endloop
 			return true
+		endmethod
+
+		public method spawnDeadOnly takes nothing returns nothing
+			local unit whichUnit = null
+			local effect whichEffect = null
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_members.size())
+				if (IsUnitDeadBJ(this.m_group.units()[i])) then
+					set whichUnit = ASpawnPointMember(this.m_members[i]).placeUnit(this.owner())
+
+					if (whichUnit != null) then
+						call this.clearSpawnPointMember(this.m_group.units()[i])
+						call this.setUnit(whichUnit, i)
+						// need global, faster?
+						if (this.effectFilePath() != null) then
+							set whichEffect = AddSpecialEffect(this.effectFilePath(), GetUnitX(whichUnit), GetUnitY(whichUnit))
+							call DestroyEffect(whichEffect)
+							set whichEffect = null
+						endif
+						if (this.soundFilePath() != null) then
+							call PlaySoundFileAt(this.soundFilePath(), GetUnitX(whichUnit), GetUnitY(whichUnit), GetUnitZ(whichUnit))
+						endif
+					debug else
+						debug call this.print("Warning: Couldn't place unit.")
+					endif
+				endif
+				set i = i + 1
+			endloop
 		endmethod
 
 		/**
