@@ -80,11 +80,6 @@ If you're using a huge amount of code (like me) I recommend dropping "pjass" usa
 by JassParser (http://www.wc3c.net/showthread.php?t=105235) since there is a memory exhausted bug in
 "pjass" (http://www.wc3c.net/showpost.php?p=1115263&postcount=154).
 
--- jAPI and RtC support:
-ASL supports "japi" (http://www.wc3c.net/showthread.php?t=79652) and "RtC" (http://www.wc3c.net/showthread.php?t=109255). Just set global constants A_JAPI or A_RTC to value true.
-If you set global constant A_FPS_MOVEMENT to value true (which needs A_RTC set to be true, as well) the character movement system
-should be usable by mouse keys.
-
 -- BonusMod support:
 For using Bonus Mod you have to make an entry in the "jasshelper.conf" file for the object merger tool.
 It should always be named "ObjectMerger".
