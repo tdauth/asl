@@ -124,6 +124,7 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 		 * Stores instances of \ref AMultipageSpellbookAction.
 		 */
 		private AIntegerVector m_entries
+		private string m_shortcut
 		private AIntegerVector m_shownEntries
 		private AMultipageSpellbookActionNextPage m_nextPageAction
 		private AMultipageSpellbookActionPreviousPage m_previousPageAction
@@ -178,13 +179,17 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			call this.m_previousPageAction.show(this.unit())
 		endmethod
 
-		public method setCurrentPage takes integer page returns nothing
-			set this.m_currentPage = page
-			call this.updateUi()
-		endmethod
-
 		public method currentPage takes nothing returns integer
 			return this.m_currentPage
+		endmethod
+		
+		public method setCurrentPage takes integer page returns nothing
+			if (this.currentPage() == page) then
+				return
+			endif
+
+			set this.m_currentPage = page
+			call this.updateUi()
 		endmethod
 
 		public method nextPage takes nothing returns nothing
@@ -193,6 +198,10 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			else
 				call this.setCurrentPage(this.currentPage() + 1)
 			endif
+
+			if (GetTriggerPlayer() != null and this.m_shortcut != null) then
+				call ForceUIKeyBJ(GetTriggerPlayer(), this.m_shortcut) // WORKAROUND: whenever an ability is being removed it closes grimoire
+			endif
 		endmethod
 
 		public method previousPage takes nothing returns nothing
@@ -200,6 +209,10 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 				call this.setCurrentPage(this.maxPages() - 1)
 			else
 				call this.setCurrentPage(this.currentPage() - 1)
+			endif
+
+			if (GetTriggerPlayer() != null and this.m_shortcut != null) then
+				call ForceUIKeyBJ(GetTriggerPlayer(), this.m_shortcut) // WORKAROUND: whenever an ability is being removed it closes grimoire
 			endif
 		endmethod
 
@@ -220,12 +233,21 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			call this.m_entries.erase(index)
 		endmethod
 
+		public method setShortcut takes string shortcut returns nothing
+			set this.m_shortcut = shortcut
+		endmethod
+
+		public method shortcut takes nothing returns string
+			return this.m_shortcut
+		endmethod
+
 		public static method create takes unit whichUnit, integer nextPageAbility, integer nextPageSpellbookAbility, integer previousPageAbility, integer previousPageSpellbookAbility returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_unit = whichUnit
 			set this.m_entriesPerPage = 8
 			set this.m_currentPage = 0
 			set this.m_entries = AIntegerVector.create()
+			set this.m_shortcut = null
 			set this.m_shownEntries = AIntegerVector.create()
 			set this.m_nextPageAction = AMultipageSpellbookActionNextPage.create(this, nextPageAbility, nextPageSpellbookAbility)
 			set this.m_previousPageAction = AMultipageSpellbookActionPreviousPage.create(this, previousPageAbility, previousPageSpellbookAbility)
