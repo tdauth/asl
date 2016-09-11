@@ -22,7 +22,7 @@ static if (A_DEBUG_HANDLES) then
 		private static AUnitVector m_units = 0
 		private static AItemVector m_items = 0
 		private static ADestructableVector m_destructables = 0
-		private static AHashTable m_timers = 0
+		private static AHandleVector m_timers = 0
 endif
 		// dynamic members
 		private string m_identifier
@@ -85,11 +85,7 @@ endif
 			// members
 			set this.m_isRunning = false
 			set this.m_time = 0
-static if workaround then
-			set this.m_stopWatch = -1 //0?
-else
 			set this.m_timer = CreateTimer()
-endif
 			// static members
 			call thistype.m_benchmarks.pushBack(this)
 			set this.m_index = thistype.m_benchmarks.backIndex()
@@ -100,14 +96,8 @@ endif
 			// static members
 			call thistype.m_benchmarks.erase(this.m_index)
 			// members
-static if workaround then
-			if (this.m_stopWatch != -1) then
-				call StopWatchDestroy(this.m_stopWatch)
-			endif
-else
 			call DestroyTimer(this.m_timer)
 			set this.m_timer = null
-endif
 		endmethod
 
 		public static method init takes nothing returns nothing
@@ -118,6 +108,7 @@ static if (A_DEBUG_HANDLES) then
 			set thistype.m_units = AUnitVector.create()
 			set thistype.m_items = AItemVector.create()
 			set thistype.m_destructables = ADestructableVector.create()
+			set thistype.m_timers = AHandleVector.create()
 endif
 		endmethod
 
@@ -132,6 +123,7 @@ static if (A_DEBUG_HANDLES) then
 			call thistype.m_units.destroy()
 			call thistype.m_items.destroy()
 			call thistype.m_destructables.destroy()
+			call thistype.m_timers.destroy()
 endif
 		endmethod
 
@@ -174,6 +166,16 @@ static if (A_DEBUG_HANDLES) then
 			endloop
 			debug call Print("Total count: " + I2S(thistype.m_destructables.size()) + ".")
 		endmethod
+
+		public static method showTimers takes nothing returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.m_timers.size())
+				//debug call Print(GetDestructableName(thistype.m_destructables[i]))
+				set i = i + 1
+			endloop
+			debug call Print("Total count: " + I2S(thistype.m_timers.size()) + ".")
+		endmethod
 endif
 
 		public static method showAll takes nothing returns nothing
@@ -182,6 +184,7 @@ static if (A_DEBUG_HANDLES) then
 			call thistype.showUnits()
 			call thistype.showItems()
 			call thistype.showDestructables()
+			call thistype.showTimers()
 endif
 		endmethod
 
@@ -218,8 +221,12 @@ static if (A_DEBUG_HANDLES) then
 			return thistype.m_destructables
 		endmethod
 
+		public static method timers takes nothing returns AHandleVector
+			return thistype.m_timers
+		endmethod
+
 		private static method createUnit takes player id, integer unitid, real x, real y, real face returns nothing
-			local unit whichUnit
+			local unit whichUnit = null
 			if (thistype.m_units != 0 and not thistype.m_suspend) then
 				set thistype.m_suspend = true
 				set whichUnit = CreateUnit(id, unitid, x, y, face)
@@ -255,7 +262,7 @@ static if (A_DEBUG_HANDLES) then
 		endmethod
 
 		private static method createDestructable takes integer objectid, real x, real y, real face, real scale, integer variation returns nothing
-			local destructable whichDestructable
+			local destructable whichDestructable = null
 			if (thistype.m_destructables != 0 and not thistype.m_suspend) then
 				set thistype.m_suspend = true
 				set whichDestructable = CreateDestructable(objectid, x, y, face, scale, variation)
@@ -271,6 +278,24 @@ static if (A_DEBUG_HANDLES) then
 				call thistype.m_destructables.remove(d)
 			endif
 		endmethod
+
+		private static method createTimer takes nothing returns nothing
+			local timer whichTimer = null
+			if (thistype.m_timers != 0 and not thistype.m_suspend) then
+				set thistype.m_suspend = true
+				set whichTimer = CreateTimer()
+				call thistype.m_timers.pushBack(whichTimer)
+				call DestroyTimer(whichTimer)
+				set whichTimer = null
+				set thistype.m_suspend = false
+			endif
+		endmethod
+
+		private static method destroyTimer takes timer whichTimer returns nothing
+			if (thistype.m_timers != 0 and not thistype.m_suspend) then
+				call thistype.m_timers.remove(whichTimer)
+			endif
+		endmethod
 endif
 	endstruct
 
@@ -281,6 +306,8 @@ static if (A_DEBUG_HANDLES) then
 	debug hook RemoveItem ABenchmark.removeItem
 	debug hook CreateDestructable ABenchmark.createDestructable
 	debug hook RemoveDestructable ABenchmark.removeDestructable
+	debug hook CreateTimer ABenchmark.createTimer
+	debug hook DestroyTimer ABenchmark.destroyTimer
 endif
 
 endlibrary

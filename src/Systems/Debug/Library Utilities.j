@@ -469,6 +469,10 @@ static if (A_DEBUG_HANDLES) then
 	private function destructables takes ACheat cheat returns nothing
 		call ABenchmark.showDestructables()
 	endfunction
+
+	private function timers takes ACheat cheat returns nothing
+		call ABenchmark.showTimers()
+	endfunction
 endif
 
 static if (DEBUG_MODE) then
@@ -564,6 +568,7 @@ static if (A_DEBUG_HANDLES) then
 		call ACheat.create("units", true, units)
 		call ACheat.create("items", true, items)
 		call ACheat.create("destructables", true, destructables)
+		call ACheat.create("timers", true, timers)
 endif
 
 static if (DEBUG_MODE) then
