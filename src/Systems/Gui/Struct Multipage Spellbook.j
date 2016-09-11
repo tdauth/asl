@@ -175,20 +175,33 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 				set i = i + 1
 			endloop
 
-			call this.m_nextPageAction.show(this.unit())
-			call this.m_previousPageAction.show(this.unit())
+			/*
+			 * Only show if there are multiple pages at all.
+			 */
+			if (this.maxPages() > 1) then
+				call this.m_nextPageAction.show(this.unit())
+				call this.m_previousPageAction.show(this.unit())
+			endif
 		endmethod
 
 		public method currentPage takes nothing returns integer
 			return this.m_currentPage
 		endmethod
-		
+
 		public method setCurrentPage takes integer page returns nothing
 			if (this.currentPage() == page) then
 				return
 			endif
 
 			set this.m_currentPage = page
+			call this.updateUi()
+		endmethod
+
+		public method setEntriesPerPage takes integer entriesPerPage returns nothing
+			debug if (entriesPerPage > 11) then
+				debug call Print("Warning: More than 11 entries per page block place for page buttons.")
+			debug endif
+			set this.m_entriesPerPage = entriesPerPage
 			call this.updateUi()
 		endmethod
 
