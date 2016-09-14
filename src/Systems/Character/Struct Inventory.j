@@ -680,6 +680,66 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			return this.m_rucksackPage * thistype.maxRucksackItemsPerPage + slot
 		endmethod
 
+		private method disableEquipmentAbilities takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.removePermanentAbilities(this.character().unit())
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+
+		private method enableEquipmentAbilities takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.addPermanentAbilities(this.character().unit())
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+
+		private method onUnequipForAllEquipment takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.onUnequipItem.evaluate(this.character().unit(), i)
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+
+		private method onEquipForAllEquipment takes nothing returns nothing
+			local AItemType itemType = 0
+			local integer i = 0
+			loop
+				exitwhen (i == thistype.maxEquipmentTypes)
+				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.onEquipItem.evaluate(this.character().unit(), i)
+					endif
+				endif
+				set i = i + 1
+			endloop
+		endmethod
+
 		private method hideEquipmentItem takes integer equipmentType, boolean addPermanentAbilities returns nothing
 			local item slotItem = UnitItemInSlot(this.character().unit(), equipmentType)
 			local AItemType itemType = 0
@@ -720,12 +780,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * \param addPermanentAbilities If this value is true the permanent abilities of all equipped item types will be added to the character's unit. Otherwise they disappear with the items.
 		 */
 		private method disableEquipment takes boolean addPermanentAbilities returns nothing
-			local integer i
-			set i = 0
+			local AItemType itemType = 0
+			local integer i = 0
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.m_equipmentItemData[i] != 0) then
 					call this.hideEquipmentItem(i, addPermanentAbilities)
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+					if (itemType != 0) then
+						call itemType.onUnequipItem.evaluate(this.character().unit(), i)
+					endif
 				else
 					call this.hideEquipmentPlaceholder(i)
 				endif
@@ -806,6 +870,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.disableRucksack()
 				// store that the rucksack would be still enabled when reenabling again
 				set this.m_rucksackIsEnabled = true
+
+				/*
+				 * Call unequip for all equipment as well. Otherwise it would be ignored.
+				 */
+				call this.onUnequipForAllEquipment()
 			else
 				call this.disableEquipment(false)
 			endif
@@ -879,12 +948,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 
 		private method enableEquipment takes nothing returns nothing
-			local integer i
-			set i = 0
+			local AItemType itemType = 0
+			local integer i = 0
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
-				if (this.m_equipmentItemData[i] != 0) then
+				if (this.equipmentItemData(i) != 0) then
 					call this.showEquipmentItem(i)
+					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+
+					if (itemType != 0) then
+						call itemType.onEquipItem.evaluate(this.character().unit(), i)
+					endif
 				else
 					call this.showEquipmentPlaceholder(i)
 				endif
@@ -1368,66 +1442,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			endloop
 
 			return result
-		endmethod
-
-		private method disableEquipmentAbilities takes nothing returns nothing
-			local AItemType itemType = 0
-			local integer i = 0
-			loop
-				exitwhen (i == thistype.maxEquipmentTypes)
-				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
-					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
-					if (itemType != 0) then
-						call itemType.removePermanentAbilities(this.character().unit())
-					endif
-				endif
-				set i = i + 1
-			endloop
-		endmethod
-
-		private method enableEquipmentAbilities takes nothing returns nothing
-			local AItemType itemType = 0
-			local integer i = 0
-			loop
-				exitwhen (i == thistype.maxEquipmentTypes)
-				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
-					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
-					if (itemType != 0) then
-						call itemType.addPermanentAbilities(this.character().unit())
-					endif
-				endif
-				set i = i + 1
-			endloop
-		endmethod
-
-		private method onUnequipForAllEquipment takes nothing returns nothing
-			local AItemType itemType = 0
-			local integer i = 0
-			loop
-				exitwhen (i == thistype.maxEquipmentTypes)
-				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
-					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
-					if (itemType != 0) then
-						call itemType.onUnequipItem.evaluate(this.character().unit(), i)
-					endif
-				endif
-				set i = i + 1
-			endloop
-		endmethod
-
-		private method onEquipForAllEquipment takes nothing returns nothing
-			local AItemType itemType = 0
-			local integer i = 0
-			loop
-				exitwhen (i == thistype.maxEquipmentTypes)
-				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
-					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
-					if (itemType != 0) then
-						call itemType.onEquipItem.evaluate(this.character().unit(), i)
-					endif
-				endif
-				set i = i + 1
-			endloop
 		endmethod
 
 		/**
