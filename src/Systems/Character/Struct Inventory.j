@@ -212,6 +212,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	 * \todo Use \ref UnitDropItemSlot instead of item removals.
 	 * \todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
 	 * \todo Test if shop events work even with a full inventory. At the moment the player has to select the shop but computer controlled players won't do that. For human players it should work.
+	 * \todo Allow selling multiple charges if gold costs are set. At the moment you could only sell non-usable (not type ITEM_TYPE_CHARGED) items with all charges. For other items the gold costs per charge must be defined.
 	 *
 	 * The controls are the following:
 	 * <ul>
@@ -1095,6 +1096,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method enableRucksack takes nothing returns nothing
 			local boolean leftResult = false
 			local boolean rightResult = false
+			local integer i = 0
+			local AItemType itemType = 0
 
 			if (not this.m_rucksackIsEnabled) then
 				set this.m_rucksackIsEnabled = true
@@ -1112,6 +1115,24 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 
 				call this.showRucksackPage(this.m_rucksackPage, true)
+
+				if (not this.m_onlyRucksackIsEnabled) then
+					/*
+					 * Add permanent abilities of equipment when only rucksack is shown. Otherwise they are missing.
+					 */
+					set i = 0
+					loop
+						exitwhen (i == thistype.maxEquipmentTypes)
+						if (this.equipmentItemData(i) != 0) then
+							set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
+							if (itemType != 0) then
+								call itemType.onEquipItem.evaluate(this.character().unit(), i)
+								call itemType.addPermanentAbilities(this.character().unit())
+							endif
+						endif
+						set i = i + 1
+					endloop
+				endif
 			debug else
 				debug call this.print("Enabling rucksack although it is already enabled.")
 			endif
@@ -1147,24 +1168,6 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			if (this.m_rucksackIsEnabled or this.m_onlyRucksackIsEnabled) then
 				set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
 				call this.enableRucksack()
-
-				if (not this.m_onlyRucksackIsEnabled) then
-					/*
-					 * Add permanent abilities of equipment when only rucksack is shown. Otherwise they are missing.
-					 */
-					set i = 0
-					loop
-						exitwhen (i == thistype.maxEquipmentTypes)
-						if (this.equipmentItemData(i) != 0) then
-							set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
-							if (itemType != 0) then
-								call itemType.onEquipItem.evaluate(this.character().unit(), i)
-								call itemType.addPermanentAbilities(this.character().unit())
-							endif
-						endif
-						set i = i + 1
-					endloop
-				endif
 			else
 				call this.enableEquipment()
 			endif
@@ -1993,7 +1996,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.disableRucksack()
 				call this.enableEquipment()
 			else
-				call this.disableEquipment(true)
+				call this.disableEquipment(false)
 				call this.enableRucksack()
 			endif
 		endmethod
