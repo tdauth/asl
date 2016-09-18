@@ -377,9 +377,11 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		public method kill takes nothing returns nothing
+			local integer i = 0
 			loop
-				exitwhen (this.m_group.units().isEmpty())
-				call KillUnit(this.m_group.units().front())
+				exitwhen (i == this.m_group.units().size())
+				call KillUnit(this.m_group.units()[i])
+				set i = i + 1
 			endloop
 		endmethod
 
