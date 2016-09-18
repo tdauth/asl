@@ -57,12 +57,12 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		public method description takes nothing returns string
 			return this.m_description
 		endmethod
-		
+
 		public method setIsRequired takes boolean isRequired returns nothing
 			set this.m_isRequired = isRequired
 			call QuestSetRequired(this.m_questLogQuest, isRequired)
 		endmethod
-		
+
 		public method isRequired takes nothing returns boolean
 			return this.m_isRequired
 		endmethod
@@ -75,12 +75,27 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		endmethod
 
 		// methods
-		
+
 		/// \todo Should be protected
 		public stub method distributeRewards takes nothing returns nothing
 			call super.distributeRewards()
 		endmethod
-		
+
+		public method hasLatestPing takes nothing returns boolean
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_questItems.size())
+				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew and AQuestItem(this.m_questItems[i]).ping()) then
+					return AQuestItem(this.m_questItems[i]).ping()
+				endif
+				set i = i + 1
+			endloop
+			if (this.state() == thistype.stateNew and this.ping()) then
+				return true
+			endif
+			return false
+		endmethod
+
 		public method latestPingX takes nothing returns real
 			local integer i = 0
 			loop
@@ -103,7 +118,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			endif
 			return 0.0
 		endmethod
-		
+
 		public method latestPingY takes nothing returns real
 			local integer i = 0
 			loop
@@ -373,7 +388,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 		public method removeQuestItemByIndex takes integer index returns nothing
 			call this.m_questItems.erase(index)
 		endmethod
-		
+
 		private method createQuestLogQuest takes nothing returns nothing
 			if (thistype.m_useQuestLog) then
 				set this.m_questLogQuest = CreateQuest()
@@ -382,7 +397,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 				call QuestSetRequired(this.m_questLogQuest, this.isRequired())
 			endif
 		endmethod
-		
+
 		/// Friend relationship to \ref AQuestItem, do not use.
 		public method reorderQuestItems takes nothing returns nothing
 			local integer i
