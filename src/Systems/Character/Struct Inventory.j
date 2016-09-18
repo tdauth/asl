@@ -1,4 +1,49 @@
-library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreGeneralUnit, AStructCoreStringFormat, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter, AStructSystemsCharacterItemType
+library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, AStructCoreGeneralList, ALibraryCoreGeneralUnit, AStructCoreStringFormat, ALibraryCoreInterfaceTextTag, AStructSystemsCharacterAbstractCharacterSystem, AStructSystemsCharacterCharacter, AStructSystemsCharacterItemType
+
+	/**
+	 * The sell system is made by the Hiveworkshop user MeKC:
+	 * http://www.hiveworkshop.com/threads/detecting-item-price.120355/
+	 * For better performance this system caches the item prices once they have been calculated.
+	 */
+	function GetUnitShop takes nothing returns integer
+		return 'ngme'                                                               // This is the raw code for the goblin shop
+	endfunction
+
+	function GetUnitSell takes nothing returns integer
+		return 'Hpal'                                                               // This is the raw code for the paladin
+	endfunction
+
+	function GetItemValueEx takes integer i returns integer
+		local real x   = 0                                                          // This is the x position where we create the dummy units. Dont place it in the water.
+		local real y   = 0                                                          // This is the y position where we create the dummy units. Dont place it in the water.
+		local unit u1  = CreateUnit(Player(12),GetUnitShop(),x,y,0)
+		local unit u2  = CreateUnit(Player(12),GetUnitSell(),x,y-100,90)
+		local item a   = UnitAddItemByIdSwapped(i,u2)
+		local integer g1 = GetPlayerState(Player(12),PLAYER_STATE_RESOURCE_GOLD)
+		local integer g2 = 0
+		call UnitDropItemTarget(u2,a,u1)
+		set g2 = GetPlayerState(Player(12),PLAYER_STATE_RESOURCE_GOLD) - g1
+		call SetPlayerState(Player(12),PLAYER_STATE_RESOURCE_GOLD,GetPlayerState(Player(12),PLAYER_STATE_RESOURCE_GOLD)-g2)
+		call RemoveUnit(u1)
+		call RemoveUnit(u2)
+		set u1 = null
+		set u2 = null
+		set a  = null
+		return g2
+	endfunction
+
+	function GetItemValue takes integer i returns integer
+		if (AHashTable.global().hasInteger(A_HASHTABLE_KEY_ITEMCOSTS, i)) then
+			return AHashTable.global().integer(A_HASHTABLE_KEY_ITEMCOSTS, i)
+		endif
+
+		return GetItemValueEx(i)
+	endfunction
+
+	function ClearAllItemValues takes nothing returns nothing
+		call AHashTable.global().flushKey(A_HASHTABLE_KEY_ITEMCOSTS)
+	endfunction
+
 
 	/**
 	 * \brief This structure is used to store all item information of one slot in inventory.
@@ -202,17 +247,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	 * Rucksack uses the same interface as equipment since there are only 6 available item slots in Warcraft.
 	 * Abilities of equipment will be hold when character is opening his rucksack.
 	 * Rucksack item abilities do not affect!
-	 * You can only use usable items like potions in rucksack which should always have type \ref ITEM_TYPE_CHARGED!
+	 * You can only use usable items like potions in rucksack.
 	 * In rucksack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
 	 * In equipment there shouldn't be any charges.
 	 * If you add an item to character triggers will be run and firstly it will be tried to equip added item to character.
 	 * If this doesn't work (e. g. it's not an equipable item) it will be added to rucksack.
 	 * You do not have to care if rucksack is being opened at that moment.
+	 * \note Usable items which do not remain in the inventory after using them should always have type \ref ITEM_TYPE_CHARGED! They need special treatment.
 	 * \note Do not forget to create \ref AItemType instances for all equipable item types!
 	 * \todo Use \ref UnitDropItemSlot instead of item removals.
 	 * \todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
 	 * \todo Test if shop events work even with a full inventory. At the moment the player has to select the shop but computer controlled players won't do that. For human players it should work.
-	 * \todo Allow selling multiple charges if gold costs are set. At the moment you could only sell non-usable (not type ITEM_TYPE_CHARGED) items with all charges. For other items the gold costs per charge must be defined.
 	 *
 	 * The controls are the following:
 	 * <ul>
@@ -221,7 +266,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 	 * <li>Drag and Drop an equipped item at the same slot -> unequips the item</li>
 	 * <li>Drag and Drop a rucksack item at a free slot -> destacks one charge at the slot</li>
 	 * <li>Drop a rucksack item -> drops it with all charges on the ground. The owner becomes neutral passive</li>
-	 * <li>Pawn a rucksack item -> pawns the item with one charge only (Otherwise the player would not get the full gold for non usable items).</li>
+	 * <li>Pawn a rucksack item -> pawns the item with all charges (The remaining gold for non usable items is added by the system).</li>
 	 * <li>Give an item to another unit -> drops the item with all charges.</li>
 	 * <li>Drag and Drop a rucksack item at a page item, moves the item will all charges to the previous or next page if there is a free slot.</li>
 	 * <li>If the player selects a shop to buy items, the inventory items are cleared out that there is a free slot and he can buy as many items as he wants to. Of course the equipment effects stay.</li>
@@ -1588,7 +1633,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set itemType = AItemType.itemTypeOfItem(usedItem)
 			set equipmentType = itemType.equipmentType()
 
-			if (itemType != 0 and equipmentType != -1) then
+			if (itemType != 0 and equipmentType != AItemType.equipmentTypeNone) then
 				/*
 				 * Can be equipped to the equipment type since either no equipment is there or it will be swapped.
 				 */
@@ -2508,12 +2553,20 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method timerFunctionPawnOneCharge takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
-			local integer charges = this.m_rucksackItemData[index].charges() - 1
-			debug call Print("Charges are now " + I2S(charges))
-			if (charges <= 0) then
-				call this.clearRucksackSlot(index)
-			else
-				call this.setRucksackItemCharges(index, charges)
+			local boolean charged = AHashTable.global().handleBoolean(GetExpiredTimer(), 2)
+			local integer itemTypeId = this.m_rucksackItemData[index].itemTypeId()
+			local integer oldCharges = this.m_rucksackItemData[index].charges()
+			local integer additionGold = 0
+			call this.clearRucksackSlot(index)
+			// Non-charged (non-usable) items do not show the gold price for all charges but for one. Therefore the remaining gold has to be added manually.
+			if (not charged) then
+				set additionGold = GetItemValue(itemTypeId) * (oldCharges - 1)
+
+				if (additionGold > 0) then
+					call SetPlayerState(this.character().player(), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(this.character().player(), PLAYER_STATE_RESOURCE_GOLD) + GetItemValue(itemTypeId) * (oldCharges - 1))
+					debug call Print("Adding gold: " + I2S(additionGold))
+					call ShowBountyTextTagForPlayer(this.character().player(), GetUnitX(this.character().unit()), GetUnitY(this.character().unit()) - 50.0, additionGold)
+				endif
 			endif
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
@@ -2522,17 +2575,17 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private static method triggerActionPawn takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local integer index = this.itemIndex(GetSoldItem())
-			local timer whichTimer
-
+			local timer whichTimer = null
+			debug call Print("Pawn: Item type gold: " + I2S(GetItemValue(GetItemTypeId(GetSoldItem()))))
 			call this.m_pawnedItems.pushBack(GetHandleId(GetSoldItem())) // make sure it will be recognized by the drop trigger as pawned item
 			/*
 			 * Tests showed that the unit still has the item when this event is triggered.
 			 * Therefore a 0 timer has to be used to run code after the pawning.
 			 */
-			call SetItemCharges(GetSoldItem(), 1) // only sell 1 charge
 			set whichTimer = CreateTimer()
 			call AHashTable.global().setHandleInteger(whichTimer, 0, this)
 			call AHashTable.global().setHandleInteger(whichTimer, 1, index)
+			call AHashTable.global().setHandleBoolean(whichTimer, 2, GetItemType(GetSoldItem()) == ITEM_TYPE_CHARGED)
 			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionPawnOneCharge)
 		endmethod
 

@@ -25,7 +25,8 @@ library AStructCoreGeneralHashTable
 		constant integer A_HASHTABLE_KEY_ROUTINE_NEXT = 1018
 		constant integer A_HASHTABLE_KEY_ROUTINES = 1019
 		constant integer A_HASHTABLE_KEY_ITEMTYPES = 1020
-		constant integer A_HASHTABLE_KEY_MAX = 1021
+		constant integer A_HASHTABLE_KEY_ITEMCOSTS = 1021
+		constant integer A_HASHTABLE_KEY_MAX = 1022
 	endglobals
 
 	/**
@@ -48,7 +49,7 @@ library AStructCoreGeneralHashTable
 			public method set$TYPENAME$ takes integer parentKey, integer childKey, $TYPE$ value returns nothing
 				call Save$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, parentKey, childKey, value)
 			endmethod
-			
+
 			public method $METHODTYPENAME$ takes integer parentKey, integer childKey returns $TYPE$
 				return Load$TYPENAME$$SAVELOADSUFFIX$(this.m_hashTable, parentKey, childKey)
 			endmethod

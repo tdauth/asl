@@ -103,7 +103,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			endif
 			return true
 		endmethod
-		
+
 		/**
 		 * This method is called automatically by \ref AInventory whenever an item is being equipped.
 		 * You may overwrite this method to add additionally behaviour.
@@ -111,7 +111,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		 */
 		public stub method onEquipItem takes unit whichUnit, integer slot returns nothing
 		endmethod
-		
+
 		/**
 		 * This method is called automatically by \ref AInventory whenever an item is being unequipped.
 		 * You may overwrite this method to add additionally behaviour.
@@ -119,7 +119,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		 */
 		public stub method onUnequipItem takes unit whichUnit, integer slot returns nothing
 		endmethod
-		
+
 		/**
 		 * This method is called automatically by .evaluate() whenever the permanent abilities are being added to a unit.
 		 */
@@ -144,7 +144,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			endloop
 			call this.onAddPermanentAbilities.evaluate(who)
 		endmethod
-		
+
 		/**
 		 * This method is called automatically by .evaluate() whenever the permanent abilities are removed from to a unit.
 		 */
