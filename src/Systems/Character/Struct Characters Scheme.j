@@ -78,7 +78,8 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 						if (IsUnitType(character.unit(), UNIT_TYPE_HERO)) then
 							call this.m_experienceBar.setValue(GetHeroXP(character.unit()))
 							call this.m_experienceBar.setMaxValue(this.scheme().experienceFormula.evaluate().evaluate(character.unit()))
-							call this.m_experienceBar.refresh()
+							// renew OpLimit with .evaluate() since the method call is quite long.
+							call thistype.refreshBarWithNewOpLimit.evaluate(this.m_experienceBar)
 						endif
 					endif
 
@@ -86,28 +87,28 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 						call this.m_hitPointsBar.setValue(GetUnitState(character.unit(), UNIT_STATE_LIFE))
 						call this.m_hitPointsBar.setMaxValue(GetUnitState(character.unit(), UNIT_STATE_MAX_LIFE))
 						// renew OpLimit with .evaluate() since the method call is quite long.
-						call this.m_hitPointsBar.refresh.evaluate()
+						call thistype.refreshBarWithNewOpLimit.evaluate(this.m_hitPointsBar)
 					endif
 
 					if (this.scheme().manaLength.evaluate() > 0) then
 						call this.m_manaBar.setValue(GetUnitState(character.unit(), UNIT_STATE_MANA))
 						call this.m_manaBar.setMaxValue(GetUnitState(character.unit(), UNIT_STATE_MAX_MANA))
 						// renew OpLimit with .evaluate() since the method call is quite long.
-						call this.m_manaBar.refresh.evaluate()
+						call thistype.refreshBarWithNewOpLimit.evaluate(this.m_manaBar)
 					endif
 				else
 					if (this.scheme().hitPointsLength.evaluate() > 0) then
 						call this.m_hitPointsBar.setValue(0)
 						call this.m_hitPointsBar.setMaxValue(1)
 						// renew OpLimit with .evaluate() since the method call is quite long.
-						call this.m_hitPointsBar.refresh.evaluate()
+						call thistype.refreshBarWithNewOpLimit.evaluate(this.m_hitPointsBar)
 					endif
 
 					if (this.scheme().manaLength.evaluate() > 0) then
 						call this.m_manaBar.setValue(0)
 						call this.m_manaBar.setMaxValue(1)
 						// renew OpLimit with .evaluate() since the method call is quite long.
-						call this.m_manaBar.refresh.evaluate()
+						call thistype.refreshBarWithNewOpLimit.evaluate(this.m_manaBar)
 					endif
 				endif
 
@@ -122,6 +123,10 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			elseif (this.row() != -1) then
 				call this.destroy()
 			endif
+		endmethod
+
+		private static method refreshBarWithNewOpLimit takes AMultiboardBar bar returns nothing
+			call bar.refresh()
 		endmethod
 
 		/**
@@ -152,7 +157,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 					set column = 0
 				endif
 				// renew OpLimit with .evaluate() since the method call is quite long.
-				set this.m_experienceBar = AMultiboardBar.create.evaluate(scheme.multiboard.evaluate(), column, row, scheme.experienceLength.evaluate(), 0.0, true)
+				set this.m_experienceBar = thistype.createBarWithNewOpLimit.evaluate(scheme.multiboard.evaluate(), column, row, scheme.experienceLength.evaluate(), 0.0, true)
 			endif
 
 			if (scheme.hitPointsLength.evaluate() > 0) then
@@ -164,7 +169,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 					set column = 0
 				endif
 				// renew OpLimit with .evaluate() since the method call is quite long.
-				set this.m_hitPointsBar = AMultiboardBar.create.evaluate(scheme.multiboard.evaluate(), column, row, scheme.hitPointsLength.evaluate(), 0.0, true)
+				set this.m_hitPointsBar = thistype.createBarWithNewOpLimit.evaluate(scheme.multiboard.evaluate(), column, row, scheme.hitPointsLength.evaluate(), 0.0, true)
 			endif
 
 			if (scheme.manaLength.evaluate() > 0) then
@@ -178,7 +183,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 					set column = 0
 				endif
 				// renew OpLimit with .evaluate() since the method call is quite long.
-				set this.m_manaBar = AMultiboardBar.create.evaluate(scheme.multiboard.evaluate(), column, row, scheme.manaLength.evaluate(), 0.0, true)
+				set this.m_manaBar = thistype.createBarWithNewOpLimit.evaluate(scheme.multiboard.evaluate(), column, row, scheme.manaLength.evaluate(), 0.0, true)
 			endif
 
 			if (scheme.showGold.evaluate()) then
@@ -203,6 +208,10 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			endif
 
 			return this
+		endmethod
+
+		private static method createBarWithNewOpLimit takes multiboard whichMultiboard, integer column, integer row, integer length, real refreshRate, boolean horizontal returns AMultiboardBar
+			return AMultiboardBar.create(whichMultiboard, column, row, length, refreshRate, horizontal)
 		endmethod
 
 		/**
@@ -541,10 +550,14 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			loop
 				exitwhen (not iterator.isValid())
 				// renew OpLimit with .evaluate() since the method call is quite long.
-				call PlayerData(iterator.data()).refresh.evaluate()
+				call thistype.refreshBarWithNewOpLimit.evaluate(PlayerData(iterator.data()))
 				call iterator.next()
 			endloop
 			call iterator.destroy()
+		endmethod
+
+		private static method refreshBarWithNewOpLimit takes PlayerData playerData returns nothing
+			call playerData.refresh()
 		endmethod
 
 		private static method triggerActionRefresh takes nothing returns nothing
