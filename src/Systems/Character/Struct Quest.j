@@ -86,7 +86,7 @@ library AStructSystemsCharacterQuest requires optional ALibraryCoreDebugMisc, AL
 			loop
 				exitwhen (i == this.m_questItems.size())
 				if (AQuestItem(this.m_questItems[i]).state() == thistype.stateNew and AQuestItem(this.m_questItems[i]).ping()) then
-					return AQuestItem(this.m_questItems[i]).ping()
+					return true
 				endif
 				set i = i + 1
 			endloop
