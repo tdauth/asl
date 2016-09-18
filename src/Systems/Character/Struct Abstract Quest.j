@@ -50,6 +50,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		private AAbstractQuestStateAction array m_stateAction[thistype.maxStates]
 		private integer array m_reward[thistype.maxRewards]
 		private boolean m_ping
+		private boolean m_pingEnabled
 		private real m_pingX
 		private real m_pingY
 		private real m_pingDuration
@@ -215,6 +216,7 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		 */
 		public stub method onStateAction takes integer state returns nothing
 			if (this.m_stateAction[state] != 0) then
+				debug call Print("State Action: " + I2S(this.m_stateAction[state]))
 				call this.m_stateAction[state].execute(this) // call custom function
 			endif
 		endmethod
@@ -350,6 +352,14 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 
 		public method ping takes nothing returns boolean
 			return this.m_ping
+		endmethod
+
+		public method setPingEnabled takes boolean pingEnabled returns nothing
+			set this.m_pingEnabled = pingEnabled
+		endmethod
+
+		public method pingEnabled takes nothing returns boolean
+			return this.m_pingEnabled
 		endmethod
 
 		public method setPingX takes real pingX returns nothing
@@ -560,6 +570,8 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			set this.m_state = thistype.stateNotUsed
 			set this.m_pingWidget = null
 			set this.m_distributeRewardsOnCompletion = true
+			set this.m_ping = false
+			set this.m_pingEnabled = true
 			set this.m_pingDuration = 2.0 // This value is taken from the Bonus Campaign.
 			/*
 			 * The following values are taken from the Bonus Campaign.
@@ -604,28 +616,25 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 		endmethod
 
 		private static method timerFunctionPing takes nothing returns nothing
-			local thistype abstractQuest
-			local player user
-			local real x
-			local real y
+			local thistype abstractQuest = 0
+			local real x = 0.0
+			local real y = 0.0
 			local AIntegerListIterator iterator = thistype.m_abstractQuests.begin()
 			loop
 				exitwhen (not iterator.isValid())
 				set abstractQuest = thistype(iterator.data())
-				if (abstractQuest.m_ping and abstractQuest.m_state == thistype.stateNew) then
-					if (abstractQuest.m_pingWidget != null) then
-						set x = GetWidgetX(abstractQuest.m_pingWidget)
-						set y = GetWidgetY(abstractQuest.m_pingWidget)
+				if (abstractQuest.ping() and abstractQuest.pingEnabled() and abstractQuest.state() == thistype.stateNew) then
+					if (abstractQuest.pingWidget() != null) then
+						set x = GetWidgetX(abstractQuest.pingWidget())
+						set y = GetWidgetY(abstractQuest.pingWidget())
 					else
-						set x = abstractQuest.m_pingX
-						set y = abstractQuest.m_pingY
+						set x = abstractQuest.pingX()
+						set y = abstractQuest.pingY()
 					endif
-					if (abstractQuest.m_character != 0) then
-						set user = abstractQuest.m_character.player()
-						call PingMinimapExForPlayer(user, x, y, abstractQuest.m_pingDuration, abstractQuest.m_pingRed, abstractQuest.m_pingGreen, abstractQuest.m_pingBlue, false)
-						set user = null
+					if (abstractQuest.character() != 0) then
+						call PingMinimapExForPlayer(abstractQuest.character().player(), x, y, abstractQuest.pingDuration(), abstractQuest.pingRed(), abstractQuest.pingGreen(), abstractQuest.pingBlue(), false)
 					else
-						call PingMinimapEx(x, y, abstractQuest.m_pingDuration, PercentTo255(abstractQuest.m_pingRed), PercentTo255(abstractQuest.m_pingGreen), PercentTo255(abstractQuest.m_pingBlue), false)
+						call PingMinimapEx(x, y, abstractQuest.pingDuration(), PercentTo255(abstractQuest.pingRed()), PercentTo255(abstractQuest.pingGreen()), PercentTo255(abstractQuest.pingBlue()), false)
 					endif
 				endif
 				call iterator.next()
@@ -697,6 +706,34 @@ library AStructSystemsCharacterAbstractQuest requires optional ALibraryCoreDebug
 			debug else
 				debug call thistype.staticPrint("There is no ping timer.")
 			endif
+		endmethod
+
+		public static method enablePingsForCharacter takes ACharacter character returns nothing
+			local thistype abstractQuest = 0
+			local AIntegerListIterator iterator = thistype.m_abstractQuests.begin()
+			loop
+				exitwhen (not iterator.isValid())
+				set abstractQuest = thistype(iterator.data())
+				if (abstractQuest.character() == character) then
+					call abstractQuest.setPingEnabled(true)
+				endif
+				call iterator.next()
+			endloop
+			call iterator.destroy()
+		endmethod
+
+		public static method disablePingsForCharacter takes ACharacter character returns nothing
+			local thistype abstractQuest = 0
+			local AIntegerListIterator iterator = thistype.m_abstractQuests.begin()
+			loop
+				exitwhen (not iterator.isValid())
+				set abstractQuest = thistype(iterator.data())
+				if (abstractQuest.character() == character) then
+					call abstractQuest.setPingEnabled(false)
+				endif
+				call iterator.next()
+			endloop
+			call iterator.destroy()
 		endmethod
 	endstruct
 
