@@ -339,6 +339,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private trigger m_dropTrigger
 		private trigger m_pawnTrigger
 		/**
+		 * The UI has to be updated when the character is being revived. It might have happened that some items could not by added by \ref unitAddItemToSlotById()
+		 * since the character was already dead. Therefore all inventory slots has to be updated on revival.
+		 */
+		private trigger m_revivalTrigger
+		/**
 		 * Stores the currently open rucksack page.
 		 */
 		private integer m_rucksackPage
@@ -619,6 +624,13 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method unitAddItemToSlotById takes unit whichUnit, integer itemType, integer slot returns boolean
 			local boolean result
 			local boolean isBeingPaused
+
+			/// Cannot be added if the unit is dead.
+			if (IsUnitDeadBJ(whichUnit)) then
+				debug call Print("unit is dead")
+				return false
+			endif
+
 			// Workaround (character inventory system has to work - adding items - when character is being paused e. g. during talks)
 			if (IsUnitPaused(whichUnit)) then
 				set isBeingPaused = true
@@ -846,11 +858,16 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		private method hideRucksackItem takes integer index returns nothing
 			local integer slot = this.rucksackItemSlot(index)
 			local item slotItem = UnitItemInSlot(this.character().unit(), slot)
-			call thistype.clearItemIndex(slotItem)
-			call DisableTrigger(this.m_dropTrigger)
-			call RemoveItem(slotItem)
-			call EnableTrigger(this.m_dropTrigger)
-			set slotItem = null
+
+			if (slotItem != null) then
+				call thistype.clearItemIndex(slotItem)
+				call DisableTrigger(this.m_dropTrigger)
+				call RemoveItem(slotItem)
+				call EnableTrigger(this.m_dropTrigger)
+				set slotItem = null
+			debug else
+				debug call this.print("Item in slot " + I2S(slot) + " does not exist.")
+			endif
 		endmethod
 
 		private method hideCurrentRucksackPage takes nothing returns nothing
@@ -945,6 +962,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call DisableTrigger(this.m_orderTrigger)
 			call DisableTrigger(this.m_pickupTrigger)
 			call DisableTrigger(this.m_pawnTrigger)
+			call DisableTrigger(this.m_revivalTrigger)
 			call DisableTrigger(this.m_dropTrigger)
 		endmethod
 
@@ -965,10 +983,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call SetItemDropOnDeath(slotItem, false)
 				call thistype.setItemIndex(slotItem, equipmentType)
 				set slotItem = null
-			// Something went wrong and the item has been dropped instead. Otherwise if disabling and enabling equipment again the items will be duplicated.
+			// Something went wrong and the character was dead or the item has been dropped instead. Don't clear the equipment type. The UI might be fixed when the character is revived.
 			else
 				debug call this.print("Something went wrong on showing equipment item of type " + I2S(equipmentType))
-				call this.clearEquipmentType(equipmentType)
 			endif
 		endmethod
 
@@ -1083,10 +1100,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					debug else
 						debug call this.print("Rucksack item from slot " + I2S(slot) + " is null.")
 					endif
-				// Something went wrong and the item has been dropped instead. Otherwise if disabling and enabling rucksack again the items will be duplicated.
+				// Something went wrong and the item has not been added or dropped instead. Don't clear the slot since the character might have been dead and it will be fixed when he is revived.
 				else
 					debug call this.print("Error: Adding rucksack item with index " + I2S(index) + " failed for unknown reasons.")
-					call this.clearRucksackSlot(index)
 				endif
 			debug else
 				debug call this.print("Showing rucksack item of index " + I2S(index) + " which has no item data.")
@@ -1222,6 +1238,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call EnableTrigger(this.m_orderTrigger)
 			call EnableTrigger(this.m_pickupTrigger)
 			call EnableTrigger(this.m_pawnTrigger)
+			call EnableTrigger(this.m_revivalTrigger)
 			call EnableTrigger(this.m_dropTrigger)
 		endmethod
 
@@ -2597,6 +2614,48 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, 0, this)
 		endmethod
 
+		private static method triggerConditionIsCharacter takes nothing returns boolean
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
+
+			return GetTriggerUnit() == this.character().unit()
+		endmethod
+
+		private method updateUI takes nothing returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == bj_MAX_INVENTORY)
+				if (UnitItemInSlot(this.character().unit(), i) != null) then
+					debug call Print("Removing item: " + GetItemName(UnitItemInSlot(this.character().unit(), i)))
+					call this.unitRemoveItem(this.character().unit(), UnitItemInSlot(this.character().unit(), i))
+				endif
+				set i = i + 1
+			endloop
+
+			// let the inventory empty if a shop is selected
+			if (this.m_shop == null) then
+				if (this.m_rucksackIsEnabled) then
+					set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
+					call this.enableRucksack()
+				else
+					call this.enableEquipment()
+				endif
+			endif
+		endmethod
+
+		private static method triggerActionRevive takes nothing returns nothing
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
+			debug call Print("Updating UI after revival")
+			call this.updateUI()
+		endmethod
+
+		private method createRevivalTrigger takes nothing returns nothing
+			set this.m_revivalTrigger = CreateTrigger()
+			call TriggerRegisterAnyUnitEventBJ(this.m_revivalTrigger, EVENT_PLAYER_HERO_REVIVE_FINISH)
+			call TriggerAddCondition(this.m_revivalTrigger, Condition(function thistype.triggerConditionIsCharacter))
+			call TriggerAddAction(this.m_revivalTrigger, function thistype.triggerActionRevive)
+			call AHashTable.global().setHandleInteger(this.m_revivalTrigger, 0, this)
+		endmethod
+
 		private static method triggerConditionUse takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return GetTriggerUnit() == this.character().unit() and this.m_rucksackIsEnabled
@@ -2679,6 +2738,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.createPickupTrigger()
 			call this.createDropTrigger()
 			call this.createPawnTrigger()
+			call this.createRevivalTrigger()
 			call this.createUseTrigger()
 
 			debug call Print("Creating inventory for character of player " + GetPlayerName(character.player()))
@@ -2726,6 +2786,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			set this.m_pawnTrigger = null
 		endmethod
 
+		private method destroyRevivalTrigger takes nothing returns nothing
+			call AHashTable.global().destroyTrigger(this.m_revivalTrigger)
+			set this.m_revivalTrigger = null
+		endmethod
+
 		private method destroyUseTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_useTrigger)
 			set this.m_useTrigger = null
@@ -2761,6 +2826,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 			call this.destroyPickupTrigger()
 			call this.destroyDropTrigger()
 			call this.destroyPawnTrigger()
+			call this.destroyRevivalTrigger()
 			call this.destroyUseTrigger()
 		endmethod
 
