@@ -76,20 +76,20 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public static method playerClassSelection takes player whichPlayer returns thistype
 			return thistype.m_playerClassSelection[GetPlayerId(whichPlayer)]
 		endmethod
-		
+
 		// dynamic members
-		
+
 		public method setInfoSheetWidth takes real width returns nothing
 			set this.m_infoSheetWidth = width
 			if (this.m_infoSheet != null) then
 				call MultiboardSetItemsWidth(this.m_infoSheet, this.m_infoSheetWidth)
 			endif
 		endmethod
-		
+
 		public method infoSheetWidth takes nothing returns real
 			return this.m_infoSheetWidth
 		endmethod
-		
+
 		/**
 		 * Sets the X coordinate of the start position for the created character.
 		 * \param startX The X coordinate of the start position for the created character.
@@ -101,7 +101,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method startX takes nothing returns real
 			return this.m_startX
 		endmethod
-		
+
 		/**
 		 * Sets the Y coordinate of the start position for the created character.
 		 * \param startY The Y coordinate of the start position for the created character.
@@ -113,7 +113,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method startY takes nothing returns real
 			return this.m_startY
 		endmethod
-		
+
 		/**
 		 * Sets the start facing angle for the created character.
 		 * \param startFacing The start facing angle for the created character.
@@ -125,7 +125,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method startFacing takes nothing returns real
 			return this.m_startFacing
 		endmethod
-		
+
 		/**
 		 * If this attribute is set to true it shows the classes' attributes per level in the multiboard.
 		 * The attributes per level can be set in \ref AClass.
@@ -133,15 +133,15 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method setShowAttributes takes boolean showAttributes returns nothing
 			set this.m_showAttributes = showAttributes
 		endmethod
-		
+
 		public method showAttributes takes nothing returns boolean
 			return this.m_showAttributes
 		endmethod
-		
+
 		public method selectClassAction takes nothing returns AClassSelectionSelectClassAction
 			return this.m_selectClassAction
 		endmethod
-		
+
 		public method characterCreationAction takes nothing returns AClassSelectionCharacterCreationAction
 			return this.m_characterCreationAction
 		endmethod
@@ -151,9 +151,9 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method player takes nothing returns player
 			return this.m_user
 		endmethod
-		
+
 		// members
-		
+
 		/**
 		 * \return Returns the currently displayed unit of the selected class in the class selection.
 		 * \note The unit changes every time another class is selected.
@@ -161,7 +161,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method classUnit takes nothing returns unit
 			return this.m_classUnit
 		endmethod
-		
+
 		/**
 		 * \return Returns the index of the currently selected class.
 		 */
@@ -170,28 +170,28 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		endmethod
 
 		// methods
-		
+
 		/**
 		 * \return Returns the available class at index \p index.
 		 */
 		public method class takes integer index returns AClass
 			return AClass(this.m_classes[index])
 		endmethod
-		
+
 		/**
 		 * \return Returns the total number of classes available in the class slection.
 		 */
 		public method classCount takes nothing returns integer
 			return this.m_classes.size()
 		endmethod
-		
+
 		/**
 		 * \return Returns the currentl selected class.
 		 */
 		public method currentClass takes nothing returns AClass
 			return this.class(this.classIndex())
 		endmethod
-		
+
 		/**
 		 * Adds a new class to the current class selection.
 		 * \param class The class which is added to the class selection.
@@ -199,7 +199,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		public method addClass takes AClass class returns nothing
 			call this.m_classes.pushBack(class)
 		endmethod
-		
+
 		/**
 		 * Is called via .evaluate() whenever a class is being selected.
 		 * By default it evaluates \ref selectClassAction() if it is not 0.
@@ -210,7 +210,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				call this.selectClassAction().evaluate(character, class, last)
 			endif
 		endmethod
-		
+
 		/**
 		 * Is called via .evaluate() to create a character whenever one is selected by a class and unit.
 		 * By default it calls \ref characterCreationAction() via .evaluate().
@@ -220,17 +220,17 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			if (this.characterCreationAction() != 0) then
 				return this.characterCreationAction().evaluate(classSelection, whichUnit)
 			endif
-			
+
 			return ACharacter.create(classSelection.player(), whichUnit)
 		endmethod
-		
+
 		/**
 		 * Is called by .evaluate() whenever a class unit is created for a class.
 		 * \param whichUnit The created unit of the corresponding class.
 		 */
 		public stub method onCreate takes unit whichUnit returns nothing
 		endmethod
-		
+
 		/**
 		 * Is called by .evaluate() whenever a player leaves the game who has an active class selection.
 		 * It is called before the class selection had been destroyed or the class had been selected automatically and after the control had been shared.
@@ -246,7 +246,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			local integer i
 			local ACharacter character = 0
 			local unit whichUnit = this.currentClass().generateUnit(this.m_user, this.startX(), this.startY(), this.startFacing())
-			
+
 			set character = this.onCharacterCreation.evaluate(this, whichUnit)
 			call ACharacter.setPlayerCharacterByCharacter(character)
 
@@ -271,7 +271,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			debug call Print("Destroy it!")
 			call this.destroy()
 		endmethod
-		
+
 		/**
 		 * Enables or disables changing the shown class using the left and the right arrow key.
 		 */
@@ -284,7 +284,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				call DisableTrigger(this.m_changeNextTrigger)
 			endif
 		endmethod
-		
+
 		/**
 		 * Enables or disables selecting the class using the escape key.
 		 */
@@ -312,14 +312,14 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call SetUnitMoveSpeed(this.m_classUnit, 0.0) // should not be moved but be rotatable, the map Azeroth Grandprix uses a movement speed of 0.0 but a rotation rate of 0.10 for the selectable cars
 			// do not block units from other players by the unit's pathing
 			call SetUnitPathing(this.m_classUnit, false)
-			
+
 			/*
 			 * Make the character invisible for all other players since all class selections share the same rect.
 			 */
 			if (GetLocalPlayer() != this.player()) then
 				call SetUnitVertexColor(this.m_classUnit, 255, 255, 255, 0)
 			endif
-			
+
 			/// \todo Has to be set although unit is being paused?!
 			if (IsUnitType(this.m_classUnit, UNIT_TYPE_HERO)) then
 				call SuspendHeroXP(this.m_classUnit, true)
@@ -334,10 +334,10 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 
 			// refresh OpLimit
 			call this.refreshInfoSheet.evaluate()
-			
+
 			call this.onCreate.evaluate(this.m_classUnit)
 		endmethod
-		
+
 		/**
 		 * Refreshes the info sheet (multiboard). If it does not exist it creates one and updates it with information fo the currently displayed character class.
 		 */
@@ -428,7 +428,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				call this.createUnit()
 			endif
 		endmethod
-		
+
 		/**
 		 * Minimizes or maximizes the multiboard with information about the currently displayed class.
 		 * \param minimize If this value is true the multiboard is minimized. If this value is false the multiboard is maximized.
@@ -490,7 +490,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 				call AHashTable.global().setHandleInteger(this.m_refreshTrigger, 0, this)
 			endif
 		endmethod
-		
+
 		/**
 		 * Changes to the previous class in selection.
 		 */
@@ -502,7 +502,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			endif
 			call this.createUnit()
 		endmethod
-		
+
 		/**
 		 * Changes to the next class in selection.
 		 */
@@ -557,16 +557,26 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		private method createInfoSheet takes nothing returns nothing
 			set this.m_infoSheet = CreateMultiboard()
 		endmethod
-		
+
 		private static method triggerConditionMove takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			return GetTriggerUnit() == this.m_classUnit and (GetIssuedOrderId() == OrderId("move") or GetIssuedOrderId() == OrderId("smart"))
+			return GetTriggerUnit() == this.m_classUnit and (GetIssuedOrderId() == OrderId("move") or GetIssuedOrderId() == OrderId("smart") or GetIssuedOrderId() == OrderId("attack") or GetIssuedOrderId() == OrderId("patrol"))
 		endmethod
-		
+
+		private static method timerFunctionStop takes nothing returns nothing
+			local unit triggerUnit = AHashTable.global().handleUnit(GetExpiredTimer(), 0)
+			call IssueImmediateOrder(triggerUnit, "stop")
+			call PauseTimer(GetExpiredTimer())
+			call AHashTable.global().destroyTimer(GetExpiredTimer())
+		endmethod
+
 		private static method triggerActionMove takes nothing returns nothing
-			call IssueImmediateOrder(GetTriggerUnit(), "stop")
+			local timer whichTimer = CreateTimer()
+			call AHashTable.global().setHandleUnit(whichTimer, 0, GetTriggerUnit())
+			call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionStop)
+			debug call Print("Stop!")
 		endmethod
-		
+
 		private method createMoveTrigger takes nothing returns nothing
 			set this.m_moveTrigger = CreateTrigger()
 			call TriggerRegisterAnyUnitEventBJ(this.m_moveTrigger, EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER)
@@ -660,7 +670,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call DestroyMultiboard(this.m_infoSheet)
 			set this.m_infoSheet = null
 		endmethod
-		
+
 		private method destroyMoveTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_moveTrigger)
 			set this.m_moveTrigger = null
@@ -692,7 +702,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call this.destroyMoveTrigger()
 			call this.removeClassUnit()
 		endmethod
-		
+
 		private static method timerFunctionAutoSelectClasses takes nothing returns nothing
 			local integer i = 0
 			loop
@@ -708,7 +718,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call DestroyTimer(GetExpiredTimer())
 			set thistype.m_selectionTimer = null
 		endmethod
-		
+
 		/**
 		 * Starts a timer which auto selects classes for all players who have not already selected a class.
 		 * This helps to start games with players who are afk. Otherwise the players would have to be kicked out of the game.
@@ -726,7 +736,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call TimerDialogSetTitle(thistype.m_selectionTimerDialog, text)
 			call TimerDialogDisplay(thistype.m_selectionTimerDialog, true)
 		endmethod
-		
+
 		/**
 		 * Ends the limitation timer.
 		 */
