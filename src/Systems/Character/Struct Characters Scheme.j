@@ -420,7 +420,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call PlayerData(iterator.data()).experienceBar().setValueIcon(length, valueIcon)
+				call thistype.setBarValueIconForPlayerDataWithNewOpLimit.evaluate(PlayerData(iterator.data()).experienceBar(), length, valueIcon)
 				call iterator.next()
 			endloop
 			call iterator.destroy()
@@ -430,7 +430,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call PlayerData(iterator.data()).experienceBar().setEmptyIcon(length, emptyIcon)
+				call thistype.setBarEmptyIconForPlayerDataWithNewOpLimit.evaluate(PlayerData(iterator.data()).experienceBar(), length, emptyIcon)
 				call iterator.next()
 			endloop
 			call iterator.destroy()
@@ -454,7 +454,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call PlayerData(iterator.data()).hitPointsBar().setValueIcon(length, valueIcon)
+				call thistype.setBarValueIconForPlayerDataWithNewOpLimit.evaluate(PlayerData(iterator.data()).hitPointsBar(), length, valueIcon)
 				call iterator.next()
 			endloop
 			call iterator.destroy()
@@ -464,7 +464,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call PlayerData(iterator.data()).hitPointsBar().setEmptyIcon(length, emptyIcon)
+				call thistype.setBarEmptyIconForPlayerDataWithNewOpLimit.evaluate(PlayerData(iterator.data()).hitPointsBar(), length, emptyIcon)
 				call iterator.next()
 			endloop
 			call iterator.destroy()
@@ -488,7 +488,7 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call PlayerData(iterator.data()).manaBar().setValueIcon(length, valueIcon)
+				call thistype.setBarValueIconForPlayerDataWithNewOpLimit.evaluate(PlayerData(iterator.data()).manaBar(), length, valueIcon)
 				call iterator.next()
 			endloop
 			call iterator.destroy()
@@ -498,10 +498,18 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			local AIntegerListIterator iterator = this.m_playerData.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				call PlayerData(iterator.data()).manaBar().setEmptyIcon(length, emptyIcon)
+				call thistype.setBarEmptyIconForPlayerDataWithNewOpLimit.evaluate(PlayerData(iterator.data()).manaBar(), length, emptyIcon)
 				call iterator.next()
 			endloop
 			call iterator.destroy()
+		endmethod
+
+		private static method setBarValueIconForPlayerDataWithNewOpLimit takes AMultiboardBar bar, integer length, string valueIcon returns nothing
+			call bar.setValueIcon(length, valueIcon)
+		endmethod
+
+		private static method setBarEmptyIconForPlayerDataWithNewOpLimit takes AMultiboardBar bar, integer length, string emptyIcon returns nothing
+			call bar.setEmptyIcon(length, emptyIcon)
 		endmethod
 
 		public method setBarWidths takes real width returns nothing
@@ -623,10 +631,14 @@ library AStructSystemsCharacterCharactersScheme requires optional ALibraryCoreDe
 			loop
 				exitwhen (i == bj_MAX_PLAYERS)
 				if (ACharacter.playerCharacter(Player(i)) != 0) then
-					call this.m_playerData.pushBack(PlayerData.create(Player(i), this, this.m_playerData.size()))
+					call this.m_playerData.pushBack(thistype.createPlayerDataWithNewOpLimit.evaluate(Player(i), this, this.m_playerData.size()))
 				endif
 				set i = i + 1
 			endloop
+		endmethod
+
+		private static method createPlayerDataWithNewOpLimit takes player whichPlayer, thistype this, integer index returns PlayerData
+			return PlayerData.create(whichPlayer, this, index)
 		endmethod
 
 		/**
