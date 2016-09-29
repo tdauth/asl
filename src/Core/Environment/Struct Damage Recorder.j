@@ -213,63 +213,6 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			call this.destroyDamageTrigger()
 		endmethod
 
-		private static method groupFunctionRegister takes nothing returns nothing
-			call thistype.registerGlobalUnit.evaluate(GetEnumUnit())
-		endmethod
-		
-		private static method unitIsNotDead takes nothing returns boolean
-			return not IsUnitDeadBJ(GetFilterUnit())
-		endmethod
-
-		private static method registerAllUnitsInPlayableMap takes nothing returns nothing
-			local group whichGroup = CreateGroup()
-			call GroupEnumUnitsInRect(whichGroup, bj_mapInitialPlayableArea, Filter(function thistype.unitIsNotDead))
-			call ForGroup(whichGroup, function thistype.groupFunctionRegister)
-			call DestroyGroup(whichGroup)
-			set whichGroup = null
-		endmethod
-
-		private static method triggerActionEnter takes nothing returns nothing
-			call thistype.registerGlobalUnit.evaluate(GetTriggerUnit())
-		endmethod
-
-		private static method triggerActionLeave takes nothing returns nothing
-			call thistype.unregisterGlobalUnit.evaluate(GetTriggerUnit())
-		endmethod
-		
-		private static method triggerActionDeath takes nothing returns nothing
-			if (not IsUnitType(GetTriggerUnit(), UNIT_TYPE_HERO)) then
-				call thistype.unregisterGlobalUnit.evaluate(GetTriggerUnit())
-			endif
-		endmethod
-
-		/**
-		 * \param useGlobalDamageDetection If this value is true there will be a global damage detection system which allows you acessing a damage recorder of every unit in map.
-		 * \param globalDamageDetectionOnDamageAction Use this value to specify a default action which is set for every created global damage recorder.
-		 * \param saveDataByDefault If this value is true data will be saved by default, otherwise it will be discared.
-		 * \todo What's about dying units (should be removed from global damage detection? Heroes?!)
-		 */
-		public static method init takes boolean useGlobalDamageDetection, ADamageRecorderOnDamageAction globalDamageDetectionOnDamageAction, boolean saveDataByDefault returns nothing
-			// static construction members
-			set thistype.m_useGlobalDamageDetection = useGlobalDamageDetection
-			set thistype.m_globalDamageDetectionOnDamageAction = globalDamageDetectionOnDamageAction
-			set thistype.m_saveDataByDefault = saveDataByDefault
-
-			if (thistype.m_useGlobalDamageDetection) then
-				call thistype.registerAllUnitsInPlayableMap()
-
-				set thistype.m_globalDamageDetectionEnterTrigger = CreateTrigger()
-				call TriggerRegisterEnterRectSimple(thistype.m_globalDamageDetectionEnterTrigger, bj_mapInitialPlayableArea) /// \todo Leak
-				call TriggerAddAction(thistype.m_globalDamageDetectionEnterTrigger, function thistype.triggerActionEnter)
-				set thistype.m_globalDamageDetectionLeaveTrigger = CreateTrigger()
-				call TriggerRegisterLeaveRectSimple(thistype.m_globalDamageDetectionLeaveTrigger, bj_mapInitialPlayableArea) /// \todo Leak
-				
-				set thistype.m_globalDamageDetectionDeathTrigger = CreateTrigger()
-				call TriggerRegisterAnyUnitEventBJ(thistype.m_globalDamageDetectionDeathTrigger, EVENT_PLAYER_UNIT_DEATH)
-				call TriggerAddAction(thistype.m_globalDamageDetectionDeathTrigger, function thistype.triggerActionDeath)
-			endif
-		endmethod
-
 		public static method isGlobalUnitRegistered takes unit whichUnit returns boolean
 			debug if (not thistype.m_useGlobalDamageDetection) then
 				debug call thistype.staticPrintMethodError("isGlobalUnitRegistered", "Global damage detection is not enabled.")
@@ -289,7 +232,7 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 			endif
 			set this = thistype.create(whichUnit)
 			call this.setOnDamageAction(thistype.m_globalDamageDetectionOnDamageAction)
-			call this.setSaveData(thistype.m_saveDataByDefault)
+			call this.setSaveData(thistype.m_saveDataByDefault) // TODO weak performance, just don't do it on construction
 			call AHashTable.global().setHandleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER, this)
 			return this
 		endmethod
@@ -313,6 +256,63 @@ library AStructCoreEnvironmentDamageRecorder requires optional ALibraryCoreDebug
 				debug return 0
 			debug endif
 			return thistype(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_GLOBALDAMAGERECORDER))
+		endmethod
+
+		private static method groupFunctionRegister takes nothing returns nothing
+			call thistype.registerGlobalUnit(GetEnumUnit())
+		endmethod
+
+		private static method unitIsNotDead takes nothing returns boolean
+			return not IsUnitDeadBJ(GetFilterUnit())
+		endmethod
+
+		private static method registerAllUnitsInPlayableMap takes nothing returns nothing
+			local group whichGroup = CreateGroup()
+			call GroupEnumUnitsInRect(whichGroup, bj_mapInitialPlayableArea, Filter(function thistype.unitIsNotDead))
+			call ForGroup(whichGroup, function thistype.groupFunctionRegister)
+			call DestroyGroup(whichGroup)
+			set whichGroup = null
+		endmethod
+
+		private static method triggerActionEnter takes nothing returns nothing
+			call thistype.registerGlobalUnit(GetTriggerUnit())
+		endmethod
+
+		private static method triggerActionLeave takes nothing returns nothing
+			call thistype.unregisterGlobalUnit(GetTriggerUnit())
+		endmethod
+
+		private static method triggerActionDeath takes nothing returns nothing
+			if (not IsUnitType(GetTriggerUnit(), UNIT_TYPE_HERO)) then
+				call thistype.unregisterGlobalUnit(GetTriggerUnit())
+			endif
+		endmethod
+
+		/**
+		 * \param useGlobalDamageDetection If this value is true there will be a global damage detection system which allows you acessing a damage recorder of every unit in map.
+		 * \param globalDamageDetectionOnDamageAction Use this value to specify a default action which is set for every created global damage recorder.
+		 * \param saveDataByDefault If this value is true data will be saved by default, otherwise it will be discared.
+		 * \todo What's about dying units (should be removed from global damage detection? Heroes?!)
+		 */
+		public static method init takes boolean useGlobalDamageDetection, ADamageRecorderOnDamageAction globalDamageDetectionOnDamageAction, boolean saveDataByDefault returns nothing
+			// static construction members
+			set thistype.m_useGlobalDamageDetection = useGlobalDamageDetection
+			set thistype.m_globalDamageDetectionOnDamageAction = globalDamageDetectionOnDamageAction
+			set thistype.m_saveDataByDefault = saveDataByDefault
+
+			if (thistype.m_useGlobalDamageDetection) then
+				call thistype.registerAllUnitsInPlayableMap()
+
+				set thistype.m_globalDamageDetectionEnterTrigger = CreateTrigger()
+				call TriggerRegisterEnterRectSimple(thistype.m_globalDamageDetectionEnterTrigger, bj_mapInitialPlayableArea) /// \todo Leak
+				call TriggerAddAction(thistype.m_globalDamageDetectionEnterTrigger, function thistype.triggerActionEnter)
+				set thistype.m_globalDamageDetectionLeaveTrigger = CreateTrigger()
+				call TriggerRegisterLeaveRectSimple(thistype.m_globalDamageDetectionLeaveTrigger, bj_mapInitialPlayableArea) /// \todo Leak
+
+				set thistype.m_globalDamageDetectionDeathTrigger = CreateTrigger()
+				call TriggerRegisterAnyUnitEventBJ(thistype.m_globalDamageDetectionDeathTrigger, EVENT_PLAYER_UNIT_DEATH)
+				call TriggerAddAction(thistype.m_globalDamageDetectionDeathTrigger, function thistype.triggerActionDeath)
+			endif
 		endmethod
 	endstruct
 
