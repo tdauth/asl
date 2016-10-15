@@ -2,7 +2,7 @@
 * 1.3 preparings:
 * DONE: Drop RtC support and japi completely. Is untested anyway.
 * DONE: Use GPLv2.
-* Test AMultipageSpellbook.
+* DONE (TPoF uses it): Test AMultipageSpellbook.
 * DONE: Fix ACharactersScheme.
 * ALibraryCoreEnvironmentSound is in Environment but Music is in Interface.
 * Add function StopSoundForPlayer and use it in TPoF.
