@@ -6,20 +6,20 @@ library AStructSystemsCharacterBuff requires AStructCoreGeneralHashTable, AStruc
 	 */
 	private struct BuffCounter
 		private unit m_unit
-		private AHashTable m_hashtable /// Stores for every allocated buff the count
+		private AGlobalHashTable m_hashtable /// Stores for every allocated buff the count
 		private integer m_guard /// If this value becomes 0 or less on decrement the buff counter is auto destroyed since the unit has no more buffs
-		
+
 		public method count takes ABuff whichBuff returns integer
 			return this.m_hashtable.integer(whichBuff, 0)
 		endmethod
-		
+
 		public method increment takes ABuff whichBuff returns integer
 			local integer result =  this.m_hashtable.integer(whichBuff, 0) + 1
 			call this.m_hashtable.setInteger(whichBuff, 0, result)
 			set this.m_guard = this.m_guard + 1
 			return result
 		endmethod
-		
+
 		public method decrement takes ABuff whichBuff returns integer
 			local integer result = this.m_hashtable.integer(whichBuff, 0) - 1
 			call this.m_hashtable.setInteger(whichBuff, 0, result)
@@ -29,24 +29,24 @@ library AStructSystemsCharacterBuff requires AStructCoreGeneralHashTable, AStruc
 			endif
 			return result
 		endmethod
-		
+
 		public static method create takes unit whichUnit returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_unit = whichUnit
 			set this.m_hashtable = AHashTable.create()
 			set this.m_guard = 0
-			
+
 			call AHashTable.global().setHandleInteger(whichUnit, A_HASHTABLE_KEY_BUFFCOUNTER, this)
-			
+
 			return this
 		endmethod
-		
+
 		public method onDestroy takes nothing returns nothing
 			call AHashTable.global().removeHandleInteger(this.m_unit, A_HASHTABLE_KEY_BUFFCOUNTER)
 			set this.m_unit = null
 			call this.m_hashtable.destroy()
 		endmethod
-		
+
 		public static method unitBuffCounter takes unit whichUnit returns thistype
 			return BuffCounter(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_BUFFCOUNTER))
 		endmethod
@@ -64,10 +64,10 @@ library AStructSystemsCharacterBuff requires AStructCoreGeneralHashTable, AStruc
 		// members
 		private AUnitVector m_targets
 		private integer m_index
-		
+
 		public stub method onAdd takes unit source, unit whichUnit, integer index returns nothing
 		endmethod
-		
+
 		public stub method onRemove takes unit source, unit whichUnit, integer index returns nothing
 		endmethod
 
@@ -82,13 +82,13 @@ library AStructSystemsCharacterBuff requires AStructCoreGeneralHashTable, AStruc
 			debug call Print("Before getting count")
 			return buffCounter.count(this)
 		endmethod
-		
+
 		private method getCounterOnRequest takes unit whichUnit returns BuffCounter
 			local BuffCounter buffCounter = BuffCounter.unitBuffCounter(whichUnit)
 			if (buffCounter == 0) then
 				set buffCounter = BuffCounter.create(whichUnit)
 			endif
-			
+
 			return buffCounter
 		endmethod
 

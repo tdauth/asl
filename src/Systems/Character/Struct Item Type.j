@@ -205,10 +205,10 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			set this.m_abilities = AIntegerVector.create()
 			set this.m_permanent = ABooleanVector.create()
 
-			debug if (AHashTable.global().hasInteger(A_HASHTABLE_KEY_ITEMTYPES, itemType)) then
+			debug if (AGlobalHashTable.global().hasInteger(A_HASHTABLE_GLOBAL_KEY_ITEMTYPES, itemType)) then
 				debug call this.print("Item type " + I2S(itemType) + " already has a custom item type.")
 			debug endif
-			call AHashTable.global().setInteger(A_HASHTABLE_KEY_ITEMTYPES, itemType, this)
+			call AGlobalHashTable.global().setInteger(A_HASHTABLE_GLOBAL_KEY_ITEMTYPES, itemType, this)
 			return this
 		endmethod
 
@@ -222,7 +222,7 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 			call this.m_abilities.destroy()
 			call this.m_permanent.destroy()
 
-			call AHashTable.global().removeInteger(A_HASHTABLE_KEY_ITEMTYPES, this.m_itemType)
+			call AGlobalHashTable.global().removeInteger(A_HASHTABLE_GLOBAL_KEY_ITEMTYPES, this.m_itemType)
 		endmethod
 
 		public static method init takes string textLevel, string textStrength, string textAgility, string textIntelligence, string textClass returns nothing
@@ -235,11 +235,11 @@ library AStructSystemsCharacterItemType requires optional ALibraryCoreDebugMisc,
 		endmethod
 
 		public static method itemTypeIdHasItemType takes integer itemTypeId returns boolean
-			return AHashTable.global().hasInteger(A_HASHTABLE_KEY_ITEMTYPES, itemTypeId)
+			return AGlobalHashTable.global().hasInteger(A_HASHTABLE_GLOBAL_KEY_ITEMTYPES, itemTypeId)
 		endmethod
 
 		public static method itemTypeOfItemTypeId takes integer itemTypeId returns thistype
-			return AHashTable.global().integer(A_HASHTABLE_KEY_ITEMTYPES, itemTypeId)
+			return AGlobalHashTable.global().integer(A_HASHTABLE_GLOBAL_KEY_ITEMTYPES, itemTypeId)
 		endmethod
 
 		public static method itemTypeOfItem takes item whichItem returns thistype

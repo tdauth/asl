@@ -283,14 +283,14 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		public method isInTime takes nothing returns boolean
 			return this.isInSpecifiedTime(GetFloatGameState(GAME_STATE_TIME_OF_DAY))
 		endmethod
-		
+
 		/**
 		 * \return Returns true if the period is the one which is currently active for the corresponding unit. Otherwise it returns false.
 		 */
 		public method isCurrent takes nothing returns boolean
 			return thistype.current(this.unit()) == this
 		endmethod
-		
+
 		/**
 		 * \return Returns true if the period is the one which is currently queued as next for the corresponding unit. Otherwise it returns false.
 		 */
@@ -338,7 +338,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call IssueRectOrder(this.unit(), "move", this.targetRect())
 			//debug call this.print("Created target trigger for " + GetUnitName(this.unit()))
 		endmethod
-		
+
 		/**
 		 * Ends the routine period and clears it from the unit.
 		 * Destroys the target trigger and calls \ref ARoutine.onEnd() with .execute() if it is enabled.
@@ -374,7 +374,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 						call thistype.current(this.unit()).end()
 						call thistype.clearCurrent(this.unit())
 					endif
-				
+
 					/*
 					 * Clear the next queued.
 					 */
@@ -386,7 +386,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 
 					call thistype.setCurrent(this.unit(), this)
 					call this.routine().onStart.execute(this)
-					
+
 					if (this.routine().hasTarget()) then
 						if (RectContainsUnit(this.m_targetRect, this.unit())) then // already at target
 							call this.routine().onTarget.execute(this)
@@ -425,17 +425,17 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			call TriggerAddAction(this.m_endTrigger, function thistype.triggerActionEnd)
 			call AHashTable.global().setHandleInteger(this.m_endTrigger, 0, this)
 		endmethod
-		
+
 		private method destroyStartTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_startTrigger)
 			set this.m_startTrigger = null
 		endmethod
-		
+
 		private method destroyEndTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(this.m_endTrigger)
 			set this.m_endTrigger = null
 		endmethod
-		
+
 		/**
 		 * Changes the start time of day at which the period is triggered for the unit.
 		 * \param startTimeOfDay The real representation of the time of day at which the period is started.
@@ -651,7 +651,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 
 			// pause
 			if (flag) then
-			
+
 				if (this.isEnabled()) then
 					call DisableTrigger(this.m_endTrigger)
 					if (this.m_targetTrigger != null) then
@@ -668,7 +668,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 						call this.end() // run onEnd() and clear current
 					endif
 				endif
-				
+
 				if (not this.isInTime()) then
 					call thistype.clearCurrent(this.unit())
 
@@ -727,7 +727,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					call iterator.next()
 				endloop
 				call iterator.destroy()
-				
+
 				/*
 				 * Now end first and then start other routines.
 				 * Otherwise bugs may appear since a routine might be started and another one ended after that (enter and leave house bugs).
@@ -741,7 +741,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					call iterator.next()
 				endloop
 				call iterator.destroy()
-				
+
 				set iterator = toStartRoutines.begin()
 				loop
 					exitwhen (not iterator.isValid())
@@ -751,7 +751,7 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 					call iterator.next()
 				endloop
 				call iterator.destroy()
-				
+
 				call toEndRoutines.destroy()
 				call toStartRoutines.destroy()
 			endif
@@ -832,12 +832,14 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 		public static method disableAll takes unit whichUnit returns nothing
 			local AIntegerList list = thistype.routines(whichUnit)
 			local AIntegerListIterator iterator
+			debug call Print("Routines count for unit " + GetUnitName(whichUnit) + ": " + I2S(list.size()))
 			if (list == 0) then
 				return
 			endif
 			set iterator = list.begin()
 			loop
 				exitwhen (not iterator.isValid())
+				debug call Print("Disable routine: " + I2S(thistype(iterator.data())))
 				call thistype(iterator.data()).disable()
 				call iterator.next()
 			endloop

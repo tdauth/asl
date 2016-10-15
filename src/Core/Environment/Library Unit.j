@@ -292,12 +292,12 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 
 	/// \sa FlushUnitTypeCollisionSize, GetUnitCollisionSizeEx, GetUnitCollisionSize
 	function FlushUnitCollisionSizes takes nothing returns nothing
-		call AHashTable.global().flushKey(A_HASHTABLE_KEY_UNITCOLLISIONSIZES)
+		call AGlobalHashTable.global().flushKey(A_HASHTABLE_GLOBAL_KEY_UNITCOLLISIONSIZES)
 	endfunction
 
 	/// \sa FlushUnitCollisionSizes, GetUnitCollisionSizeEx, GetUnitCollisionSize
 	function FlushUnitTypeCollisionSize takes integer unitTypeId returns nothing
-		call AHashTable.global().removeReal(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitTypeId)
+		call AGlobalHashTable.global().removeReal(A_HASHTABLE_GLOBAL_KEY_UNITCOLLISIONSIZES, unitTypeId)
 	endfunction
 
 	/**
@@ -316,8 +316,8 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 		local real lo
 		local real mid
 		local integer unitType = GetUnitTypeId(u)
-		if (AHashTable.global().hasReal(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitType)) then
-			return AHashTable.global().real(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitType)
+		if (AGlobalHashTable.global().hasReal(A_HASHTABLE_GLOBAL_KEY_UNITCOLLISIONSIZES, unitType)) then
+			return AGlobalHashTable.global().real(A_HASHTABLE_GLOBAL_KEY_UNITCOLLISIONSIZES, unitType)
 		endif
 		set hi = maxCollisionSize
 		set lo = 0.0
@@ -331,7 +331,7 @@ library ALibraryCoreEnvironmentUnit requires ALibraryCoreMathsReal, AStructCoreG
 			endif
 			set i=i+1
 		endloop
-		call AHashTable.global().setReal(A_HASHTABLE_KEY_UNITCOLLISIONSIZES, unitType, mid)
+		call AGlobalHashTable.global().setReal(A_HASHTABLE_GLOBAL_KEY_UNITCOLLISIONSIZES, unitType, mid)
 		return mid
 	endfunction
 

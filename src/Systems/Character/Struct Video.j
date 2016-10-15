@@ -343,7 +343,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		//! runtextmacro optional A_STRUCT_DEBUG("\"AVideo\"")
 
 		// dynamic members
-		
+
 		/**
 		 * Sets the owner of all unit actors which are copies of actual owners.
 		 * This helps preventing fights between hostile units in videos.
@@ -352,15 +352,15 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public method setActorOwner takes player owner returns nothing
 			set this.m_actorOwner = owner
 		endmethod
-		
+
 		public method actorOwner takes nothing returns player
 			return this.m_actorOwner
 		endmethod
-		
+
 		public method setHasCharacterActor takes boolean hasCharacterActor returns nothing
 			set this.m_hasCharacterActor = hasCharacterActor
 		endmethod
-		
+
 		public method hasCharacterActor takes nothing returns boolean
 			return this.m_hasCharacterActor
 		endmethod
@@ -425,36 +425,36 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public method fadeIn takes nothing returns boolean
 			return this.m_fadeIn
 		endmethod
-		
+
 		public method checkFilterTime takes real time, string name returns nothing
 			debug if (time < bj_CINEMODE_INTERFACEFADE) then
 				debug call this.staticPrint(name + " filter time should be equal to or bigger than bj_CINEMODE_INTERFACEFADE (" + R2S(bj_CINEMODE_INTERFACEFADE) + " but it has value " + R2S(time) + ".")
 			debug endif
 		endmethod
-		
+
 		public method setPlayFilterTime takes real time returns nothing
 			set this.m_playFilterTime = time
 			debug call this.checkFilterTime(time, "play")
 		endmethod
-		
+
 		public method playFilterTime takes nothing returns real
 			return this.m_playFilterTime
 		endmethod
-		
+
 		public method setStopFilterTime takes real time returns nothing
 			set this.m_stopFilterTime = time
 			debug call this.checkFilterTime(time, "stop")
 		endmethod
-		
+
 		public method stopFilterTime takes nothing returns real
 			return this.m_stopFilterTime
 		endmethod
-		
+
 		public method setSkipFilterTime takes real time returns nothing
 			set this.m_skipFilterTime = time
 			debug call this.checkFilterTime(time, "skip")
 		endmethod
-		
+
 		public method skipFilterTime takes nothing returns real
 			return this.m_skipFilterTime
 		endmethod
@@ -530,7 +530,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				call this.m_skipAction.evaluate(this) // evaluate since it is called before stop action
 			endif
 		endmethod
-		
+
 		/**
 		 * \return Returns the first character's actor.
 		 * \note \ref hasCharacterActor() must return true for the current video if you use this method.
@@ -627,7 +627,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set i = i + 1
 			endloop
 		endmethod
-		
+
 		public method setActorsOwner takes player owner returns nothing
 			local integer i = 0
 			call SetUnitOwner(this.actor(), owner, true)
@@ -637,8 +637,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set i = i + 1
 			endloop
 		endmethod
-		
-		private static method resetSkippingPlayers takes nothing returns nothing
+
+		public static method resetSkippingPlayers takes nothing returns nothing
 			local integer i
 			set thistype.m_skippingPlayers = 0
 			set i = 0
@@ -693,7 +693,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 						debug call this.print("There is no character for the video.")
 					endif
 				endif
-				
+
 				call this.m_actor.refresh()
 			endif
 			call SetCameraBoundsToRect(bj_mapInitialPlayableArea) // for all players
@@ -736,13 +736,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			debug endif
 			call DisableTrigger(thistype.m_skipTrigger)
 			call DisableTrigger(thistype.m_leaveTrigger)
-			
+
 			if (fadeOut) then
 				call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			endif
-			
+
 			call TriggerSleepAction(filterTime)
-			
+
 			/*
 			 * Cleanup.
 			 */
@@ -768,18 +768,18 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call thistype.restorePlayerData()
 			call SetTimeOfDay(thistype.m_timeOfDay)
 			call this.onStopAction.evaluate()
-	
+
 			set playersAll = GetPlayersAll()
 			call CinematicModeBJ(false, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> filterTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
 			//call CinematicModeExBJ(true, playersAll, 0.0)
 			set playersAll = null
-			
+
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			call TriggerSleepAction(filterTime)
 			set thistype.m_runningVideo = 0
 			//No camera pan! Call it manually, please.
 		endmethod
-		
+
 		public method stop takes nothing returns nothing
 			call this.doStop(this.stopFilterTime(), true)
 		endmethod
@@ -816,7 +816,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 			call ACharacter.displayMessageToAll(ACharacter.messageTypeInfo, thistype.m_textSkip)
 			call this.onSkipAction.evaluate()
-			
+
 			call this.doStop(this.skipFilterTime(), firstStop)
 		endmethod
 
@@ -849,19 +849,19 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			// members
 			set this.m_actor = 0
 			set this.m_actors = AIntegerVector.create()
-			
+
 			debug call this.checkFilterTime(this.m_playFilterTime, "play")
 			debug call this.checkFilterTime(this.m_stopFilterTime, "stop")
 			debug call this.checkFilterTime(this.m_skipFilterTime, "skip")
 
 			return this
 		endmethod
-		
+
 		public method onDestroy takes nothing returns nothing
 			if (this.m_actor != 0) then
 				call this.m_actor.destroy()
 			endif
-			
+
 			loop
 				exitwhen (this.m_actors.empty())
 				call AActorInterface(this.m_actors.back()).destroy()
@@ -869,7 +869,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endloop
 			call this.m_actors.destroy()
 		endmethod
-		
+
 		/**
 		 * Checks the number of skipable players (all playing human players) and runs \ref onSkipCondition() with that number.
 		 * If it returns true it prepares the skip of the video setting \ref thistype.m_skipped to true and fading to black.
@@ -886,7 +886,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				endif
 				set i = i + 1
 			endloop
-		
+
 			if (this.onSkipCondition.evaluate(skipablePlayers)) then
 				debug call Print("Skipping video: " + I2S(this))
 				/*
@@ -895,16 +895,16 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				 */
 				call thistype.resetSkippingPlayers()
 				set thistype.m_skipped = true
-				
+
 				/*
 				 * These things must be done immediately.
 				 */
 				call CancelCineSceneBJ()
 				call CinematicFadeBJ(bj_CINEFADETYPE_FADEOUT, this.skipFilterTime(), "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
-				
+
 				return true
 			endif
-			
+
 			return false
 		endmethod
 
@@ -920,7 +920,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			if (thistype.m_runningVideo == 0 or thistype.m_skipped) then
 				return false
 			endif
-			
+
 			if (thistype.m_playerHasSkipped[GetPlayerId(whichPlayer)]) then
 				return false
 			endif
@@ -941,7 +941,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set thistype.m_playedSound = playedSound
 			call TransmissionFromUnit(whichUnit, text, playedSound)
 		endmethod
-		
+
 		public static method transmissionFromUnitWithName takes unit whichUnit, string name, string text, sound playedSound returns nothing
 			set thistype.m_playedSound = playedSound
 			call TransmissionFromUnitWithName(whichUnit, name, text, playedSound)
@@ -970,17 +970,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call TriggerAddCondition(thistype.m_skipTrigger, Condition(function thistype.triggerConditionVideoIsRunning))
 			call TriggerAddAction(thistype.m_skipTrigger, function thistype.triggerActionSkip)
 		endmethod
-		
+
 		private static method triggerActionLeave takes nothing returns nothing
 			local thistype this = thistype.m_runningVideo
 			// recalculate skipping players and skip if there is a majority.
 			if (thistype.m_playerHasSkipped[GetPlayerId(GetTriggerPlayer())]) then
 				set thistype.m_skippingPlayers = thistype.m_skippingPlayers - 1
 			endif
-			
+
 			call this.checkForSkip()
 		endmethod
-		
+
 		private static method createLeaveTrigger takes nothing returns nothing
 			local integer i
 			set thistype.m_leaveTrigger = CreateTrigger()
@@ -1013,7 +1013,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				set thistype.m_playerData[i] = 0
 				set thistype.m_playerCharacterData[i] = 0
 				set thistype.m_playerHasSkipped[i] = false
-	
+
 				set i = i + 1
 			endloop
 			set thistype.m_timeOfDay = 0.0
@@ -1026,7 +1026,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call AHashTable.global().destroyTrigger(thistype.m_skipTrigger)
 			set thistype.m_skipTrigger = null
 		endmethod
-		
+
 		private static method destroyLeaveTrigger takes nothing returns nothing
 			call AHashTable.global().destroyTrigger(thistype.m_leaveTrigger)
 			set thistype.m_leaveTrigger = null
@@ -1069,13 +1069,13 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		public static method isRunning takes nothing returns boolean
 			return thistype.m_runningVideo != 0
 		endmethod
-		
+
 		// static methods
-		
+
 		public static method unitIsActor takes unit whichUnit returns boolean
 			return AHashTable.global().hasHandleInteger(whichUnit, A_HASHTABLE_KEY_ACTOR)
 		endmethod
-		
+
 		public static method actorByUnit takes unit whichUnit returns AActorInterface
 			return AActorInterface(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_ACTOR))
 		endmethod
@@ -1105,7 +1105,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	function wait takes real seconds returns boolean
 		if (WaitCheckingCondition(seconds, function WaitCondition, 0)) then
 			call AVideo.runningVideo().skip()
-			
+
 			return true
 		endif
 		return false
@@ -1131,7 +1131,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			exitwhen (condition.evaluate(AVideo.runningVideo()))
 			if (WaitCondition()) then
 				call AVideo.runningVideo().skip()
-			
+
 				return true
 			endif
 			call PolledWait(interval)
