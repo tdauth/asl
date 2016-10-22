@@ -497,12 +497,19 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endloop
 		endmethod
 
+		/**
+		 * Overwrite this method to implement code which is run when the video is started during the black fade.
+		 * Called by .evaluate().
+		 */
 		public stub method onInitAction takes nothing returns nothing
 			if (this.m_initAction != 0) then
 				call this.m_initAction.evaluate(this) // evaluate since it is called between fading
 			endif
 		endmethod
 
+		/**
+		 * Called by .execute().
+		 */
 		public stub method onPlayAction takes nothing returns nothing
 			if (this.m_playAction != 0) then
 				call this.m_playAction.execute(this) // execute since we need to be able to use TriggerSleepAction calls (stop has to be called in this function)
