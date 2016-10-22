@@ -6,8 +6,18 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 	 * Allows restoring from the video sequence as well as access to the stored actor.
 	 */
 	private interface AActorInterface
+		/**
+		 * Restores the original unit and destroys or hides the actor unit.
+		 */
 		public method restore takes nothing returns nothing
 		public method restoreOnActorsLocation takes nothing returns nothing
+		/**
+		 * Refreshes the actor unit which means copying as much data as possible from the original unit.
+		 */
+		public method refresh takes nothing returns nothing
+		/**
+		 * \return Returns the actor unit.
+		 */
 		public method actor takes nothing returns unit
 	endinterface
 
@@ -336,7 +346,8 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		private real m_stopFilterTime
 		private real m_skipFilterTime
 		// members
-		private AActorData m_actor // copy of first character
+		/// A copy of the first player character.
+		private AActorData m_actor
 		/// Vector of \ref AActorInterface instances.
 		private AIntegerVector m_actors
 
@@ -667,7 +678,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * \sa CinematicModeExBJ()
 		 */
 		public method play takes nothing returns nothing
-			local force playersAll
 			debug if (thistype.m_runningVideo != 0) then
 				debug call this.print("Another Video is already being run.")
 				debug return
@@ -684,9 +694,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call ClearSelection()
 			call ACharacter.setAllMovable(false)
 			call ACharacter.showAll(false)
-			debug call Print("Before pausing all units.")
 			call PauseAllUnits(true)
-			debug call Print("After pausing all units.")
 			/*
 			 * Refresh the character's actor if the video requires one.
 			 */
@@ -704,10 +712,7 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 				call this.m_actor.refresh()
 			endif
 			call SetCameraBoundsToRect(bj_mapInitialPlayableArea) // for all players
-			set playersAll = GetPlayersAll()
-			call CinematicModeBJ(true, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> m_playFilterTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
-			//call CinematicModeExBJ(true, playersAll, 0.0)
-			set playersAll = null
+			call CinematicModeBJ(true, GetPlayersAll())
 			set thistype.m_runningVideo = this
 			call this.onInitAction.evaluate()
 			if (this.fadeIn()) then
@@ -715,7 +720,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			endif
 			call TriggerSleepAction(this.playFilterTime())
 			call EnableTrigger(thistype.m_skipTrigger)
-			//call EnableUserControl(true) //otherwise we could not catch the press event (just the escape key)
 			call this.onPlayAction.execute() // execute since we need to be able to use TriggerSleepAction calls (stop method has to be called in this method)
 		endmethod
 
@@ -736,7 +740,6 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		 * \note Since there is an execution of the action, TriggerSleepAction functions will be ignored, so this method could not be called by the play method.
 		 */
 		private method doStop takes real filterTime, boolean fadeOut returns nothing
-			local force playersAll
 			debug if (thistype.m_runningVideo != this) then
 				debug call this.print("Video is not being run.")
 				debug return
@@ -775,18 +778,17 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			call thistype.restorePlayerData()
 			call SetTimeOfDay(thistype.m_timeOfDay)
 			call this.onStopAction.evaluate()
-
-			set playersAll = GetPlayersAll()
-			call CinematicModeBJ(false, playersAll) // Never use with value 0.0, unit portraits won't work anymore -> filterTime should be bigger than or equal to bj_CINEMODE_INTERFACEFADE
-			//call CinematicModeExBJ(true, playersAll, 0.0)
-			set playersAll = null
-
+			call CinematicModeBJ(false, GetPlayersAll())
 			call CinematicFadeBJ(bj_CINEFADETYPE_FADEIN, filterTime, "ReplaceableTextures\\CameraMasks\\Black_mask.blp", 100.00, 100.00, 100.00, 0.0)
 			call TriggerSleepAction(filterTime)
 			set thistype.m_runningVideo = 0
-			//No camera pan! Call it manually, please.
+			// No camera pan! Call it manually, please.
 		endmethod
 
+		/**
+		 * Stops the video.
+		 * This method has to be called at the end of every \ref onPlayAction() call.
+		 */
 		public method stop takes nothing returns nothing
 			call this.doStop(this.stopFilterTime(), true)
 		endmethod
@@ -840,6 +842,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			return thistype.m_skippingPlayers >= skipablePlayers / 2 + ModuloInteger(skipablePlayers, 2)
 		endmethod
 
+		/**
+		 * Creates a new video sequence which can be played to all players at the same time.
+		 * \param hasCharacterActor If this value is true, \ref actor() will be available during the video sequence. Otherwise the character will simply be hidden.
+		 */
 		public static method create takes boolean hasCharacterActor returns thistype
 			local thistype this = thistype.allocate()
 			// dynamic members
@@ -1067,22 +1073,36 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			return thistype.m_runningVideo
 		endmethod
 
+		/**
+		 * \return Returns true if the running video has been skipped. Otherwise it returns false.
+		 */
 		public static method skipped takes nothing returns boolean
 			return thistype.m_skipped
 		endmethod
 
 		// static methods
 
+		/**
+		 * \return Returns true if a video is running at the moment at all.
+		 */
 		public static method isRunning takes nothing returns boolean
 			return thistype.m_runningVideo != 0
 		endmethod
 
 		// static methods
 
+		/**
+		 * \param whichUnit The specified unit which could be an actor.
+		 * \return Returns true if the specified unit is an actor unit. Otherwise it returns false.
+		 */
 		public static method unitIsActor takes unit whichUnit returns boolean
 			return AHashTable.global().hasHandleInteger(whichUnit, A_HASHTABLE_KEY_ACTOR)
 		endmethod
 
+		/**
+		 * \param whichUnit The specified unit which could be an actor.
+		 * \return Returns the corresponding \ref AActorInterface instance of the specified unit. Returns 0 if the unit is no actor unit.
+		 */
 		public static method actorByUnit takes unit whichUnit returns AActorInterface
 			return AActorInterface(AHashTable.global().handleInteger(whichUnit, A_HASHTABLE_KEY_ACTOR))
 		endmethod

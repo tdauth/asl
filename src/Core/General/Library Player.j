@@ -48,6 +48,11 @@ library ALibraryCoreGeneralPlayer
 		return result
 	endfunction
 
+	/**
+	 * Gets all players who are controlled by human players and which are actually playing at the moment.
+	 * \return Returns the number of players with human controlling players who have not left the game yet.
+	 * \note The returned force has to be destroyed manually.
+	 */
 	function GetPlayingUsers takes nothing returns force
 		local force result = CreateForce()
 		local player whichPlayer

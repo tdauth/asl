@@ -1,7 +1,7 @@
 library AStructCoreInterfaceVolumeSet
 
 	/**
-	 * Stores the any volumeset and can be applied to players or forces.
+	 * \brief Stores the any volumeset and can be applied to players or forces.
 	 * \sa VolumeGroupSetVolume, VolumeGroupReset, VolumeGroupSetVolumeForPlayerBJ, SetCineModeVolumeGroupsImmediateBJ, SetSpeechVolumeGroupsImmediateBJ
 	 */
 	struct AVolumeSet

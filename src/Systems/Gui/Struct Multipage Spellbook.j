@@ -153,6 +153,10 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			return result
 		endmethod
 
+		/**
+		 * Updates the complete UI for the current page.
+		 * Removes all shown entries from the UI and adds all entries to the UI for the currently shown page.
+		 */
 		public method updateUi takes nothing returns nothing
 			local integer i = this.m_entries.size() / this.entriesPerPage() * this.m_currentPage
 			local integer maxEntries = IMinBJ(this.m_entries.size(), i + this.entriesPerPage())
@@ -246,13 +250,25 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 			call this.m_entries.erase(index)
 		endmethod
 
+		/**
+		 * The shortcut is important for reopening the spellbook after updating its UI. Otherwise it will always be closed automatically
+		 * when the UI is updated. Unfortunately this is the only way to keep it open.
+		 * @{
+		 * \param shortcut The shortcut for the spellbook ability which works also ingame. For example "A".
+		 */
 		public method setShortcut takes string shortcut returns nothing
 			set this.m_shortcut = shortcut
 		endmethod
 
+		/**
+		 * \return Returns the corresponding ingame shortcut for the spellbook ability.
+		 */
 		public method shortcut takes nothing returns string
 			return this.m_shortcut
 		endmethod
+		/**
+		 * @}
+		 */
 
 		public static method create takes unit whichUnit, integer nextPageAbility, integer nextPageSpellbookAbility, integer previousPageAbility, integer previousPageSpellbookAbility returns thistype
 			local thistype this = thistype.allocate()
