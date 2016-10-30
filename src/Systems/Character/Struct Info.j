@@ -161,7 +161,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			endif
 			return ADialogButton(this.m_dialogButtons[GetPlayerId(whichPlayer)]).index()
 		endmethod
-		
+
 		/**
 		 * \return Returns true if the info has been shown to \p whichPlayer.
 		 * \sa hasBeenShownToCharacter()
@@ -209,12 +209,12 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call talk.clear(character.player()) // NOTE necessary that all infos will return false for isShown()!
 			call info.run(character)
 		endmethod
-		
+
 		private method createDialogButton takes player whichPlayer returns ADialogButton
 			if (this.m_dialogButtons[GetPlayerId(whichPlayer)] == 0) then
 				set this.m_dialogButtons[GetPlayerId(whichPlayer)] = AGui.playerGui(whichPlayer).dialog().addDialogButtonIndex(this.description(), thistype.dialogButtonActionRunInfo)
 			endif
-			
+
 			return this.m_dialogButtons[GetPlayerId(whichPlayer)]
 		endmethod
 
@@ -278,7 +278,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				set i = i + 1
 			endloop
 			set this.m_talkIndex = talk.addInfoInstance(this)
-			
+
 			return this
 		endmethod
 
@@ -295,7 +295,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		/// Lists of \ref PlayerSpeechData instances
 		private AIntegerList array playerSpeechData[12] /// \todo bj_MAX_PLAYERS, vJass bug.
 	endglobals
-	
+
 	/**
 	 * \brief Stores sound, texttag and player of a speech call and is used for skipping.
 	 * Skips everything on its destruction.
@@ -304,28 +304,28 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		private player m_player
 		private texttag m_texttag
 		private sound m_sound
-		
+
 		public method player takes nothing returns player
 			return this.m_player
 		endmethod
-		
+
 		public method textTag takes nothing returns texttag
 			return this.m_texttag
 		endmethod
-		
+
 		public method sound takes nothing returns sound
 			return this.m_sound
 		endmethod
-		
+
 		public static method create takes player whichPlayer, texttag textTag, sound whichSound returns thistype
 			local thistype this = thistype.allocate()
 			set this.m_player = whichPlayer
 			set this.m_texttag = textTag
 			set this.m_sound = whichSound
-			
+
 			return this
 		endmethod
-		
+
 		/**
 		 * Skips the sound and removes the texttag for the player.
 		 */
@@ -339,13 +339,13 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			set this.m_player = null
 		endmethod
 	endstruct
-	
+
 	private function SetSpeechVolumeGroupsImmediateForPlayer takes player whichPlayer returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call SetSpeechVolumeGroupsImmediateBJ()
 		endif
 	endfunction
-	
+
 	private function VolumeGroupResetForPlayer takes player whichPlayer returns nothing
 		if (whichPlayer == GetLocalPlayer()) then
 			call VolumeGroupReset()
@@ -429,7 +429,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 				if (playerHasSkipped[GetPlayerId(user)]) then
 					exitwhen (true)
 				endif
-				
+
 				// If we have a bit of time left, skip past 10% of the remaining
 				// duration instead of checking every interval, to minimize the
 				// polling on long waits.
@@ -443,19 +443,17 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 			call DestroyTimer(whichTimer)
 			set whichTimer = null
 		endif
-		
+
 		// only clear data in this function if it has not already been cleared by the skip function
 		if (not playerHasSkipped[GetPlayerId(user)]) then
 			call playerSpeechData[GetPlayerId(character.player())].remove(playerSpeechData)
 			call playerSpeechData.destroy()
 		endif
-		
+
 		call waitForVideo(1.0) // do not show any speeches during video
 
 		call VolumeGroupResetForPlayer(user)
-		if (useThirdPerson) then
-			call AThirdPersonCamera.playerThirdPersonCamera(user).disable()
-		endif
+
 		if (character.talkLog() != 0) then
 			call character.talkLog().addSpeech(info, toCharacter, text, usedSound)
 		endif
@@ -481,7 +479,7 @@ library AStructSystemsCharacterInfo requires optional ALibraryCoreDebugMisc, ALi
 		call KillSoundWhenDone(whichSound)
 		set whichSound = null
 	endfunction
-	
+
 	/**
 	 * Sets the skip flag to true that the waiting is skipped in the \ref speech() function.
 	 * But clears all texttags and sounds immediately.
