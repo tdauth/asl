@@ -144,6 +144,10 @@ library AStructCoreEnvironmentJump requires optional ALibraryCoreDebugMisc, AStr
 		public static method disable takes nothing returns nothing
 			call PauseTimer(thistype.m_timer)
 		endmethod
+
+		public static method refreshRate takes nothing returns real
+			return thistype.m_refreshRate
+		endmethod
 	endstruct
 
 endlibrary
