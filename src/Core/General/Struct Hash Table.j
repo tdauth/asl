@@ -112,10 +112,6 @@ library AStructCoreGeneralHashTable
 			call FlushParentHashtable(this.m_hashTable)
 		endmethod
 
-		public method flushKey takes integer key returns nothing
-			call FlushChildHashtable(this.m_hashTable, key)
-		endmethod
-
 		public method flushHandle takes handle whichHandle returns nothing
 			call FlushChildHashtable(this.m_hashTable, GetHandleId(whichHandle))
 		endmethod
