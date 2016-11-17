@@ -967,6 +967,7 @@ endif
 	//! runtextmacro A_VECTOR("", "ABooleanVector", "boolean", "false", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "ARealVector", "real", "0.0", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AHandleVector", "handle", "null", "100", "150000", "8192")
+	//! runtextmacro A_VECTOR("", "ATriggerVector", "trigger", "null", "100", "150000", "8192")
 
 	//! runtextmacro A_VECTOR("", "AEffectVector", "effect", "null", "100", "150000", "8192")
 	//! runtextmacro A_VECTOR("", "AUnitVector", "unit", "null", "100", "150000", "8192")
