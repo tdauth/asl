@@ -318,11 +318,13 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public method addUnit takes unit whichUnit, integer memberIndex returns nothing
 			call thistype.setSpawnPointMember(whichUnit, this.m_members[memberIndex])
 			call this.m_group.units().pushBack(whichUnit)
+			call this.onSpawnUnit.evaluate(whichUnit, memberIndex)
 		endmethod
 
 		public method setUnit takes unit whichUnit, integer memberIndex returns nothing
 			call thistype.setSpawnPointMember(whichUnit, this.m_members[memberIndex])
 			set this.m_group.units()[memberIndex] = whichUnit
+			call this.onSpawnUnit.evaluate(whichUnit, memberIndex)
 		endmethod
 
 		/**
@@ -470,6 +472,12 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 				set i = i + 1
 			endloop
 			return true
+		endmethod
+
+		/**
+		 * Called by .evaluate() whenever a unit is respawned or added for the first time.
+		 */
+		public stub method onSpawnUnit takes unit whichUnit, integer memberIndex returns nothing
 		endmethod
 
 		public method spawn takes nothing returns boolean
