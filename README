@@ -59,16 +59,16 @@ WARNING: Using % chars in the custom map script leads to unexpected results. You
 -- Trigger editor integration:
 Import the following files with their corresponding paths to enable various data types and functions in World Editor's trigger editor:
 
-"gui/UI/TriggerData.txt"
-Import path:
+Use the wc3converter to create a new trigger data file:
+wc3converter --merge TriggerDataNew.txt <path to original TriggerData.txt from War3Patch.mpq> gui/UI/TriggerData.txt
+
+Then import the file "TriggerDataNew.txt" as:
 "UI\TriggerData.txt"
 
-"gui_<language id>/UI/TriggerStrings.txt"
-Import path:
+Import the file "gui_<language id>/UI/TriggerStrings.txt" as:
 "UI\TriggerStrings.txt"
 
-gui_<language id>/UI/WorldEditStrings.txt"
-Import path:
+Import the file "gui_<language id>/UI/WorldEditStrings.txt" as:
 "UI\WorldEditStrings.txt"
 
 Remember that you have to import all ASL code into your map (script) to use those trigger actions and types.
@@ -88,4 +88,4 @@ You have to import file "Systems/BonusMod/Creation Bonus Mod.j" once to create a
 -- Optimization:
 Please use Wc3mapoptimizer (http://www.wc3c.net/showthread.php?t=79326) to decrease your map script size and increase the script's performance.
 
-Tamino Dauth <tamino@cdauth.eu>, 2016-08-03
+Tamino Dauth <tamino@cdauth.eu>, 2016-11-20
