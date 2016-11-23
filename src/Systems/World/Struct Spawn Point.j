@@ -160,7 +160,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ASpawnPoint\"")
 
 		/**
-		 * \param time Time which has to elapse before the units respawn.
+		 * \param time The time in seconds which has to elapse before the units respawn.
 		 */
 		public method setTime takes real time returns nothing
 			set this.m_time = time
@@ -207,11 +207,15 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 
 		/**
 		  * \param owner The player who owns all spawn point units.
+		  * \note Currently this does not change the owner of existing units only of respawning ones.
 		  */
 		public method setOwner takes player owner returns nothing
 			set this.m_owner = owner
 		endmethod
 
+		/**
+		 * \return Returns the owner of the units of this spawn point. By default this is Player(PLAYER_NEUTRAL_AGGRESSIVE).
+		 */
 		public method owner takes nothing returns player
 			return this.m_owner
 		endmethod
@@ -366,6 +370,11 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return this.m_group.countUnitsOfType(unitTypeId)
 		endmethod
 
+		/**
+		 * Checks for a member with unit type \p unitTypeId and returns it.
+		 * \param unitTypeId The specified unit type ID.
+		 * \return Returns the first unit with the specified unit type ID. If no such unit is a member of the spawn point, it returns null.
+		 */
 		public method firstUnitOfType takes integer unitTypeId returns unit
 			local integer i = 0
 			loop
@@ -378,6 +387,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return null
 		endmethod
 
+		/**
+		 * Kills all members of the spawn point immediately.
+		 */
 		public method kill takes nothing returns nothing
 			local integer i = 0
 			loop
@@ -417,6 +429,9 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			call thistype.clearSpawnPointMember(whichUnit)
 		endmethod
 
+		/**
+		 * \return Returns the remaining time in seconds for the respawn of all members.
+		 */
 		public method remainingTime takes nothing returns real
 			if (this.m_spawnTimer == null) then
 				return 0.0
@@ -428,6 +443,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return this.remainingTime() > 0.0
 		endmethod
 
+		/**
+		 * Pauses the respawn timer. If it does not run nothing happens and the call returns false.
+		 * Otherwise it returns true.
+		 */
 		public method pause takes nothing returns boolean
 			if (not this.runs()) then
 				return false
@@ -454,6 +473,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			call this.resume()
 		endmethod
 
+		/**
+		 * Disables the spawn point which means that no item drops or respawns will happen anymore. Besides that the respawn timer is
+		 * paused.
+		 */
 		public method disable takes nothing returns nothing
 			call DisableTrigger(this.m_deathTrigger)
 			call this.pause()
@@ -480,6 +503,12 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		public stub method onSpawnUnit takes unit whichUnit, integer memberIndex returns nothing
 		endmethod
 
+		/**
+		 * Spawns all members but only if all are dead.
+		 * Otherwise it returns false and nothing happens.
+		 * \return Returns true if all members are dead and are spawned. Otherwise it returns false.
+		 * \sa spawnDeadOnly()
+		 */
 		public method spawn takes nothing returns boolean
 			local integer i
 			local effect whichEffect
@@ -513,6 +542,10 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return true
 		endmethod
 
+		/**
+		 * Spawns only the dead members.
+		 * \sa spawn()
+		 */
 		public method spawnDeadOnly takes nothing returns nothing
 			local unit whichUnit = null
 			local effect whichEffect = null
@@ -543,11 +576,12 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		/**
-		 * This returns a new item owner using a uniform distribution.
-		 * It considers ownly playing users.
+		 * \return This returns a new item owner using a uniform distribution.
+		 * \note It considers ownly playing users (no computer players).
+		 * \note Since thistype.m_dropOwnerId is initialized with a random number it uses always the same values in a game but the initial value might be different.
 		 */
 		private static method getRandomItemOwner takes nothing returns player
-			local player user
+			local player user = null
 			local integer oldDropId = thistype.m_dropOwnerId
 			set thistype.m_dropOwnerId = thistype.m_dropOwnerId + 1
 			loop
@@ -564,20 +598,26 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 			return user
 		endmethod
 
+		/**
+		 * Assigns a randomly choosen owner to the item \p whichItem and shows the dropping message to all playing users.
+		 * If no dropping message has been specified  (\ref textDistributeItem() returns null), no message is shown.
+		 */
 		public method distributeDroppedItem takes item whichItem returns nothing
 			local player itemOwner = thistype.getRandomItemOwner()
-			local player user
+			local player user = null
 			local integer i = 0
 			call SetItemPlayer(whichItem, itemOwner, true)
-			loop
-				exitwhen (i == bj_MAX_PLAYERS)
-				set user = Player(i)
-				if (IsPlayerPlayingUser(user) and this.textDistributeItem() != null) then
-					call DisplayTimedTextToPlayer(user, 0.0, 0.0, 6.0, Format(this.textDistributeItem()).s(GetItemName(whichItem)).s(GetPlayerName(itemOwner)).result())
-				endif
-				set user = null
-				set i = i + 1
-			endloop
+			if (this.textDistributeItem() != null) then
+				loop
+					exitwhen (i == bj_MAX_PLAYERS)
+					set user = Player(i)
+					if (IsPlayerPlayingUser(user)) then
+						call DisplayTimedTextToPlayer(user, 0.0, 0.0, 6.0, Format(this.textDistributeItem()).s(GetItemName(whichItem)).s(GetPlayerName(itemOwner)).result())
+					endif
+					set user = null
+					set i = i + 1
+				endloop
+			endif
 			set itemOwner = null
 		endmethod
 
@@ -598,10 +638,8 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 		endmethod
 
 		private static method timerFunctionSpawn takes nothing returns nothing
-			local timer expiredTimer = GetExpiredTimer()
-			local thistype this = AHashTable.global().handleInteger(expiredTimer, 0)
+			local thistype this = AHashTable.global().handleInteger(GetExpiredTimer(), 0)
 			call this.spawn()
-			set expiredTimer = null
 		endmethod
 
 		private method startTimer takes nothing returns nothing
@@ -697,7 +735,7 @@ library AStructSystemsWorldSpawnPoint requires AInterfaceSystemsWorldSpawnPointI
 
 		public static method init takes nothing returns nothing
 			// static members
-			set thistype.m_dropOwnerId = 0
+			set thistype.m_dropOwnerId = GetRandomInt(0, bj_MAX_PLAYERS - 1)
 		endmethod
 	endstruct
 
