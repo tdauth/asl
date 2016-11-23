@@ -196,6 +196,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		endmethod
 	endstruct
 
+	/// \todo Should be a part of \ref AInventory, vJass bug.
+	function interface AInventoryItemAddFunction takes AInventory inventory, integer index, boolean firstTime returns nothing
+
 	/**
 	 * \brief This structure provides an interface to the character's inventory which is based on the default Warcraft III: The Frozen Throne inventory with 6 slots.
 	 * A unit ability can be used to open and close rucksack.
@@ -267,6 +270,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * The item type ID of the placeholder items for the equipment.
 		 */
 		private integer array m_equipmentItemTypeId[thistype.maxEquipmentTypes]
+		private AIntegerVector m_onEquipFunctions
+		private AIntegerVector m_onAddToRucksackFunctions
 
 		// members
 		private AInventoryItemData array m_equipmentItemData[thistype.maxEquipmentTypes]
@@ -456,6 +461,48 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 		public method totalItemTypeCharges takes integer itemTypeId returns integer
 			return this.totalRucksackItemTypeCharges(itemTypeId) + this.totalEquipmentItemTypeCharges(itemTypeId)
+		endmethod
+
+		/**
+		 * Adds a new callback function which is called via .evaluate() whenever an item is equipped.
+		 * \param callback The function which is called.
+		 */
+		public method addOnEquipFunction takes AInventoryItemAddFunction callback returns nothing
+			call this.m_onEquipFunctions.pushBack(callback)
+		endmethod
+
+		/**
+		 * Adds a new callback function which is called via .evaluate() whenever an item is added to the rucksack.
+		 * \param callback The function which is called.
+		 */
+		public method addOnAddToRucksackFunction takes AInventoryItemAddFunction callback returns nothing
+			call this.m_onAddToRucksackFunctions.pushBack(callback)
+		endmethod
+
+		/**
+		 * Called via .evaluate() whenever an item is equipped. This is called after the equipment, so all data can be retrieved.
+		 * \param firstTime If this value is true, the item has not been in the inventory before.
+		 */
+		public stub method onEquipItem takes integer equipmentType, boolean firstTime returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_onEquipFunctions.size())
+				call AInventoryItemAddFunction(this.m_onEquipFunctions[i]).evaluate(this, equipmentType, firstTime)
+				set i = i + 1
+			endloop
+		endmethod
+
+		/**
+		 * Called via .evaluate() whenever an item is added to the rucksack. This is called after the adding, so all data can be retrieved.
+		 * \param firstTime If this value is true, the item has not been in the inventory before.
+		 */
+		public stub method onAddRucksackItem takes integer rucksackItemIndex, boolean firstTime returns nothing
+			local integer i = 0
+			loop
+				exitwhen (i == this.m_onAddToRucksackFunctions.size())
+				call AInventoryItemAddFunction(this.m_onAddToRucksackFunctions[i]).evaluate(this, rucksackItemIndex, firstTime)
+				set i = i + 1
+			endloop
 		endmethod
 
 		/// \return Returns the page of a rucksack item by index.
@@ -1582,9 +1629,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * \param dontMoveToRucksack If this value is true the item is not tried to be added to the rucksack if the equipment does not succeed.
 		 * \param swapWithAlreadyEquipped If this value is true it is equipped even if there is already an item equipped of the same type.
 		 * \param showEquipMessage If this value is true a message is shown to the owner of the character when the item is equipped successfully.
+		 * \param firstTime If this value is true, the item is added for the first time from the ground or another character or via code.
 		 * \return Returns true if the item is equipped successfully. Otherwise if not or if it is added to the rucksack instead it returns false.
 		 */
-		private method equipItem takes item usedItem, boolean dontMoveToRucksack, boolean swapWithAlreadyEquipped, boolean showEquipMessage returns boolean
+		private method equipItem takes item usedItem, boolean dontMoveToRucksack, boolean swapWithAlreadyEquipped, boolean showEquipMessage, boolean firstTime returns boolean
 			local AItemType itemType
 			local integer equipmentType
 			local item equippedItem
@@ -1624,7 +1672,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 							 * TODO maybe add to rucksack AFTER equipping the new item? Not really necessary.
 							 */
 							set equippedItem = this.m_equipmentItemData[equipmentType].createItem(GetUnitX(this.character().unit()), GetUnitY(this.character().unit()))
-							call this.addItemToRucksack.evaluate(equippedItem, true, false)
+							call this.addItemToRucksack.evaluate(equippedItem, true, false, false)
 							call this.clearEquipmentItem(equipmentType, false)
 							set equippedItem = null
 						elseif (equipmentType == AItemType.equipmentTypeAmulet and this.m_equipmentItemData[equipmentType] != 0) then
@@ -1637,6 +1685,8 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 							call this.character().displayMessage(ACharacter.messageTypeInfo, Format(thistype.m_textEquipItem).s(itemName).result())
 						endif
 
+						call this.onEquipItem.evaluate(equipmentType, firstTime)
+
 						return true
 					endif
 				endif
@@ -1646,7 +1696,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			// move to rucksack
 			if (not dontMoveToRucksack) then
-				return this.addItemToRucksack.evaluate(usedItem, true, true) //if item type is 0 it will be placed in rucksack, too
+				return this.addItemToRucksack.evaluate(usedItem, true, true, firstTime) //if item type is 0 it will be placed in rucksack, too
 			elseif (thistype.m_textUnableToEquipItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToEquipItem)
 			endif
@@ -1661,7 +1711,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * \return Returns true if the item has been equipped. Otherwise it returns false.
 		 */
 		public method addItem takes item whichItem returns boolean
-			return this.equipItem(whichItem, false, false, true) // try always equipment first!
+			return this.equipItem(whichItem, false, false, true, true) // try always equipment first!
 		endmethod
 
 		/**
@@ -1715,11 +1765,12 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 * Adds item \p usedItem to the rucksack.
 		 * \param dontMoveToEquipment If this value is true the item won't be moved to the equipment if the rucksack is full.
 		 * \param showAddMessage If this value is true a message will be shown.
+		 * \param firstTime If this value is true, the item is added for the first time from the ground or another character or via code.
 		 * \return Returns true if the item has been added to the rucksack successfully.
 		 */
-		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage returns boolean
-			local integer i
-			local string itemName
+		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage, boolean firstTime returns boolean
+			local integer i = 0
+			local string itemName = ""
 
 			// sometimes null items will be added for example when an item is added which is removed at the same moment
 			if (usedItem == null) then
@@ -1746,6 +1797,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 					if (showAddMessage and thistype.m_textAddItemToRucksack != null) then
 						call this.character().displayMessage(ACharacter.messageTypeInfo, Format(thistype.m_textAddItemToRucksack).s(itemName).result())
 					endif
+					call this.onAddRucksackItem.evaluate(i, firstTime)
 					return true
 				endif
 				set i = i + 1
@@ -1753,7 +1805,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 
 			// equip
 			if (not dontMoveToEquipment) then
-				return this.equipItem(usedItem, true, false, true)
+				return this.equipItem(usedItem, true, false, true, firstTime)
 			// the rucksack is full and the item should not be equipped, for example when the item was added to the rucksack from the equipment
 			elseif (thistype.m_textUnableToAddRucksackItem != null) then
 				call this.character().displayMessage(ACharacter.messageTypeError, thistype.m_textUnableToAddRucksackItem)
@@ -1953,7 +2005,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 						set movedItem = this.m_rucksackItemData[oldIndex].createItem(GetUnitX(characterUnit), GetUnitY(characterUnit))
 						call SetItemCharges(movedItem, 0)
 						call this.setRucksackItemCharges(oldIndex, this.m_rucksackItemData[oldIndex].charges() - 1)
-						call this.equipItem(movedItem, false, true, true) //test
+						call this.equipItem(movedItem, false, true, true, false) //test
 						set characterUnit = null
 					else
 						// TODO show different message
@@ -2150,7 +2202,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				else
 					call this.clearItemIndex(usedItem)
 					call this.clearEquipmentItem(oldSlot, true)
-					call this.addItemToRucksack(usedItem, true, true)
+					call this.addItemToRucksack(usedItem, true, true, false)
 				endif
 			endif
 			set usedItem = null
@@ -2373,7 +2425,7 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				call this.addItem(GetManipulatedItem())
 			// don't equip items if equipment is disabled
 			else
-				call this.addItemToRucksack(GetManipulatedItem(), true, false)
+				call this.addItemToRucksack(GetManipulatedItem(), true, false, true)
 			endif
 		endmethod
 
@@ -2672,6 +2724,9 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 		 */
 		public static method create takes ACharacter character returns thistype
 			local thistype this = thistype.allocate(character)
+			// dynamic members
+			set this.m_onEquipFunctions = AIntegerVector.create()
+			set this.m_onAddToRucksackFunctions = AIntegerVector.create()
 			// members
 			set this.m_rucksackPage = 0
 			set this.m_rucksackIsEnabled = false
@@ -2770,6 +2825,11 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				endif
 				set i = i + 1
 			endloop
+
+			// dynamic members
+			call this.m_onEquipFunctions.destroy()
+			call this.m_onAddToRucksackFunctions.destroy()
+
 			call this.m_pawnedItems.destroy()
 			call UnitRemoveAbility(this.character().unit(), thistype.m_openRucksackAbilityId)
 
