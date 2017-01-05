@@ -4,6 +4,7 @@
 * DONE: Use GPLv2.
 * DONE (TPoF uses it): Test AMultipageSpellbook.
 * DONE: Fix ACharactersScheme.
+* ADynamicLightning: Use one static timer to update all dynamic lightnings.
 * ALibraryCoreEnvironmentSound is in Environment but Music is in Interface.
 * Add function StopSoundForPlayer and use it in TPoF.
 * Character/world systems: Replace all init() methods by dynamic members!
