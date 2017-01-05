@@ -45,11 +45,11 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method speed takes nothing returns real
 			return this.m_speed
 		endmethod
-		
+
 		public method setMaxHeight takes real maxHeight returns nothing
 			set this.m_maxHeight = maxHeight
 		endmethod
-		
+
 		public method maxHeight takes nothing returns real
 			return this.m_maxHeight
 		endmethod
@@ -61,7 +61,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method targetSeeking takes nothing returns boolean
 			return this.m_targetSeeking
 		endmethod
-		
+
 		/**
 		 * The collision radius is used at the target point or widget. When the missile reaches its target at this radius it will collide and therefore stop.
 		 * @{
@@ -69,7 +69,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method setCollisionRadius takes real collisionRadius returns nothing
 			set this.m_collisionRadius = collisionRadius
 		endmethod
-		
+
 		public method collisionRadius takes nothing returns real
 			return this.m_collisionRadius
 		endmethod
@@ -156,7 +156,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 	endstruct
 
 	/**
-	 * Provides the functionality of a single physical missile which can have a specific missile type, a widget source and target or three coordinate values (x, y and z).
+	 * \brief Provides the functionality of a single physical missile which can have a specific missile type, a widget source and target or three coordinate values (x, y and z).
 	 * All missiles are moved by a timer at a certain periodical interval.
 	 * To provide a graphic for the missile you have to create a custom unit type with the graphic as model.
 	 * For simiplification it does not use any gravity. It just uses a parabola function to deterimne the curve.
@@ -241,15 +241,15 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method unit takes nothing returns unit
 			return this.m_unit
 		endmethod
-		
+
 		public method startX takes nothing returns real
 			return this.m_startX
 		endmethod
-		
+
 		public method startY takes nothing returns real
 			return this.m_startY
 		endmethod
-		
+
 		public method startDistance takes nothing returns real
 			return this.m_startDistance
 		endmethod
@@ -296,7 +296,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method z takes nothing returns real
 			return GetUnitZ(this.m_unit)
 		endmethod
-		
+
 		private method angleBetweenTarget takes real x, real y returns real
 			if (this.m_targetWidget != null) then
 				return GetAngleBetweenPoints(x, y, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget))
@@ -304,7 +304,7 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 				return GetAngleBetweenPoints(x, y, this.m_targetX, this.m_targetY)
 			endif
 		endmethod
-		
+
 		private method distanceBetweenTarget takes real x, real y returns real
 			if (this.m_targetWidget != null) then
 				return GetDistanceBetweenPointsWithoutZ(x, y, GetWidgetX(this.m_targetWidget), GetWidgetY(this.m_targetWidget))
@@ -334,10 +334,6 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			set this.m_isPaused = false
 			if (this.m_missileType.startSoundPath() != null) then
 				call PlaySoundFileAt(this.m_missileType.startSoundPath(), x, y, z)
-			endif
-			
-			if (not thistype.m_refreshTimerStarted) then
-				call thistype.enable.evaluate()
 			endif
 		endmethod
 
@@ -434,9 +430,6 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 		public method onDestroy takes nothing returns nothing
 			// static members
 			call thistype.m_missiles.erase(this.m_iterator)
-			if (thistype.m_missiles.empty()) then
-				call thistype.disable.evaluate()
-			endif
 			// members
 			if (this.m_unit != null) then
 				call RemoveUnit(this.m_unit)
@@ -455,33 +448,6 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 			call iterator.destroy()
 		endmethod
 
-		/**
-		 * \param gravitationalAcceleration Earth average: 9.80665.
-		 */
-		public static method init takes real refreshTime returns nothing
-			debug if (refreshTime <= 0.0) then
-				debug call thistype.staticPrint("Wrong value refresh time value in AMissile struct initialization: " + R2S(refreshTime) + ".")
-			debug endif
-			// static construction members
-			set thistype.m_refreshTime = refreshTime
-			// static members
-			set thistype.m_missiles = AIntegerList.create()
-			set thistype.m_refreshTimer = CreateTimer()
-			set thistype.m_refreshTimerStarted = false
-		endmethod
-
-		public static method cleanUp takes nothing returns nothing
-			call PauseTimer(thistype.m_refreshTimer)
-			call DestroyTimer(thistype.m_refreshTimer)
-			set thistype.m_refreshTimer = null
-			//remove all missiles
-			loop
-				exitwhen (thistype.m_missiles.empty())
-				call thistype(thistype.m_missiles.back()).destroy()
-			endloop
-			call thistype.m_missiles.destroy()
-		endmethod
-
 		public static method enable takes nothing returns nothing
 			if (not thistype.m_refreshTimerStarted) then
 				set thistype.m_refreshTimerStarted = true
@@ -494,6 +460,31 @@ library AStructCoreEnvironmentMissile requires optional ALibraryCoreDebugMisc, A
 				set thistype.m_refreshTimerStarted = false
 				call PauseTimer(thistype.m_refreshTimer)
 			endif
+		endmethod
+
+		public static method init takes real refreshTime returns nothing
+			debug if (refreshTime <= 0.0) then
+				debug call thistype.staticPrint("Wrong value refresh time value in AMissile struct initialization: " + R2S(refreshTime) + ".")
+			debug endif
+			// static construction members
+			set thistype.m_refreshTime = refreshTime
+			// static members
+			set thistype.m_missiles = AIntegerList.create()
+			set thistype.m_refreshTimer = CreateTimer()
+			set thistype.m_refreshTimerStarted = false
+			call thistype.enable()
+		endmethod
+
+		public static method cleanUp takes nothing returns nothing
+			call PauseTimer(thistype.m_refreshTimer)
+			call DestroyTimer(thistype.m_refreshTimer)
+			set thistype.m_refreshTimer = null
+			//remove all missiles
+			loop
+				exitwhen (thistype.m_missiles.empty())
+				call thistype(thistype.m_missiles.back()).destroy()
+			endloop
+			call thistype.m_missiles.destroy()
 		endmethod
 
 		// static construction members
