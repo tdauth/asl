@@ -21,6 +21,13 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 
 		// methods
 
+		/**
+		 * \return Returns the index of the quest item in the quest.
+		 */
+		public method index takes nothing returns integer
+			return this.m_index
+		endmethod
+
 		/// Single call!
 		public stub method enable takes nothing returns boolean
 			if (this.setState(AAbstractQuest.stateNew)) then
@@ -70,7 +77,7 @@ library AStructSystemsCharacterQuestItem requires optional ALibraryCoreDebugMisc
 			call this.setStateWithoutConditionAndCheck.evaluate(state) // TODO JassHelper bug, shouldn't use .evaluate since we're calling from parent struct. Change order that this method is declared after setStateWithoutConditionAndCheck() again when bug is fixed.
 			call this.quest().checkQuestItemsForState.evaluate(state)
 		endmethod
-		
+
 		/// Friend relationship to \ref AQuest, do not use.
 		public method createQuestItem takes nothing returns nothing
 			if (AQuest.isQuestLogUsed.evaluate()) then
