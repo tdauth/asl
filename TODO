@@ -4,7 +4,7 @@
 * DONE: Use GPLv2.
 * DONE (TPoF uses it): Test AMultipageSpellbook.
 * DONE: Fix ACharactersScheme.
-* ADynamicLightning: Use one static timer to update all dynamic lightnings.
+* DONE: ADynamicLightning: Use one static timer to update all dynamic lightnings.
 * ALibraryCoreEnvironmentSound is in Environment but Music is in Interface.
 * Add function StopSoundForPlayer and use it in TPoF.
 * Character/world systems: Replace all init() methods by dynamic members!
@@ -12,6 +12,7 @@
 * FIXED: AHashTable with StringHash() functions is not necessarily safe. StringHash() might collide with another hash. Besides it is very slow. Remove methods with StringHash(). Replace everything by integer keys.
 * FIXED: AInventory: When a spell is stopped (ASpell) from an item the item charges are set to 0 (no stacked item).
 * FIXED: AInventory: When a character gives the page item to another it will be reset but remain in the rucksack of the other as normal item as well!
+* FIXED: AInventory: Show the total sum of gold from selling items.
 * AInventory: More public methods: showRucksackPage(integer pageNumber)
 * AInventory: 0 timer functions might fail when the character dies at that moment. When he is dead the items might land on the ground.
 * FIXED: AInventory: Allow giving owned item to another character. Detect giving order!
