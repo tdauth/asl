@@ -2587,9 +2587,10 @@ library AStructSystemsCharacterInventory requires AStructCoreGeneralHashTable, A
 				set additionGold = GetItemValue(itemTypeId) * (oldCharges - 1)
 
 				if (additionGold > 0) then
-					call SetPlayerState(this.character().player(), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(this.character().player(), PLAYER_STATE_RESOURCE_GOLD) + GetItemValue(itemTypeId) * (oldCharges - 1))
+					call SetPlayerState(this.character().player(), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(this.character().player(), PLAYER_STATE_RESOURCE_GOLD) + additionGold)
 					debug call Print("Adding gold: " + I2S(additionGold))
-					call ShowBountyTextTagForPlayer(this.character().player(), GetUnitX(this.character().unit()), GetUnitY(this.character().unit()) - 50.0, additionGold)
+					// Show the additional gold and the total sum of gold received for selling the item.
+					call ShowFadingTextTagForPlayer(this.character().player(), "+" + I2S(additionGold) + " = " + I2S(additionGold + GetItemValue(itemTypeId)), 0.025, GetUnitX(this.character().unit()), GetUnitY(this.character().unit()) - 50.0, 255, 220, 0, 255, 0.03, 2.0, 3.0)
 				endif
 			endif
 			call PauseTimer(GetExpiredTimer())
