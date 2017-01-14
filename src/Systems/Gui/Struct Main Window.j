@@ -353,24 +353,26 @@ endif
 		endmethod
 
 		public method show takes nothing returns nothing
-			local real x
-			local real y
-			local integer i
-			if (not this.onShowCheck()) then
+			local real centerX = 0.0
+			local real centerY = 0.0
+			local integer i = 0
+			if (not this.onShowCheck.evaluate()) then
+				debug call this.print("Failed on show check")
 				return
 			endif
-			set x = this.m_x + (this.m_sizeX / 2.0)
-			set y = this.m_y - (this.m_sizeY / 2.0)
+			set centerX = this.m_x + (this.m_sizeX / 2.0)
+			set centerY = this.m_y - (this.m_sizeY / 2.0)
 			call this.m_gui.savePlayerData()
 			call FogModifierStop(this.m_blackMaskModifier)
 			call FogModifierStart(this.m_visibilityModifier)
 			call ClearScreenMessagesForPlayer(this.gui().player())
+			call SetCameraPositionForPlayer(this.gui().player(), centerX, centerY)
 			if (this.cameraSetup() != null) then
+				debug call this.print("Has camera setup")
 				call CameraSetupApplyForPlayer(false, this.cameraSetup(), this.gui().player(), 0.0)
 			endif
-			call PanCameraToTimedForPlayer(this.gui().player(), x, y, 0.0)
-			call SetCameraBoundsToPointForPlayer(this.gui().player(), x, y) /// \todo DEBUG
-			//widgets
+			call SetCameraBoundsToAreaForPlayer(this.gui().player(), this.x(), this.y(), this.sizeX(), this.sizeY())
+			// widgets
 			set i = 0
 			loop
 				exitwhen (i == this.m_widgets.size())
@@ -385,7 +387,7 @@ endif
 			endif
 			set this.m_isShown = true
 			call this.m_gui.hideShownMainWindowAndSetNew(this)
-			call this.onShow()
+			call this.onShow.execute()
 		endmethod
 
 		public stub method onHideCheck takes nothing returns boolean
@@ -403,7 +405,8 @@ endif
 
 		public method hide takes nothing returns nothing
 			local integer i
-			if (not this.onHideCheck()) then
+			if (not this.onHideCheck.evaluate()) then
+				debug call this.print("Failed on hide check")
 				return
 			endif
 
@@ -428,7 +431,7 @@ endif
 			endif
 			set this.m_isShown = false
 			call this.m_gui.resetShownMainWindow()
-			call this.onHide()
+			call this.onHide.execute()
 		endmethod
 
 		/// Friend relationship to \ref AWidget, do not use.

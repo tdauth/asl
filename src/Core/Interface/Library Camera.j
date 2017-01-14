@@ -215,17 +215,29 @@ library ALibraryCoreInterfaceCamera requires optional ALibraryCoreDebugMisc, ALi
 	//! runtextmacro ACameraTextMacro("destructable", "Destructable")
 
 	function SetCameraBoundsForPlayer takes player whichPlayer, real x1, real y1, real x2, real y2, real x3, real y3, real x4, real y4 returns nothing
-		local player localPlayer = GetLocalPlayer()
-		if (whichPlayer == localPlayer) then
+		if (whichPlayer == GetLocalPlayer()) then
 			call SetCameraBounds(x1, y1, x2, y2, x3, y3, x4, y4)
 		endif
-		set localPlayer = null
 	endfunction
 
-	function SetCameraBoundsToPointForPlayer takes player whichPlayer, real x, real y returns nothing
-		call SetCameraBoundsForPlayer(whichPlayer, x, y, x, y, x, y, x, y)
+	/**
+	 * Applies the camera bounds of an area defined by the starting point in the bottom left corner and its width and height for one single player only.
+	 * \param whichPlayer The player who gets the new camera bounds.
+	 */
+	function SetCameraBoundsToAreaForPlayer takes player whichPlayer, real x, real y, real width, real height returns nothing
+		local real minX = x
+		local real minY = y
+		local real maxX = x + width
+		local real maxY = y + height
+		if (whichPlayer == GetLocalPlayer()) then
+			call SetCameraBounds(minX, minY, minX, maxY, maxX, maxY, maxX, minY)
+		endif
 	endfunction
 
+	/**
+	 * Resets the camera bounds to the map rect (\ref bj_mapInitialCameraBounds) for a single player only.
+	 * \param whichPlayer The player who gets the camera bounds reset.
+	 */
 	function ResetCameraBoundsToMapRectForPlayer takes player whichPlayer returns nothing
 		local real minX = GetRectMinX(bj_mapInitialCameraBounds)
 		local real minY = GetRectMinY(bj_mapInitialCameraBounds)

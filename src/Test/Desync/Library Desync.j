@@ -35,8 +35,6 @@ library ALibraryTestDesyncDesync requires AStructCoreGeneralGroup, ALibraryCoreD
 		call PanCameraToTimedLocationWithZForPlayer(whichPlayer, whichLocation, 1.0, 4.0)
 		debug call Print("RotateCameraAroundLocationForPlayer")
 		call RotateCameraAroundLocationForPlayer(whichPlayer, whichLocation, 30.0, 3.0)
-		debug call Print("SetCameraBoundsToPointForPlayer")
-		call SetCameraBoundsToPointForPlayer(whichPlayer, 0.0, 0.0)
 		debug call Print("ResetCameraBoundsToMapRectForPlayer")
 		call ResetCameraBoundsToMapRectForPlayer(whichPlayer)
 		call TriggerSleepAction(5.0)
