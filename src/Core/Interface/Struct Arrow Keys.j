@@ -10,7 +10,7 @@ library AStructCoreInterfaceArrowKeys
 	/**
 	 * Use \ref playerArrowKeys() to refer to each player's instance.
 	 * \author Anitarf
-	 * \author Tamino Dauth
+	 * \author Tamino Dauth (only the adaption for the ASL)
 	 * <a href="http://www.wc3c.net/showthread.php?t=101271">source</a>
 	 */
 	struct AArrowKeys
