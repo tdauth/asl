@@ -74,7 +74,7 @@ library AStructSystemsGuiMultipageSpellbook requires optional ALibraryCoreDebugM
 
 		private static method triggerActionAction takes nothing returns nothing
 			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), 0))
-			call this.onTrigger.evaluate()
+			call this.onTrigger.execute()
 		endmethod
 
 		public static method create takes AMultipageSpellbook multipageSpellbook, integer abilityId, integer spellbookAbilityId returns thistype
