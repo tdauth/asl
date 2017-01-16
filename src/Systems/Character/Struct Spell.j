@@ -19,6 +19,10 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		private ASpellCastCondition m_castCondition
 		private ASpellCastAction m_castAction
 		// members
+		/**
+		 * This trigger is called when the hero ability is skilled.
+		 * It only works if the ability is a hero ability.
+		 */
 		private trigger m_upgradeTrigger
 		/**
 		 * The channel trigger is used to check the condition first and stop the character if the condition is not fullfilled.
@@ -127,6 +131,9 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call DisableTrigger(this.m_castTrigger)
 		endmethod
 
+		/**
+		 * Called via .execute() when the hero ability is upgraded.
+		 */
 		public stub method onUpgradeAction takes nothing returns nothing
 			if (this.m_upgradeAction != 0) then
 				call this.m_upgradeAction.execute(this, GetLearnedSkillLevel())
@@ -172,7 +179,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call TriggerAddAction(this.m_upgradeTrigger, function thistype.triggerActionUpgrade)
 			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, 0, this)
 		endmethod
-		
+
 		private static method triggerConditionChannel takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
@@ -190,7 +197,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			endif
 			return false
 		endmethod
-		
+
 		private method createChannelTrigger takes nothing returns nothing
 			set this.m_channelTrigger = CreateTrigger()
 			// never use ENDCAST since GetSpellTargetX() etc. won't work anymore
@@ -198,7 +205,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call TriggerAddCondition(this.m_channelTrigger, Condition(function thistype.triggerConditionChannel))
 			call AHashTable.global().setHandleInteger(this.m_channelTrigger, 0, this)
 		endmethod
-		
+
 		private static method triggerConditionCast takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
@@ -231,8 +238,9 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		 * \param character Used character.
 		 * \param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
 		 * \param castEvent Use EVENT_PLAYER_UNIT_SPELL_CHANNEL for regular spells since event data such as GetSpellTargetX() does work with this event. In other cases such as removing the cast ability EVENT_PLAYER_UNIT_SPELL_ENDCAST is recommended but event data does not work with this one.
+		 * \param useUpgradeTrigger If this value is false, no upgrade trigger is created, so the upgradeAction or the method \ref onUpgradeAction() is never called. Do always set this to false if the ability is NOT a hero ability.
 		 */
-		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction, playerunitevent castEvent returns thistype
+		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction, playerunitevent castEvent, boolean useUpgradeTrigger, boolean useChannelTrigger, boolean useCastTrigger returns thistype
 			local thistype this = thistype.allocate(character)
 			// construction members
 			set this.m_ability = usedAbility
@@ -244,35 +252,48 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 			call character.addSpell(this)
 
-			call this.createUpgradeTrigger()
-			// conditions have always to be checked on a channel event that the spell order can be stopped before mana consumption and cooldown!
-			call this.createChannelTrigger()
-			call this.createCastTrigger(castEvent)
+			if (useUpgradeTrigger) then
+				call this.createUpgradeTrigger()
+			endif
+			if (useChannelTrigger) then
+				// conditions have always to be checked on a channel event that the spell order can be stopped before mana consumption and cooldown!
+				call this.createChannelTrigger()
+			endif
+			if (useCastTrigger) then
+				call this.createCastTrigger(castEvent)
+			endif
 
 			return this
 		endmethod
 
 		/// Use this constructor if you either don't any event response functions or you overwrite the stub methods.
 		public static method createSimple takes ACharacter character, integer whichAbility returns thistype
-			return thistype.create(character, whichAbility, 0, 0, 0, EVENT_PLAYER_UNIT_SPELL_CHANNEL)
+			return thistype.create(character, whichAbility, 0, 0, 0, EVENT_PLAYER_UNIT_SPELL_CHANNEL, true, true, true)
 		endmethod
 
 		private method destroyUpgradeTrigger takes nothing returns nothing
-			call AHashTable.global().destroyTrigger(this.m_upgradeTrigger)
-			set this.m_upgradeTrigger = null
+			if (this.m_upgradeTrigger != null) then
+				call AHashTable.global().destroyTrigger(this.m_upgradeTrigger)
+				set this.m_upgradeTrigger = null
+			endif
 		endmethod
-		
+
 		private method destroyChannelTrigger takes nothing returns nothing
-			call AHashTable.global().destroyTrigger(this.m_channelTrigger)
-			set this.m_channelTrigger = null
+			if (this.m_channelTrigger != null) then
+				call AHashTable.global().destroyTrigger(this.m_channelTrigger)
+				set this.m_channelTrigger = null
+			endif
 		endmethod
 
 		private method destroyCastTrigger takes nothing returns nothing
-			call AHashTable.global().destroyTrigger(this.m_castTrigger)
-			set this.m_castTrigger = null
+			if (this.m_castTrigger != null) then
+				call AHashTable.global().destroyTrigger(this.m_castTrigger)
+				set this.m_castTrigger = null
+			endif
 		endmethod
 
 		public method onDestroy takes nothing returns nothing
+			// TODO slow!
 			call this.character().removeSpell(this)
 
 			call this.destroyUpgradeTrigger()
