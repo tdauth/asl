@@ -103,10 +103,10 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 		endmethod
 
 		private method move takes nothing returns nothing
-			if (this.m_destroyOnDeath and (IsUnitDeadBJ(this.m_firstUnit) or IsUnitDeadBJ(this.m_secondUnit))) then
+			if (this.destroyOnDeath() and (IsUnitDeadBJ(this.firstUnit()) or IsUnitDeadBJ(this.secondUnit()))) then
 				call this.destroy()
 			else
-				call MoveLightningEx(this.m_lightning, false, GetUnitX(this.m_firstUnit), GetUnitY(this.m_firstUnit), GetUnitZ(this.m_firstUnit), GetUnitX(this.m_secondUnit), GetUnitY(this.m_secondUnit), GetUnitZ(this.m_secondUnit))
+				call MoveLightningEx(this.m_lightning, false, GetUnitX(this.firstUnit()), GetUnitY(this.firstUnit()), GetUnitZ(this.firstUnit()), GetUnitX(this.secondUnit()), GetUnitY(this.secondUnit()), GetUnitZ(this.secondUnit()))
 			endif
 		endmethod
 
@@ -152,16 +152,21 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 		endmethod
 
 		private static method timerFunctionRefresh takes nothing returns nothing
+			local thistype dynamicLighting = 0
 			local AIntegerListIterator iterator = thistype.m_dynamicLightnings.begin()
 			loop
 				exitwhen (not iterator.isValid())
-				if (not thistype(iterator.data()).isPaused()) then
-					call thistype(iterator.data()).move()
+				set dynamicLighting = thistype(iterator.data())
+				if (not dynamicLighting.isPaused()) then
+					call dynamicLighting.move()
 				endif
 			endloop
 			call iterator.destroy()
 		endmethod
 
+		/**
+		 * Enables the refresh timer which updates the positions of all dynamic lightnings.
+		 */
 		public static method enable takes nothing returns nothing
 			if (not thistype.m_refreshTimerStarted) then
 				set thistype.m_refreshTimerStarted = true
@@ -169,6 +174,9 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 			endif
 		endmethod
 
+		/**
+		 * Disables the refresh timer which updates the positions of all dynamic lightnings.
+		 */
 		public static method disable takes nothing returns nothing
 			if (thistype.m_refreshTimerStarted) then
 				set thistype.m_refreshTimerStarted = false
@@ -176,6 +184,10 @@ library AStructCoreEnvironmentDynamicLightning requires optional ALibraryCoreDeb
 			endif
 		endmethod
 
+		/**
+		 * Initializes the dynamic lightning system. This is required before creating any dynamic lightning since it creates and starts the refresh timer.
+		 * \param refreshTime The time in seconds which is the interval in which all dynamic lightnings positions are updated.
+		 */
 		public static method init takes real refreshTime returns nothing
 			debug if (refreshTime <= 0.0) then
 				debug call thistype.staticPrint("Wrong value refresh time value in ADynamicLightning struct initialization: " + R2S(refreshTime) + ".")
