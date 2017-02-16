@@ -118,17 +118,31 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			set this.m_castAction = GetStoredInteger(cache, missionKey, labelPrefix + "CastAction")
 		endmethod
 
-		//Make it available
+		/**
+		 * Enables upgrading, channeling and casting if triggers do exist.
+		 */
 		public method enable takes nothing returns nothing
-			call EnableTrigger(this.m_upgradeTrigger)
-			call EnableTrigger(this.m_channelTrigger)
-			call EnableTrigger(this.m_castTrigger)
+			if (this.m_upgradeTrigger != null) then
+				call EnableTrigger(this.m_upgradeTrigger)
+			endif
+			if (this.m_channelTrigger != null) then
+				call EnableTrigger(this.m_channelTrigger)
+			endif
+			if (this.m_castTrigger != null) then
+				call EnableTrigger(this.m_castTrigger)
+			endif
 		endmethod
 
 		public method disable takes nothing returns nothing
-			call DisableTrigger(this.m_upgradeTrigger)
-			call DisableTrigger(this.m_channelTrigger)
-			call DisableTrigger(this.m_castTrigger)
+			if (this.m_upgradeTrigger != null) then
+				call DisableTrigger(this.m_upgradeTrigger)
+			endif
+			if (this.m_channelTrigger != null) then
+				call DisableTrigger(this.m_channelTrigger)
+			endif
+			if (this.m_castTrigger != null) then
+				call DisableTrigger(this.m_castTrigger)
+			endif
 		endmethod
 
 		/**
@@ -239,6 +253,8 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		 * \param usedAbility The ability which has to be casted by the unit of the character to run the cast action and which has to be skilled for the unit of the character to run the teach action.
 		 * \param castEvent Use EVENT_PLAYER_UNIT_SPELL_CHANNEL for regular spells since event data such as GetSpellTargetX() does work with this event. In other cases such as removing the cast ability EVENT_PLAYER_UNIT_SPELL_ENDCAST is recommended but event data does not work with this one.
 		 * \param useUpgradeTrigger If this value is false, no upgrade trigger is created, so the upgradeAction or the method \ref onUpgradeAction() is never called. Do always set this to false if the ability is NOT a hero ability.
+		 * \param useChannelTrigger If this value is false, no channel trigger is created, so the \ref castCondition() or the method \ref onCastCondition() is never called. Do always set this to false if the spell doesn't require custom code to save performance and memory.
+		 * \param useCastTrigger If this value is false, no cast trigger is created, so the \ref castAction() or the method \ref onCastAction() is never called. Do always set this to false if the spell doesn't require custom code to save performance and memory.
 		 */
 		public static method create takes ACharacter character, integer usedAbility, ASpellUpgradeAction upgradeAction, ASpellCastCondition castCondition, ASpellCastAction castAction, playerunitevent castEvent, boolean useUpgradeTrigger, boolean useChannelTrigger, boolean useCastTrigger returns thistype
 			local thistype this = thistype.allocate(character)
@@ -264,11 +280,6 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			endif
 
 			return this
-		endmethod
-
-		/// Use this constructor if you either don't any event response functions or you overwrite the stub methods.
-		public static method createSimple takes ACharacter character, integer whichAbility returns thistype
-			return thistype.create(character, whichAbility, 0, 0, 0, EVENT_PLAYER_UNIT_SPELL_CHANNEL, true, true, true)
 		endmethod
 
 		private method destroyUpgradeTrigger takes nothing returns nothing
