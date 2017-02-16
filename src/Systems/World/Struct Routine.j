@@ -619,6 +619,10 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 			set thistype.m_routinePeriods = AIntegerList.create()
 		endmethod
 
+		public static method routinePeriods takes nothing returns AIntegerList
+			return thistype.m_routinePeriods
+		endmethod
+
 		public static method enableCurrent takes unit whichUnit returns boolean
 			local boolean result = thistype.hasCurrent(whichUnit)
 			if (result) then
@@ -933,6 +937,28 @@ library AStructSystemsWorldRoutine requires optional ALibraryCoreDebugMisc, ALib
 				set unitRoutine = thistype(iterator.data())
 				if (unitRoutine.isInTime() and thistype.current(whichUnit) != unitRoutine) then // check if it's the current period already, as well to prevent multiple starts
 					call unitRoutine.start()
+				endif
+				call iterator.next()
+			endloop
+			call iterator.destroy()
+		endmethod
+
+		/**
+		 * Starts the routines manually for all created unit routines.
+		 * This might be necessary in the beginning of the game since the time of day events might not have be called yet.
+		 */
+		public static method manualStartAll takes nothing returns nothing
+			local AIntegerListIterator iterator = thistype.routinePeriods().begin()
+			local ARoutinePeriod period = 0
+			local thistype unitRoutine = 0
+			loop
+				exitwhen (not iterator.isValid())
+				set period = ARoutinePeriod(iterator.data())
+				if (period.getType() == AUnitRoutine.typeid) then
+					set unitRoutine = AUnitRoutine(period)
+					if (unitRoutine.isInTime() and thistype.current(unitRoutine.unit()) != unitRoutine) then // check if it's the current period already, as well to prevent multiple starts
+						call unitRoutine.start()
+					endif
 				endif
 				call iterator.next()
 			endloop
