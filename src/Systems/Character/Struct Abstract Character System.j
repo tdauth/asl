@@ -9,6 +9,12 @@ library AStructSystemsCharacterAbstractCharacterSystem
 		//static method create takes ACharacter character returns ACharacterSystemInterface
 	endinterface
 
+	/**
+	 * \brief Base struct for all character systems. A character system instance does always belong to one single character and can be disabled permanently.
+	 * Besides it provides abstract methods for serialization in a game cache.
+	 * \ref enableAgain() stores if the system is enabled again after the character is made movable again.
+	 * During a character is not movable all character systems are disabled/paused.
+	 */
 	struct AAbstractCharacterSystem extends AAbstractCharacterSystemInterface
 		// dynamic members
 		private boolean m_enableAgain
