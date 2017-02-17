@@ -26,7 +26,8 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		private trigger m_upgradeTrigger
 		/**
 		 * The channel trigger is used to check the condition first and stop the character if the condition is not fullfilled.
-		 * In this case \ref m_canCast is set to false and therefore the cast trigger blocks the action.
+		 * In this case \ref m_canCast is set to false and therefore the cast trigger blocks the action. It is important that the channel trigger
+		 * is always run before the cast trigger since the cast trigger might have the same event.
 		 */
 		private trigger m_channelTrigger
 		private trigger m_castTrigger
@@ -36,6 +37,10 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 		 * It is checked in the cast trigger.
 		 */
 		private boolean m_canCast
+		/**
+		 * Flag which stores if the channel trigger has already been run for a check. This is required for debugging to check whether the condition is always checked before or not.
+		 */
+		debug private boolean m_checkedCondition
 
 		//! runtextmacro optional A_STRUCT_DEBUG("\"ASpell\"")
 
@@ -194,18 +199,23 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			call AHashTable.global().setHandleInteger(this.m_upgradeTrigger, 0, this)
 		endmethod
 
+		private method checkForAbility takes nothing returns boolean
+			return GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability and GetTriggerUnit() == this.character().unit()
+		endmethod
+
 		private static method triggerConditionChannel takes nothing returns boolean
-			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
+			local thistype this = thistype(AHashTable.global().handleInteger(GetTriggeringTrigger(), 0))
+			local boolean result = this.checkForAbility()
 			set this.m_canCast = result
 			if (result) then
 				set result = this.onCastCondition()
 				set this.m_canCast = result
+				debug set this.m_checkedCondition = this.m_castTrigger != null // Only set this flag if the cast trigger is also run and clears it again.
 				if (not result) then
-					//taken from wc3jass.com
-					//call PauseUnit(this.character().unit(), true)
+					/*
+					 * Stopping the caster in the condition of a trigger with the event EVENT_PLAYER_UNIT_SPELL_CHANNEL will abort the spell before using mana for the spell.
+					 */
 					call IssueImmediateOrder(this.character().unit(), "stop")
-					//call PauseUnit(this.character().unit(), false)
 					debug call Print("Stop: " + GetAbilityName(this.ability()))
 				endif
 			endif
@@ -222,13 +232,19 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 
 		private static method triggerConditionCast takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			local boolean result = GetTriggerUnit() == this.character().unit() and GetSpellAbilityId() != null and GetSpellAbilityId() == this.m_ability
+			local boolean result = this.checkForAbility()
 			if (result) then
 				debug if (this.m_canCast) then
 					debug call this.print("Can cast")
 				debug else
 					debug call this.print("Cannot cast")
 				debug endif
+				debug if (not this.m_checkedCondition) then
+					// The condition should always be checked before.
+					debug call this.print("Warning: Condition has not been checked before!")
+				debug endif
+				debug set this.m_checkedCondition = false // Reset the flag.
+
 				return this.m_canCast
 			endif
 			return result
@@ -265,6 +281,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 			set this.m_castAction = castAction
 			// members
 			set this.m_canCast = false
+			debug set this.m_checkedCondition = false
 
 			call character.addSpell(this)
 
