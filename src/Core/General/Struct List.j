@@ -90,20 +90,20 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			public method isValid takes nothing returns boolean
-				return not (this.m_node == 0)
+				return this.m_node != 0
 			endmethod
 
 			public method hasNext takes nothing returns boolean
-				return this.m_node != 0 and this.m_node.hasNext()
+				return this.isValid() and this.m_node.hasNext()
 			endmethod
 
 			public method hasPrevious takes nothing returns boolean
-				return this.m_node != 0 and this.m_node.hasPrevious()
+				return this.isValid() and this.m_node.hasPrevious()
 			endmethod
 
 			/// Similar to C++'s ++ iterators operator.
 			public method next takes nothing returns nothing
-				if (this.m_node == 0) then
+				if (not this.isValid()) then
 					return
 				endif
 
@@ -112,7 +112,7 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 
 			/// Similar to C++'s -- iterators operator.
 			public method previous takes nothing returns nothing
-				if (this.m_node == 0) then
+				if (not this.isValid()) then
 					return
 				endif
 
@@ -134,14 +134,14 @@ library AStructCoreGeneralList requires AInterfaceCoreGeneralContainer
 			endmethod
 
 			public method setData takes $ELEMENTTYPE$ data returns nothing
-				if (this.m_node == 0) then
+				if (not this.isValid()) then
 					return
 				endif
 				call this.m_node.setData(data)
 			endmethod
 
 			public method data takes nothing returns $ELEMENTTYPE$
-				if (this.m_node == 0) then
+				if (not this.isValid()) then
 					return $NULLVALUE$
 				endif
 				return this.m_node.data()
