@@ -438,9 +438,12 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 		endmethod
 
 		public method checkFilterTime takes real time, string name returns nothing
+			/*
+			TODO Causes a bug, the function call is stopped here.
 			debug if (time < bj_CINEMODE_INTERFACEFADE) then
 				debug call this.staticPrint(name + " filter time should be equal to or bigger than bj_CINEMODE_INTERFACEFADE (" + R2S(bj_CINEMODE_INTERFACEFADE) + " but it has value " + R2S(time) + ".")
 			debug endif
+			*/
 		endmethod
 
 		public method setPlayFilterTime takes real time returns nothing
