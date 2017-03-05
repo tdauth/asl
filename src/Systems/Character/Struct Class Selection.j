@@ -203,6 +203,8 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		/**
 		 * Is called via .evaluate() whenever a class is being selected.
 		 * By default it evaluates \ref selectClassAction() if it is not 0.
+		 * \param character The created character from the class selection.
+		 * \param class The selected class for the character.
 		 * \param last Is true if this is the last class to be selected by a player.
 		 */
 		public stub method onSelectClass takes ACharacter character, AClass class, boolean last returns nothing
@@ -243,7 +245,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 		 * Calls \ref selectClassAction() with .execute().
 		 */
 		public method selectClass takes nothing returns nothing
-			local integer i
+			local integer i = 0
 			local ACharacter character = 0
 			local unit whichUnit = this.currentClass().generateUnit(this.m_user, this.startX(), this.startY(), this.startFacing())
 
@@ -270,6 +272,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			call this.onSelectClass.evaluate(character, this.currentClass(), thistype.m_stack == 1)
 			debug call Print("Destroy it!")
 			call this.destroy()
+			debug call Print("After destruction!")
 		endmethod
 
 		/**
@@ -352,18 +355,20 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 
 			if (this.showAttributes()) then
 				set count = 3
-				set strengthText = RWArg(this.m_textStrength, this.currentClass().strPerLevel(), 0, 2)
-				set agilityText = RWArg(this.m_textAgility, this.currentClass().agiPerLevel(), 0, 2)
-				set intelligenceText = RWArg(this.m_textIntelligence, this.currentClass().intPerLevel(), 0, 2)
+				set strengthText = RWArg(this.m_textStrength, this.currentClass().strPerLevel(), 0, 1)
+				set agilityText = RWArg(this.m_textAgility, this.currentClass().agiPerLevel(), 0, 1)
+				set intelligenceText = RWArg(this.m_textIntelligence, this.currentClass().intPerLevel(), 0, 1)
 			endif
 
 			//call MultiboardClear(this.m_infoSheet) // clears not everything?!
 			if (this.m_infoSheet != null) then
 				debug call Print("Destroy old info sheet")
+				call MultiboardDisplay(this.m_infoSheet, false)
 				call DestroyMultiboard(this.m_infoSheet)
 				set this.m_infoSheet = null
 			endif
 			set this.m_infoSheet = CreateMultiboard()
+			call MultiboardDisplay(this.m_infoSheet, false) // TODO dont call this since during a repick they might see the characters scheme and there can be only one multiboard?
 			debug call Print("Create Info sheet")
 			call MultiboardSetItemsWidth(this.m_infoSheet, this.m_infoSheetWidth)
 			call MultiboardSetColumnCount(this.m_infoSheet, 1)
@@ -413,7 +418,7 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 					set index = index + 1
 				endloop
 			endif
-			debug call Print("Show info sheet to player " + GetPlayerName(this.m_user))
+			debug call Print("Show info sheet to player " + GetPlayerName(this.m_user) + " with ID " + I2S(GetHandleId(this.m_infoSheet)))
 			call ShowMultiboardForPlayer(this.m_user, this.m_infoSheet, true)
 		endmethod
 
@@ -686,21 +691,32 @@ library AStructSystemsCharacterClassSelection requires optional ALibraryCoreDebu
 			// construction members
 			set this.m_user = null
 			// members
+			debug call Print("onDestroy 1")
 			call this.m_classes.destroy()
+			debug call Print("onDestroy 2")
 			set this.m_classes = 0
 			// static members
 			set thistype.m_playerClassSelection[GetPlayerId(user)] = 0
 			set user = null
 			set thistype.m_stack = thistype.m_stack - 1
 
+			debug call Print("onDestroy 3")
 			call this.destroyLeaveTrigger()
+			debug call Print("onDestroy 4")
 			call this.destroyRefreshTrigger()
+			debug call Print("onDestroy 5")
 			call this.destroyChangePreviousTrigger()
+			debug call Print("onDestroy 6")
 			call this.destroyChangeNextTrigger()
+			debug call Print("onDestroy 7")
 			call this.destroySelectTrigger()
+			debug call Print("onDestroy 8")
 			call this.destroyInfoSheet()
+			debug call Print("onDestroy 9")
 			call this.destroyMoveTrigger()
+			debug call Print("onDestroy 10")
 			call this.removeClassUnit()
+			debug call Print("onDestroy 11")
 		endmethod
 
 		private static method timerFunctionAutoSelectClasses takes nothing returns nothing
