@@ -377,11 +377,12 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		 */
 		public method replaceUnit takes unit newUnit returns nothing
 			local unit oldUnit = this.m_unit
+			call AHashTable.global().removeHandleInteger(oldUnit, A_HASHTABLE_KEY_CHARACTER)
 			set this.m_unit = newUnit
 			call AHashTable.global().setHandleInteger(newUnit, A_HASHTABLE_KEY_CHARACTER, this)
 			call this.onReplaceUnit.evaluate(oldUnit, newUnit)
 		endmethod
-		
+
 		/**
 		 * Is called by .evaluate() when the unit is replaced by \ref replaceUnit(). At the time of the call the reference in this struct is already replaced.
 		 * Any references can be updated in this method.
@@ -409,14 +410,14 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				call this.m_talkLog.store(cache, missionKey, "TalkLog")
 			endif
 		endmethod
-		
+
 		/**
 		 * Restores a character unit from a gamecache.
 		 */
 		public static method restoreUnitFromCache takes gamecache cache, string missionKey, player whichPlayer, real x, real y, real facing returns unit
 			return RestoreUnit(cache, missionKey, "Unit", whichPlayer, x, y, facing)
 		endmethod
-		
+
 		public method restoreDataFromCache takes gamecache cache, string missionKey returns nothing
 			set this.m_class = AClass(GetStoredInteger(cache, missionKey, "Class"))
 			/// \todo call refresh unit actions
@@ -446,7 +447,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			set this.m_unit = thistype.restoreUnitFromCache(cache, missionKey, this.m_player, x, y, facing)
 			call this.restoreDataFromCache(cache, missionKey)
 		endmethod
-		
+
 		/**
 		 * This method is called with .evaluate() by \ref ARevival.
 		 */
@@ -469,7 +470,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		public method spell takes integer index returns ASpell
 			return this.m_spells[index]
 		endmethod
-		
+
 		public method spellByAbilityId takes integer abilityId returns ASpell
 			local integer i = 0
 			loop
@@ -481,7 +482,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endloop
 			return 0
 		endmethod
-		
+
 		/// \note Use this method with care. Make sure the spells are already destroyed.
 		public method clearSpells takes nothing returns nothing
 			call this.m_spells.clear()
@@ -522,7 +523,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endif
 			*/
 		endmethod
-		
+
 		private static method triggerConditionIsCharacter takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			return this.unit() == GetTriggerUnit()
@@ -597,15 +598,15 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			call this.createSystems()
 			return this
 		endmethod
-		
+
 		public static method createRestored takes player whichPlayer, gamecache cache, string missionKey, real x, real y, real facing returns thistype
 			local thistype this = thistype.create(whichPlayer, thistype.restoreUnitFromCache(cache, missionKey, whichPlayer, x, y, facing))
-			
+
 			call this.restoreDataFromCache(cache, missionKey)
-			
+
 			return this
 		endmethod
-			
+
 
 		private method removeUnit takes nothing returns nothing
 			if (thistype.m_removeUnitOnDestruction) then
@@ -658,7 +659,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endif
 			call this.destroySystems()
 		endmethod
-		
+
 		private method destroySpells takes nothing returns nothing
 			loop
 				exitwhen (this.m_spells.empty())
@@ -667,7 +668,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			endloop
 			call this.m_spells.destroy()
 		endmethod
-		
+
 		private method destroySpell takes ASpell spell returns nothing
 			call spell.destroy()
 		endmethod
@@ -810,7 +811,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		public static method displayMessageByUser takes player user, integer messageType, string message returns nothing
 			call thistype.playerCharacter(user).displayMessage(messageType, message)
 		endmethod
-		
+
 		// the following methods are for convience to call methods for all characters
 
 		public static method setAllMovable takes boolean movable returns nothing
@@ -843,7 +844,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				set i = i + 1
 			endloop
 		endmethod
-		
+
 		/**
 		 * Counts all characters.
 		 * \return Returns the number of all characters.
