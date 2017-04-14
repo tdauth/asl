@@ -74,10 +74,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			// remove copied items of rucksack and add equipment
 			// TODO would be better performance when not copying items in CopyUnit in case rucksack is displayed
 			// only show equipment if equipment is enabled, not if only rucksack is enabled and not if inventory has been disabled completely
-			if (character != 0 and character.inventory() != 0 and character.inventory().rucksackIsEnabled() and not character.inventory().onlyRucksackIsEnabled() and ((character.isMovable() and character.inventory().isEnabled()) or (not character.isMovable() and character.inventory().enableAgain()))) then
+			if (character != 0 and character.characterInventory() != 0 and character.inventory() != 0 and character.inventory().rucksackIsEnabled() and not character.inventory().onlyRucksackIsEnabled() and ((character.isMovable() and character.characterInventory().isEnabled()) or (not character.isMovable() and character.characterInventory().enableAgain()))) then
 				set i = 0
 				loop
-					exitwhen (i == AInventory.maxEquipmentTypes)
+					exitwhen (i == AUnitInventory.maxEquipmentTypes)
 					set whichItem = UnitItemInSlot(this.m_actor, i)
 					if (whichItem != null) then
 						call RemoveItem(whichItem)

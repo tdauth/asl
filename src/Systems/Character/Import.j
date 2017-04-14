@@ -20,7 +20,7 @@
 //! import "Systems/Character/Struct Video.j"
 
 /**
- * \brief The character system allows you to create an RPG character per player (\ref ACharacter) with a custom class (\ref AClassSelection and \ref AClass), inventory (\ref AInventory), revival shrines (\ref AShrine), custom spells (\ref ASpell), custom quests (\ref AQuest), custom NPC dialogs (\ref ATalk), videos for all players (\ref AVideo) and a custom 3D view (\ref AView).
+ * \brief The character system allows you to create an RPG character per player (\ref ACharacter) with a custom class (\ref AClassSelection and \ref AClass), inventory (\ref ACharacterInventory), revival shrines (\ref AShrine), custom spells (\ref ASpell), custom quests (\ref AQuest), custom NPC dialogs (\ref ATalk), videos for all players (\ref AVideo) and a custom 3D view (\ref AView).
  * For RPG maps and mods it often is necessary to create a typical RPG like environment with player characters.
  * This library allows such a functionality and allows you to enable systems optionally for a player character.
  */

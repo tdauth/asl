@@ -35,7 +35,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		//insert the character systems here
 		private AView m_view
 		private ARevival m_revival
-		private AInventory m_inventory
+		private ACharacterInventory m_inventory
 		private ATalkLog m_talkLog
 		private AIntegerVector m_spells
 
@@ -139,8 +139,16 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			return this.m_revival
 		endmethod
 
-		public method inventory takes nothing returns AInventory
+		public method characterInventory takes nothing returns ACharacterInventory
 			return this.m_inventory
+		endmethod
+
+		/**
+		 * For keeping the compatibilty, this method returns the instance of \ref AUnitInventory.
+		 * Use \ref characterInventory() for getting the actual character inventory instance.
+		 */
+		public method inventory takes nothing returns AUnitInventory
+			return this.m_inventory.unitInventory.evaluate()
 		endmethod
 
 		public method talkLog takes nothing returns ATalkLog
@@ -567,7 +575,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 				set this.m_revival = ARevival.create.evaluate(this)
 			endif
 			if (thistype.m_useInventorySystem) then
-				set this.m_inventory = AInventory.create.evaluate(this)
+				set this.m_inventory = ACharacterInventory.create.evaluate(this)
 			endif
 			if (thistype.m_useTalkLogSystem) then
 				set this.m_talkLog = ATalkLog.create.evaluate(this)
@@ -684,7 +692,7 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 		 * \param useTalkLogSystem Shows if the talk log system is used.
 		 * \sa AView
 		 * \sa ARevival
-		 * \sa AInventory
+		 * \sa ACharacterInventory
 		 * \sa ATalkLog
 		 */
 		public static method init takes boolean doAlwaysAddExperience, boolean removeUnitOnDestruction, boolean destroyOnPlayerLeaves, boolean shareOnPlayerLeaves, boolean destroyOnDeath, boolean useViewSystem, boolean useRevivalSystem, boolean useInventorySystem, boolean useTalkLogSystem returns nothing

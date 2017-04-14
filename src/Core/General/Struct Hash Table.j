@@ -25,7 +25,8 @@ library AStructCoreGeneralHashTable
 		constant integer A_HASHTABLE_KEY_ROUTINE_CURRENT = 1015
 		constant integer A_HASHTABLE_KEY_ROUTINE_NEXT = 1016
 		constant integer A_HASHTABLE_KEY_ROUTINES = 1017
-		constant integer A_HASHTABLE_KEY_MAX = 1018
+		constant integer A_HASHTABLE_KEY_INVENTORY = 1018
+		constant integer A_HASHTABLE_KEY_MAX = 1019
 	endglobals
 
 	/**
