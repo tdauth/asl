@@ -11,7 +11,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 	function interface ASpellCastAction takes ASpell spell returns nothing
 
 	/// This struct represents exactly one spell which is owned by a character.
-	/// \todo As there is no multiple inheritance this cannot inherit \ref AUnitSpell.
+	/// \todo As there is no multiple inheritance this cannot inherit \ref AUnitSpell but this should be an adapter instead of providing everything again.
 	struct ASpell extends AAbstractCharacterSystem
 		// construction members
 		private integer m_ability
@@ -217,6 +217,7 @@ library AStructSystemsCharacterSpell requires optional ALibraryCoreDebugMisc, AS
 					 */
 					call IssueImmediateOrder(this.character().unit(), "stop")
 					debug call Print("Stop: " + GetAbilityName(this.ability()))
+					debug call Print("This means that the condition is false")
 				endif
 			endif
 			return false

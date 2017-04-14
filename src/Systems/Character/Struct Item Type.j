@@ -9,8 +9,6 @@ library AStructSystemsCharacterItemType requires AStructSystemsInventoryItemType
 		// construction members
 		private AClass m_requiredClass
 
-		//! runtextmacro optional A_STRUCT_DEBUG("\"ACharacterItemType\"")
-
 		// construction members
 
 		public method requiredClass takes nothing returns AClass
@@ -21,7 +19,7 @@ library AStructSystemsCharacterItemType requires AStructSystemsInventoryItemType
 
 		/**
 		 * This method can be overwritten to check requirements manually.
-		 * It is used by AUnitInventory for instance.
+		 * It is used by \ref AUnitInventory for instance.
 		 */
 		public stub method checkRequirement takes unit whichUnit returns boolean
 			local boolean result = super.checkRequirement(whichUnit)

@@ -268,7 +268,8 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		private static AIntegerVector m_inventories
 		private static timer m_pickupTimer
 		private static boolean m_pickupTimerHasStarted
-		private static item array m_targetItem[12] // TODO bj_MAX_PLAYERS
+		/// The item which should currently be picked up by the unit.
+		private item m_targetItem = null
 		// construction members
 		private unit m_unit
 		private player m_player
@@ -1260,8 +1261,6 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 * Usually you do not have to call this method. The system handles itself.
 		 */
 		public stub method enable takes nothing returns nothing
-			local integer i
-			local AItemType itemType
 			if (this.m_rucksackIsEnabled or this.m_onlyRucksackIsEnabled) then
 				set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
 				call this.enableRucksack()
@@ -2289,6 +2288,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 * This code is directly taken from the system "EasyItemStacknSplit v2.7.4 and allows picking up items even if the inventory is full.
 		 */
 		private static method timerFunctionPickup takes nothing returns nothing
+			local thistype inventory = 0
 			local thistype this = 0
 			local boolean noTargets = true
 			local unit whichUnit = null
@@ -2298,28 +2298,29 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local integer i = 0
 			loop
 				exitwhen (i == thistype.inventories().size())
-				if (thistype.m_targetItem[i] != null) then
+				set inventory = thistype(thistype.inventories()[i])
+				if (inventory.m_targetItem != null) then
 					set whichUnit = thistype(thistype.inventories()[i]).unit()
-					if (GetWidgetLife(whichUnit) > 0.0 and GetWidgetLife(thistype.m_targetItem[i]) > 0.0 and not IsItemOwned(thistype.m_targetItem[i])) then
+					if (GetWidgetLife(whichUnit) > 0.0 and GetWidgetLife(inventory.m_targetItem) > 0.0 and not IsItemOwned(inventory.m_targetItem)) then
 						if (GetUnitCurrentOrder(whichUnit) == 851986) then
-							set x = GetItemX(thistype.m_targetItem[i]) - GetUnitX(whichUnit)
-							set y = GetItemY(thistype.m_targetItem[i]) - GetUnitY(whichUnit)
+							set x = GetItemX(inventory.m_targetItem) - GetUnitX(whichUnit)
+							set y = GetItemY(inventory.m_targetItem) - GetUnitY(whichUnit)
 
 							if (x * x + y * y <= 22500) then
 								call IssueImmediateOrder(whichUnit, "stop")
 								// TODO play fake sound
-								call SetUnitFacing(whichUnit, bj_RADTODEG * Atan2(GetItemY(thistype.m_targetItem[i]) - GetUnitY(whichUnit), GetItemX(thistype.m_targetItem[i]) - GetUnitX(whichUnit)))
+								call SetUnitFacing(whichUnit, bj_RADTODEG * Atan2(GetItemY(inventory.m_targetItem) - GetUnitY(whichUnit), GetItemX(inventory.m_targetItem) - GetUnitX(whichUnit)))
 								set this = thistype.getUnitsInventory(whichUnit)
-								call this.addItem(thistype.m_targetItem[i])
-								set thistype.m_targetItem[i] = null
+								call this.addItem(inventory.m_targetItem)
+								set inventory.m_targetItem = null
 							endif
 						endif
 					else
-						set thistype.m_targetItem[i] = null
+						set inventory.m_targetItem = null
 					endif
 					set whichUnit = null
 
-					if (thistype.m_targetItem[i] != null) then
+					if (inventory.m_targetItem != null) then
 						set noTargets = false
 					endif
 				endif
@@ -2333,7 +2334,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		private static method triggerActionPickupOrder takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			set thistype.m_targetItem[GetPlayerId(GetOwningPlayer(GetTriggerUnit()))] = GetOrderTargetItem()
+			set this.m_targetItem = GetOrderTargetItem()
 			// TODO check if there is a stackable or free slot in the rucksack/equipment
 			if (not thistype.m_pickupTimerHasStarted) then
 				set thistype.m_pickupTimerHasStarted = true
@@ -2914,16 +2915,9 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		private static method onInit takes nothing returns nothing
-			local integer i = 0
 			set thistype.m_inventories = AIntegerVector.create()
 			set thistype.m_pickupTimer = CreateTimer()
 			set thistype.m_pickupTimerHasStarted = false
-			set i = 0
-			loop
-				exitwhen (i == bj_MAX_PLAYERS)
-				set thistype.m_targetItem[i] = null
-				set i = i + 1
-			endloop
 		endmethod
 	endstruct
 
