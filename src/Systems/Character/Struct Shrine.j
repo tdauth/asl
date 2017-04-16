@@ -1,7 +1,7 @@
 library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, AStructCoreGeneralHashTable, ALibraryCoreEnvironmentSound, ALibraryCoreEnvironmentSpecialEffect, AStructSystemsCharacterCharacter, AStructSystemsCharacterRevival
 
 	/**
-	 * Shrines are region based entities which can be used to change a characters revival (\ref ARevival).
+	 * \brief Shrines are region based entities which can be used to change a characters revival (\ref ARevival).
 	 * Each shrine has its own region which activates it when the character's unit enters it.
 	 * \note All shrines are usable by all characters!
 	 * \todo When enabled it sets a fixed facing and coordinates. It should assign a custom revival action to the character's \ref ARevival instead!
@@ -44,31 +44,17 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 		endmethod
 
 		private static method triggerConditionEnable takes nothing returns boolean
-			local trigger triggeringTrigger
-			local unit triggerUnit = GetTriggerUnit()
-			local player owner = GetOwningPlayer(triggerUnit)
-			local thistype this
-			local boolean result = false
-			if (triggerUnit == ACharacter.playerCharacter(owner).unit()) then
-				set triggeringTrigger = GetTriggeringTrigger()
-				set this = AHashTable.global().handleInteger(triggeringTrigger, 0)
-				set result = ACharacter.playerCharacter(owner).shrine() != this
-				set triggeringTrigger = null
+			local thistype this = 0
+			if (GetTriggerUnit() == ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).unit()) then
+				set this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
+				return ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())).shrine() != this
 			endif
-			set triggerUnit = null
-			set owner = null
-			return result
+			return false
 		endmethod
 
 		private static method triggerActionEnable takes nothing returns nothing
-			local trigger triggeringTrigger = GetTriggeringTrigger()
-			local unit triggerUnit = GetTriggerUnit()
-			local player owner = GetOwningPlayer(triggerUnit)
-			local thistype this = AHashTable.global().handleInteger(triggeringTrigger, 0)
-			call this.onEnter.evaluate(ACharacter.playerCharacter(owner))
-			set triggeringTrigger = null
-			set triggerUnit = null
-			set owner = null
+			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
+			call this.onEnter.evaluate(ACharacter.playerCharacter(GetOwningPlayer(GetTriggerUnit())))
 		endmethod
 
 		private method updateShrineTrigger takes nothing returns nothing
@@ -233,7 +219,7 @@ library AStructSystemsCharacterShrine requires optional ALibraryCoreDebugMisc, A
 			set user = null
 			call this.onEnable.evaluate(character, oldShrine)
 		endmethod
-		
+
 		/**
 		 * Called by .evaluate().
 		 * Is triggered whenever \ref enableForCharacter() is called.
