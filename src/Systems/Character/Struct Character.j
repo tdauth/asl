@@ -479,11 +479,17 @@ library AStructSystemsCharacterCharacter requires optional ALibraryCoreDebugMisc
 			return this.m_spells[index]
 		endmethod
 
+		/**
+		 * Gets a spell of the character by an ability ID if it exists.
+		 * \param abilityId The ability ID for which a spell is searched.
+		 * \return Returns 0 if no spell has the ability ID.
+		 * \note This method has linear complexity O(n) and should only be used if necessary.
+		 */
 		public method spellByAbilityId takes integer abilityId returns ASpell
 			local integer i = 0
 			loop
 				exitwhen (i == this.m_spells.size())
-				if (ASpell(this.m_spells[i]).ability.evaluate() == abilityId) then
+				if (ASpell(this.m_spells[i]).unitSpell.evaluate().ability() == abilityId) then
 					return ASpell(this.m_spells[i])
 				endif
 				set i = i + 1
