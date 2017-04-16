@@ -1,8 +1,8 @@
 library AStructCoreEnvironmentUnitCopy requires optional ALibraryCoreDebugMisc, ALibraryCoreEnvironmentUnit, ALibraryCoreGeneralUnit, AStructCoreGeneralHashTable
 
 	/**
-	 * Unit copies can be used to create copies of units which will be refreshed automatically after starting it.
-	 * User can specify which properties should be copied and which not or alternatively overwrite method AUnitCopy.onCopy in his derived structure.
+	 * \brief Unit copies can be used to create copies of units which will be refreshed automatically after starting it.
+	 * The user can specify which properties should be copied and which not or alternatively overwrite method \ref AUnitCopy.onCopy() in his derived structure.
 	 * \note Does not copy unit's location automatically since this doesn't mostly make sense.
 	 * \sa AHeroIcon
 	 */
