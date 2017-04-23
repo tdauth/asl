@@ -1,4 +1,4 @@
-library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTable, AStructCoreGeneralList,AStructCoreGeneralVector, ALibraryCoreGeneralItem, ALibraryCoreGeneralUnit, AStructCoreStringFormat, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceTextTag, AStructSystemsInventoryItemType
+library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTable, AStructCoreGeneralList, AStructCoreGeneralVector, ALibraryCoreGeneralItem, ALibraryCoreGeneralUnit, AStructCoreStringFormat, ALibraryCoreInterfaceMisc, ALibraryCoreInterfaceTextTag, AStructSystemsInventoryItemType
 
 	/**
 	 * \brief This structure is used to store all item information of one slot in inventory.
@@ -196,40 +196,47 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 	endstruct
 
-	/// \todo Should be a part of \ref AUnitInventory, vJass bug.
+	/**
+	 * Function interface for a function which is called when an item is added to the inventory. Can be used for equipment items or backpack items.
+	 * \param inventory The corresponding inventory which it is added to.
+	 * \param index The index of the added item (either the equipment slot, or the absolute backpack item index).
+	 * \param firstTime This value is true if the item was not in the inventory before. Otherwise it is false.
+	 * \todo Should be a part of \ref AUnitInventory, vJass bug.
+	 */
 	function interface AUnitInventoryItemAddFunction takes AUnitInventory inventory, integer index, boolean firstTime returns nothing
 
 	/**
 	 * \brief This structure provides an interface to a unit's inventory which is based on the default Warcraft III: The Frozen Throne inventory with 6 slots.
-	 * A unit ability can be used to open and close rucksack.
-	 * Rucksack uses the same interface as equipment since there are only 6 available item slots in Warcraft.
-	 * Abilities of equipment will be hold when the unit is opening his rucksack.
-	 * Rucksack item abilities do not affect!
-	 * You can only use usable items like potions in rucksack.
-	 * In rucksack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
-	 * In equipment there shouldn't be any charges.
-	 * If you add an item to the unit, triggers will be run and firstly it will be tried to equip added item to the unit.
-	 * If this doesn't work (e. g. it's not an equipable item) it will be added to rucksack.
-	 * You do not have to care if rucksack is being opened at that moment.
-	 * \note Usable items which do not remain in the inventory after using them should always have type \ref ITEM_TYPE_CHARGED! They need special treatment.
+	 * A unit ability can be used to open and close backpack.
+	 * The backpack uses the same interface as the equipment since there are only 6 available item slots in Warcraft III.
+	 * Abilities of the equipment will be kept when the unit is opening its backpack.
+	 * Backpack item abilities have no effect but backpack items can be used (for example potions).
+	 * In the backpack all item charges do start at 1 and there aren't any with 0, so the number of charges is always the real number.
+	 * In equipment there shouldn't be any charges since only one item can be equipped per slot.
+	 * If you add an item to the unit, triggers will be run and at first it will be tried to equip the added item to the unit.
+	 * If this doesn't work (e. g. it has not an equipable custom item type) it will be added to backpack.
+	 * You do not have to care if the backpack is open at that moment or not. The abilities remain and therefore all the effects of the equipment.
+	 * \note Usable items which do not remain in the inventory after using them should always have type \ref ITEM_TYPE_CHARGED! They need special treatment since they are consumed.
 	 * \note Do not forget to create \ref AItemType instances for all equipable item types!
+	 * \note If you don't want an icon of an equipment ability to be added to the unit when the backpack is opened, use a disabled spellbook ability with the same ID for every equipment item. Then add an enabled empty spellbook ability with the same ID to the unit in the beginning. All equipment ability icons will appear in this spellbook.
 	 * \todo Use \ref UnitDropItemSlot instead of item removals.
 	 * \todo Maybe there should be an implementation of equipment pages, too (for more than 5 equipment types). You could add something like AEquipmentType.
 	 * \todo Test if shop events work even with a full inventory. At the moment the player has to select the shop but computer controlled players won't do that. For human players it should work.
 	 *
-	 * The controls are the following:
+	 * The mouse and ability controls for the inventory are the following:
 	 * <ul>
-	 * <li>Casting the ability opens the rucksack or the equipment. Both use the same unit inventory.</li>
-	 * <li>Using the page items changes the page of the rucksack to the next or the previous.</li>
+	 * <li>Casting the ability opens the backpack or the equipment. Both use the same unit inventory.</li>
+	 * <li>Using the page items changes the page of the backpack to the next or the previous.</li>
 	 * <li>Drag and Drop an equipped item at the same slot -> unequips the item</li>
-	 * <li>Drag and Drop a rucksack item at a free slot -> destacks one charge at the slot</li>
-	 * <li>Drop a rucksack item -> drops it with all charges on the ground. The owner becomes neutral passive</li>
-	 * <li>Pawn a rucksack item -> pawns the item with all charges (The remaining gold for non usable items is added by the system).</li>
+	 * <li>Drag and Drop a backpack item at a free slot -> destacks one charge at the slot</li>
+	 * <li>Drop a backpack item -> drops it with all charges on the ground. The owner becomes neutral passive</li>
+	 * <li>Pawn a backpack item -> pawns the item with all charges (The remaining gold for non usable items is added by the system).</li>
 	 * <li>Give an item to another unit -> drops the item with all charges.</li>
-	 * <li>Drag and Drop a rucksack item at a page item, moves the item will all charges to the previous or next page if there is a free slot.</li>
+	 * <li>Drag and Drop a backpack item at a page item, moves the item will all charges to the previous or next page if there is a free slot.</li>
 	 * <li>If the player selects a shop to buy items, the inventory items are cleared out that there is a free slot and he can buy as many items as he wants to. Of course the equipment effects stay.</li>
 	 * </ul>
-	 * \note Every unit can only have one inventory. Use \ref getUnitsInventory() to get a unit's inventory.
+	 * \note Drag and Drop works by right clicking on an item in the inventory and left clicking on its target slot, item or unit or the ground.
+	 * \note Every unit can only have one inventory. Use \ref thistype.getUnitsInventory() to get a unit's inventory.
 	 */
 	struct AUnitInventory
 		// static constant members, useful for GUIs
@@ -238,24 +245,24 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 * If no empty slot is used the items however can not be dropped with all stacks at once (which the empty slot was used for).
 		 */
 		public static constant integer maxEquipmentTypes = 6 /// \ref AItemType.equipmentTypeAmulet gets the last two slots. Therefore two amulets can be carried. \todo \ref AItemType.maxEuqipmentTypes, vJass bug
-		public static constant integer maxRucksackPages = 30 //maxRucksackItems / maxRucksackItemsPerPage
+		public static constant integer maxBackpackPages = 30 //maxBackpackItems / maxBackpackItemsPerPage
 		/**
 		 * Picking up an item is still possible although all slots are used by detecting the order and running some code manually.
 		 */
-		public static constant integer maxRucksackItemsPerPage = 4
-		public static constant integer maxRucksackItems = 120 // TODO thistype.maxRucksackPages * thistype.maxRucksackItemsPerPage
+		public static constant integer maxBackpackItemsPerPage = 4
+		public static constant integer maxBackpackItems = 120 // TODO thistype.maxBackpackPages * thistype.maxBackpackItemsPerPage
 		public static constant integer previousPageItemSlot = 4
 		public static constant integer nextPageItemSlot = 5
 		// static construction members
 		private static integer m_leftArrowItemType
 		private static integer m_rightArrowItemType
-		private static integer m_openRucksackAbilityId
+		private static integer m_openBackpackAbilityId
 		private static boolean m_allowPickingUpFromOthers
 		private static string m_textUnableToEquipItem
 		private static string m_textEquipItem
-		private static string m_textUnableToAddRucksackItem
-		private static string m_textAddItemToRucksack
-		private static string m_textUnableToMoveRucksackItem
+		private static string m_textUnableToAddBackpackItem
+		private static string m_textAddItemToBackpack
+		private static string m_textUnableToMoveBackpackItem
 		private static string m_textDropPageItem
 		private static string m_textMovePageItem
 		private static string m_textOwnedByOther
@@ -265,7 +272,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		/**
 		 * Stores all instances of \ref thistype.
 		 */
-		private static AIntegerVector m_inventories
+		private static AIntegerList m_inventories
 		private static timer m_pickupTimer
 		private static boolean m_pickupTimerHasStarted
 		/// The item which should currently be picked up by the unit.
@@ -279,11 +286,11 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 */
 		private integer array m_equipmentItemTypeId[thistype.maxEquipmentTypes]
 		private AIntegerVector m_onEquipFunctions
-		private AIntegerVector m_onAddToRucksackFunctions
+		private AIntegerVector m_onAddToBackpackFunctions
 
 		// members
 		private AUnitInventoryItemData array m_equipmentItemData[thistype.maxEquipmentTypes]
-		private AUnitInventoryItemData array m_rucksackItemData[thistype.maxRucksackItems]
+		private AUnitInventoryItemData array m_backpackItemData[thistype.maxBackpackItems]
 		private trigger m_openTrigger
 		private trigger m_orderTrigger
 		private trigger m_useTrigger // show next page, show previous page, disable in equipment
@@ -295,13 +302,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 * When the shop is deselected the items will be shown again.
 		 *
 		 * Since the player cannot interact with the inventory anyway when selecting a shop this does not bother the player.
-		 * @{
+		 * \{
 		 */
 		private trigger m_shopSelectionTrigger
 		private unit m_shop
 		private trigger m_shopDeselectionTrigger
 		/**
-		 * @}
+		 * \}
 		 */
 		private trigger m_pickupTrigger
 		private trigger m_dropTrigger
@@ -312,17 +319,17 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 */
 		private trigger m_revivalTrigger
 		/**
-		 * Stores the currently open rucksack page.
+		 * Stores the currently open backpack page.
 		 */
-		private integer m_rucksackPage
+		private integer m_backpackPage
 		/**
-		 * This flag indicates if the rucksack is shown or the equipment is shown instead.
+		 * This flag indicates if the backpack is shown or the equipment is shown instead.
 		 */
-		private boolean m_rucksackIsEnabled
+		private boolean m_backpackIsEnabled
 		/**
 		 * If this flag is true, the equipped items won't have any effect and items cannot be equipped.
 		 */
-		private boolean m_onlyRucksackIsEnabled
+		private boolean m_onlyBackpackIsEnabled
 		/*
 		 * A list of all currently pawned item handle IDs required by the drop trigger to not accidentelly refresh a pawned item.
 		 */
@@ -332,7 +339,11 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		// static members
 
-		public static method inventories takes nothing returns AIntegerVector
+		/**
+		 * \return Returns a list of all existing unit inventories.
+		 * \note Convert the instances to \ref thistype.
+		 */
+		public static method inventories takes nothing returns AIntegerList
 			return thistype.m_inventories
 		endmethod
 
@@ -349,10 +360,16 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		// construction members
 
+		/**
+		 * \return Returns the unit which owns the inventory.
+		 */
 		public method unit takes nothing returns unit
 			return this.m_unit
 		endmethod
 
+		/**
+		 * \return Returns the player who owns the unit which owns the inventory.
+		 */
 		public method player takes nothing returns player
 			return this.m_player
 		endmethod
@@ -372,17 +389,17 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * \return Returns true if the rucksack is open. Otherwise if the equipment is shown it returns false.
+		 * \return Returns true if the backpack is open. Otherwise if the equipment is shown it returns false.
 		 */
-		public method rucksackIsEnabled takes nothing returns boolean
-			return this.m_rucksackIsEnabled
+		public method backpackIsEnabled takes nothing returns boolean
+			return this.m_backpackIsEnabled
 		endmethod
 
 		/**
-		 * \return Returns true if the rucksack is open, the equipment has no effect and no items can be equipped at the moment.
+		 * \return Returns true if the backpack is open, the equipment has no effect and no items can be equipped at the moment.
 		 */
-		public method onlyRucksackIsEnabled takes nothing returns boolean
-			return this.m_onlyRucksackIsEnabled
+		public method onlyBackpackIsEnabled takes nothing returns boolean
+			return this.m_onlyBackpackIsEnabled
 		endmethod
 
 		/**
@@ -397,14 +414,14 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * \return Returns item data of an item in the rucksack with \p index. If no item is placed under that index it should return 0.
+		 * \return Returns item data of an item in the backpack with \p index. If no item is placed under that index it should return 0.
 		 */
-		public method rucksackItemData takes integer index returns AUnitInventoryItemData
-			debug if (index >= thistype.maxRucksackItems or index < 0) then
-				debug call this.print("Wrong rucksack index: " + I2S(index) + ".")
+		public method backpackItemData takes integer index returns AUnitInventoryItemData
+			debug if (index >= thistype.maxBackpackItems or index < 0) then
+				debug call this.print("Wrong backpack index: " + I2S(index) + ".")
 				debug return 0
 			debug endif
-			return this.m_rucksackItemData[index]
+			return this.m_backpackItemData[index]
 		endmethod
 
 		/**
@@ -426,19 +443,19 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Counts all filled item slots in rucksack and returns the result.
+		 * Counts all filled item slots in backpack and returns the result.
 		 * Complexity of O(n).
 		 * \note This does not consider any charges! It considers only filled slots.
 		 * \note This does not consider any page items.
-		 * \return Returns the total number of filled slots in the rucksack. It does not consider any charges in those slots.
-		 * \sa totalRucksackItemCharges()
+		 * \return Returns the total number of filled slots in the backpack. It does not consider any charges in those slots.
+		 * \sa totalBackpackItemCharges()
 		 */
-		public method totalRucksackItems takes nothing returns integer
+		public method totalBackpackItems takes nothing returns integer
 			local integer result = 0
 			local integer i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] != 0) then
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i] != 0) then
 					set result = result + 1
 				endif
 				set i = i + 1
@@ -447,32 +464,32 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Counts all filled item charges in rucksack and returns the result.
+		 * Counts all filled item charges in backpack and returns the result.
 		 * Complexity of O(n).
-		 * \note This does consider all item charges from all rucksack slots except for the page items.
-		 * \return Returns the total number of charges by filled slots in the rucksack.
-		 * \sa totalRucksackItems()
+		 * \note This does consider all item charges from all backpack slots except for the page items.
+		 * \return Returns the total number of charges by filled slots in the backpack.
+		 * \sa totalBackpackItems()
 		 */
-		public method totalRucksackItemCharges takes nothing returns integer
+		public method totalBackpackItemCharges takes nothing returns integer
 			local integer result = 0
 			local integer i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] != 0) then
-					set result = result + this.m_rucksackItemData[i].charges()
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i] != 0) then
+					set result = result + this.m_backpackItemData[i].charges()
 				endif
 				set i = i + 1
 			endloop
 			return result
 		endmethod
 
-		public method totalRucksackItemTypeCharges takes integer itemTypeId returns integer
+		public method totalBackpackItemTypeCharges takes integer itemTypeId returns integer
 			local integer result = 0
 			local integer i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] != 0 and this.m_rucksackItemData[i].itemTypeId() == itemTypeId) then
-					set result = result + this.m_rucksackItemData[i].charges()
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i] != 0 and this.m_backpackItemData[i].itemTypeId() == itemTypeId) then
+					set result = result + this.m_backpackItemData[i].charges()
 				endif
 				set i = i + 1
 			endloop
@@ -497,7 +514,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		public method totalItemTypeCharges takes integer itemTypeId returns integer
-			return this.totalRucksackItemTypeCharges(itemTypeId) + this.totalEquipmentItemTypeCharges(itemTypeId)
+			return this.totalBackpackItemTypeCharges(itemTypeId) + this.totalEquipmentItemTypeCharges(itemTypeId)
 		endmethod
 
 		/**
@@ -509,15 +526,16 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Adds a new callback function which is called via .evaluate() whenever an item is added to the rucksack.
+		 * Adds a new callback function which is called via .evaluate() whenever an item is added to the backpack.
 		 * \param callback The function which is called.
 		 */
-		public method addOnAddToRucksackFunction takes AUnitInventoryItemAddFunction callback returns nothing
-			call this.m_onAddToRucksackFunctions.pushBack(callback)
+		public method addOnAddToBackpackFunction takes AUnitInventoryItemAddFunction callback returns nothing
+			call this.m_onAddToBackpackFunctions.pushBack(callback)
 		endmethod
 
 		/**
 		 * Called via .evaluate() whenever an item is equipped. This is called after the equipment, so all data can be retrieved.
+		 * \param equipmentType The equipment type of the item which is equipped.
 		 * \param firstTime If this value is true, the item has not been in the inventory before.
 		 */
 		public stub method onEquipItem takes integer equipmentType, boolean firstTime returns nothing
@@ -530,39 +548,39 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Called via .evaluate() whenever an item is added to the rucksack. This is called after the adding, so all data can be retrieved.
+		 * Called via .evaluate() whenever an item is added to the backpack. This is called after the adding, so all data can be retrieved.
 		 * \param firstTime If this value is true, the item has not been in the inventory before.
 		 */
-		public stub method onAddRucksackItem takes integer rucksackItemIndex, boolean firstTime returns nothing
+		public stub method onAddBackpackItem takes integer backpackItemIndex, boolean firstTime returns nothing
 			local integer i = 0
 			loop
-				exitwhen (i == this.m_onAddToRucksackFunctions.size())
-				call AUnitInventoryItemAddFunction(this.m_onAddToRucksackFunctions[i]).evaluate(this, rucksackItemIndex, firstTime)
+				exitwhen (i == this.m_onAddToBackpackFunctions.size())
+				call AUnitInventoryItemAddFunction(this.m_onAddToBackpackFunctions[i]).evaluate(this, backpackItemIndex, firstTime)
 				set i = i + 1
 			endloop
 		endmethod
 
-		/// \return Returns the page of a rucksack item by index.
-		public static method itemRucksackPage takes integer index returns integer
-			debug if (index >= thistype.maxRucksackItems or index < 0) then
-				debug call thistype.staticPrint("Wrong rucksack index: " + I2S(index) + ".")
+		/// \return Returns the page of a backpack item by index.
+		public static method itemBackpackPage takes integer index returns integer
+			debug if (index >= thistype.maxBackpackItems or index < 0) then
+				debug call thistype.staticPrint("Wrong backpack index: " + I2S(index) + ".")
 				debug return 0
 			debug endif
-			return index / thistype.maxRucksackItemsPerPage
+			return index / thistype.maxBackpackItemsPerPage
 		endmethod
 
-		/// \return Returns the Warcraft inventory slot number by a rucksack item index.
-		public method rucksackItemSlot takes integer index returns integer
-			debug if (index >= thistype.maxRucksackItems or index < 0) then
-				debug call this.print("Wrong rucksack index: " + I2S(index) + ".")
+		/// \return Returns the Warcraft inventory slot number by a backpack item index.
+		public method backpackItemSlot takes integer index returns integer
+			debug if (index >= thistype.maxBackpackItems or index < 0) then
+				debug call this.print("Wrong backpack index: " + I2S(index) + ".")
 				debug return 0
 			debug endif
-			return index - this.m_rucksackPage * thistype.maxRucksackItemsPerPage
+			return index - this.m_backpackPage * thistype.maxBackpackItemsPerPage
 		endmethod
 
-		/// \return Returns the rucksack item index by the slot number.
-		public method rucksackItemIndex takes integer slot returns integer
-			return this.m_rucksackPage * thistype.maxRucksackItemsPerPage + slot
+		/// \return Returns the backpack item index by the slot number.
+		public method backpackItemIndex takes integer slot returns integer
+			return this.m_backpackPage * thistype.maxBackpackItemsPerPage + slot
 		endmethod
 
 		/// Just required for the move order and for item dropping.
@@ -714,7 +732,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				call itemType.onUnequipItem.evaluate(whichUnit, equipmentType)
 				call this.checkEquipment.evaluate() // added
 
-				if (not this.rucksackIsEnabled()) then
+				if (not this.backpackIsEnabled()) then
 					debug call Print("Show placeholder")
 					// show place holder
 					call this.showEquipmentPlaceholder.evaluate(equipmentType)
@@ -725,14 +743,14 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Clears the rucksack slot \p index without dropping or removing the item from the unit's inventory.
+		 * Clears the backpack slot \p index without dropping or removing the item from the unit's inventory.
 		 * It simply destroys the corresponding \ref AUnitInventoryItemData instance.
 		 * \return Returns true if there has been an instance at the given index. Otherwise it returns false.
 		 */
-		private method clearRucksackSlot takes integer index returns boolean
-			if (this.m_rucksackItemData[index] != 0) then
-				call this.m_rucksackItemData[index].destroy()
-				set this.m_rucksackItemData[index] = 0
+		private method clearBackpackSlot takes integer index returns boolean
+			if (this.m_backpackItemData[index] != 0) then
+				call this.m_backpackItemData[index].destroy()
+				set this.m_backpackItemData[index] = 0
 
 				return true
 			endif
@@ -741,13 +759,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Clears rucksack item at \p index and drops it if specified.
+		 * Clears backpack item at \p index and drops it if specified.
 		 * \param drop If this value is true the item will be dropped by the unit. Otherwise it simply will be removed.
 		 */
-		private method clearRucksackItem takes integer index, boolean drop returns nothing
+		private method clearBackpackItem takes integer index, boolean drop returns nothing
 			local item slotItem = null
-			if (this.m_rucksackIsEnabled and this.m_rucksackPage == this.itemRucksackPage(index)) then
-				set slotItem = UnitItemInSlot(this.unit(), this.rucksackItemSlot(index))
+			if (this.m_backpackIsEnabled and this.m_backpackPage == this.itemBackpackPage(index)) then
+				set slotItem = UnitItemInSlot(this.unit(), this.backpackItemSlot(index))
 				if (slotItem != null) then
 					call thistype.clearItemIndex(slotItem)
 
@@ -765,16 +783,16 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 					set slotItem = null
 				endif
 			endif
-			call this.clearRucksackSlot(index)
+			call this.clearBackpackSlot(index)
 		endmethod
 
-		/// \return Returns the rucksack item index by a Warcraft inventory slot number.
-		public method slotRucksackIndex takes integer slot returns integer
-			debug if (slot >= thistype.maxRucksackItemsPerPage or slot < 0) then
+		/// \return Returns the backpack item index by a Warcraft inventory slot number.
+		public method slotBackpackIndex takes integer slot returns integer
+			debug if (slot >= thistype.maxBackpackItemsPerPage or slot < 0) then
 				debug call this.print("Wrong inventory slot: " + I2S(slot) + ".")
 				debug return 0
 			debug endif
-			return this.m_rucksackPage * thistype.maxRucksackItemsPerPage + slot
+			return this.m_backpackPage * thistype.maxBackpackItemsPerPage + slot
 		endmethod
 
 		private method disableEquipmentAbilities takes nothing returns nothing
@@ -785,7 +803,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
 					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
 					if (itemType != 0) then
-						call itemType.removePermanentAbilities(this.unit())
+						call itemType.removeAbilities(this.unit())
 					endif
 				endif
 				set i = i + 1
@@ -800,7 +818,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				if (this.equipmentItemData(i) != 0 and AItemType.itemTypeIdHasItemType(this.equipmentItemData(i).itemTypeId())) then
 					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
 					if (itemType != 0) then
-						call itemType.addPermanentAbilities(this.unit())
+						call itemType.addAbilities(this.unit())
 					endif
 				endif
 				set i = i + 1
@@ -837,7 +855,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 		endmethod
 
-		private method hideEquipmentItem takes integer equipmentType, boolean addPermanentAbilities returns nothing
+		private method hideEquipmentItem takes integer equipmentType, boolean addAbilities returns nothing
 			local item slotItem = UnitItemInSlot(this.unit(), equipmentType)
 			local AItemType itemType = 0
 			if (slotItem != null) then
@@ -848,8 +866,8 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				call RemoveItem(slotItem)
 				call EnableTrigger(this.m_dropTrigger)
 				// equipped items must always have an item type, otherwise something went wrong
-				if (itemType != 0 and addPermanentAbilities) then
-					call itemType.addPermanentAbilities(this.unit())
+				if (itemType != 0 and addAbilities) then
+					call itemType.addAbilities(this.unit())
 				debug elseif (itemType == 0) then
 					debug call this.print("Equipped item of equipment type " + I2S(equipmentType) + " has no custom item type which should not be possible.")
 				endif
@@ -874,15 +892,15 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		/**
 		 * Hides the equipment.
-		 * \param addPermanentAbilities If this value is true the permanent abilities of all equipped item types will be added to the unit. Otherwise they disappear with the items.
+		 * \param addAbilities If this value is true the permanent abilities of all equipped item types will be added to the unit. Otherwise they disappear with the items.
 		 */
-		private method disableEquipment takes boolean addPermanentAbilities returns nothing
+		private method disableEquipment takes boolean addAbilities returns nothing
 			local AItemType itemType = 0
 			local integer i = 0
 			loop
 				exitwhen (i == thistype.maxEquipmentTypes)
 				if (this.m_equipmentItemData[i] != 0) then
-					call this.hideEquipmentItem(i, addPermanentAbilities)
+					call this.hideEquipmentItem(i, addAbilities)
 					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
 					if (itemType != 0) then
 						call itemType.onUnequipItem.evaluate(this.unit(), i)
@@ -894,8 +912,8 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 		endmethod
 
-		private method hideRucksackItem takes integer index returns nothing
-			local integer slot = this.rucksackItemSlot(index)
+		private method hideBackpackItem takes integer index returns nothing
+			local integer slot = this.backpackItemSlot(index)
 			local item slotItem = UnitItemInSlot(this.unit(), slot)
 
 			if (slotItem != null) then
@@ -909,13 +927,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endif
 		endmethod
 
-		private method hideCurrentRucksackPage takes nothing returns nothing
-			local integer i = this.m_rucksackPage * thistype.maxRucksackItemsPerPage
-			local integer exitValue = i + thistype.maxRucksackItemsPerPage
+		private method hideCurrentBackpackPage takes nothing returns nothing
+			local integer i = this.m_backpackPage * thistype.maxBackpackItemsPerPage
+			local integer exitValue = i + thistype.maxBackpackItemsPerPage
 			loop
 				exitwhen (i == exitValue)
-				if (this.m_rucksackItemData[i] != 0) then
-					call this.hideRucksackItem(i)
+				if (this.m_backpackItemData[i] != 0) then
+					call this.hideBackpackItem(i)
 				endif
 				set i = i + 1
 			endloop
@@ -926,7 +944,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local integer slot
 			local item slotItem
 
-			if (not this.rucksackIsEnabled()) then
+			if (not this.backpackIsEnabled()) then
 				return false
 			endif
 
@@ -950,14 +968,14 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			return true
 		endmethod
 
-		private method disableRucksack takes nothing returns nothing
-			if (this.m_rucksackIsEnabled) then
+		private method disableBackpack takes nothing returns nothing
+			if (this.m_backpackIsEnabled) then
 				call this.hidePageItem(true)
 				call this.hidePageItem(false)
-				call this.hideCurrentRucksackPage()
-				set this.m_rucksackIsEnabled = false
+				call this.hideCurrentBackpackPage()
+				set this.m_backpackIsEnabled = false
 			debug else
-				debug call this.print("Disabling rucksack although it is not even enabled.")
+				debug call this.print("Disabling backpack although it is not even enabled.")
 			endif
 		endmethod
 
@@ -967,10 +985,10 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		public stub method disable takes nothing returns nothing
 			local integer i = 0
 			local AItemType itemType = 0
-			if (this.m_rucksackIsEnabled) then
-				call this.disableRucksack()
-				// store that the rucksack would be still enabled when reenabling again
-				set this.m_rucksackIsEnabled = true
+			if (this.m_backpackIsEnabled) then
+				call this.disableBackpack()
+				// store that the backpack would be still enabled when reenabling again
+				set this.m_backpackIsEnabled = true
 
 				/*
 				 * Call unequip for all equipment as well. Otherwise it would be ignored.
@@ -989,7 +1007,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				if (this.equipmentItemData(i) != 0) then
 					set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
 					if (itemType != 0) then
-						call itemType.removePermanentAbilities(this.unit())
+						call itemType.removeAbilities(this.unit())
 					endif
 				endif
 				set i = i + 1
@@ -1010,7 +1028,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local AItemType itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 
 			// equipped items must always have an item type
-			call itemType.removePermanentAbilities(this.unit())
+			call itemType.removeAbilities(this.unit())
 
 			set result = this.unitAddItemToSlotById(this.unit(), this.m_equipmentItemData[equipmentType].itemTypeId(), equipmentType)
 
@@ -1068,7 +1086,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Shows either left or right page item in the rucksack.
+		 * Shows either left or right page item in the backpack.
 		 */
 		private method showPageItem takes boolean left returns boolean
 			local boolean result = false
@@ -1099,7 +1117,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			call SetItemDroppable(slotItem, true) // for moving items to next or previous pages
 
 			if (not left) then
-				call SetItemCharges(slotItem, this.m_rucksackPage + 1)
+				call SetItemCharges(slotItem, this.m_backpackPage + 1)
 			endif
 
 			set slotItem = null
@@ -1108,75 +1126,75 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * \note Call this method only if being sure that there is some item data at \p index in the rucksack.
+		 * \note Call this method only if being sure that there is some item data at \p index in the backpack.
 		 */
-		private method showRucksackItem takes integer index returns boolean
-			local integer slot = this.rucksackItemSlot(index)
+		private method showBackpackItem takes integer index returns boolean
+			local integer slot = this.backpackItemSlot(index)
 			local item slotItem
 			local boolean result = false
 			local AItemType itemType = 0
 
-			if (this.m_rucksackItemData[index] != 0) then
+			if (this.m_backpackItemData[index] != 0) then
 
 				// TODO check if unit is dead, otherwise many items lay on the ground?
-				set result = this.unitAddItemToSlotById(this.unit(), this.m_rucksackItemData[index].itemTypeId(), slot)
+				set result = this.unitAddItemToSlotById(this.unit(), this.m_backpackItemData[index].itemTypeId(), slot)
 
 				// successfully readded
 				if (result) then
 					set slotItem = UnitItemInSlot(this.unit(), slot)
 
 					if (slotItem != null) then
-						call this.m_rucksackItemData[index].assignToItem(slotItem)
+						call this.m_backpackItemData[index].assignToItem(slotItem)
 						call SetItemDropOnDeath(slotItem, false)
-						set itemType = AItemType.itemTypeOfItemTypeId(this.m_rucksackItemData[index].itemTypeId())
-						// rucksack item do not need to have an item type
+						set itemType = AItemType.itemTypeOfItemTypeId(this.m_backpackItemData[index].itemTypeId())
+						// backpack item do not need to have an item type
 						if (itemType != 0) then
-							call itemType.removePermanentAbilities(this.unit())
+							call itemType.removeAbilities(this.unit())
 						endif
 						call thistype.setItemIndex(slotItem, index)
 						set slotItem = null
 					debug else
-						debug call this.print("Rucksack item from slot " + I2S(slot) + " is null.")
+						debug call this.print("Backpack item from slot " + I2S(slot) + " is null.")
 					endif
 				// Something went wrong and the item has not been added or dropped instead. Don't clear the slot since the unit might have been dead and it will be fixed when he is revived.
 				else
-					debug call this.print("Error: Adding rucksack item with index " + I2S(index) + " failed for unknown reasons.")
+					debug call this.print("Error: Adding backpack item with index " + I2S(index) + " failed for unknown reasons.")
 				endif
 			debug else
-				debug call this.print("Showing rucksack item of index " + I2S(index) + " which has no item data.")
+				debug call this.print("Showing backpack item of index " + I2S(index) + " which has no item data.")
 			endif
 
 			return result
 		endmethod
 
-		private method showRucksackPage takes integer page, boolean firstCall returns nothing
+		private method showBackpackPage takes integer page, boolean firstCall returns nothing
 			local integer i
 			local integer exitValue
 			local item rightArrowItem
 
-			if (page > thistype.maxRucksackPages) then
+			if (page > thistype.maxBackpackPages) then
 				debug call this.print("Page value is too big.")
 				return
 			endif
 
 			if (not firstCall) then
-				call this.hideCurrentRucksackPage()
+				call this.hideCurrentBackpackPage()
 			endif
 
-			set this.m_rucksackPage = page
+			set this.m_backpackPage = page
 			// add inventory items
-			set i = page * thistype.maxRucksackItemsPerPage
-			set exitValue = i + thistype.maxRucksackItemsPerPage
+			set i = page * thistype.maxBackpackItemsPerPage
+			set exitValue = i + thistype.maxBackpackItemsPerPage
 			loop
 				exitwhen (i == exitValue)
-				if (this.m_rucksackItemData[i] != 0) then
-					call this.showRucksackItem(i)
+				if (this.m_backpackItemData[i] != 0) then
+					call this.showBackpackItem(i)
 				endif
 				set i = i + 1
 			endloop
 
 			/*
-			 * If this is not a call from  enableRucksack() the rucksack page number has to be updated. Otherwise not.
+			 * If this is not a call from  enableBackpack() the backpack page number has to be updated. Otherwise not.
 			 */
 			if (not firstCall) then
 				set rightArrowItem = UnitItemInSlot(this.unit(), thistype.nextPageItemSlot)
@@ -1192,17 +1210,17 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endif
 		endmethod
 
-		private method enableRucksack takes nothing returns nothing
+		private method enableBackpack takes nothing returns nothing
 			local boolean leftResult = false
 			local boolean rightResult = false
 			local integer i = 0
 			local AItemType itemType = 0
 
-			if (not this.m_rucksackIsEnabled) then
-				set this.m_rucksackIsEnabled = true
+			if (not this.m_backpackIsEnabled) then
+				set this.m_backpackIsEnabled = true
 
 				/*
-				 * Make sure the page items are already there when showing the rucksack page for the first time.
+				 * Make sure the page items are already there when showing the backpack page for the first time.
 				 */
 
 				if (not this.showPageItem(true)) then
@@ -1213,11 +1231,11 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 					debug call this.print("Error on adding right page item.")
 				endif
 
-				call this.showRucksackPage(this.m_rucksackPage, true)
+				call this.showBackpackPage(this.m_backpackPage, true)
 
-				if (not this.m_onlyRucksackIsEnabled) then
+				if (not this.m_onlyBackpackIsEnabled) then
 					/*
-					 * Add permanent abilities of equipment when only rucksack is shown. Otherwise they are missing.
+					 * Add permanent abilities of equipment when only backpack is shown. Otherwise they are missing.
 					 */
 					set i = 0
 					loop
@@ -1226,14 +1244,14 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 							set itemType = AItemType.itemTypeOfItemTypeId(this.equipmentItemData(i).itemTypeId())
 							if (itemType != 0) then
 								call itemType.onEquipItem.evaluate(this.unit(), i)
-								call itemType.addPermanentAbilities(this.unit())
+								call itemType.addAbilities(this.unit())
 							endif
 						endif
 						set i = i + 1
 					endloop
 				endif
 			debug else
-				debug call this.print("Enabling rucksack although it is already enabled.")
+				debug call this.print("Enabling backpack although it is already enabled.")
 			endif
 		endmethod
 
@@ -1243,7 +1261,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 */
 		public method updateEquipmentTypePlaceholders takes nothing returns nothing
 			local integer i
-			if (not this.rucksackIsEnabled()) then
+			if (not this.backpackIsEnabled()) then
 				set i = 0
 				loop
 					exitwhen (i == thistype.maxEquipmentTypes)
@@ -1256,14 +1274,14 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Shows the current page in the inventory of the unit if the rucksack is open.
+		 * Shows the current page in the inventory of the unit if the backpack is open.
 		 * Otherwise it shows the equipment.
 		 * Usually you do not have to call this method. The system handles itself.
 		 */
 		public stub method enable takes nothing returns nothing
-			if (this.m_rucksackIsEnabled or this.m_onlyRucksackIsEnabled) then
-				set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
-				call this.enableRucksack()
+			if (this.m_backpackIsEnabled or this.m_onlyBackpackIsEnabled) then
+				set this.m_backpackIsEnabled = false // otherwise the following call won't update anything
+				call this.enableBackpack()
 			else
 				call this.enableEquipment()
 			endif
@@ -1290,12 +1308,12 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			return -1
 		endmethod
 
-		/// \return Returns the slot of the rucksack item. If not item was found it returns -1.
-		public method hasItemTypeInRucksack takes integer itemTypeId returns integer
+		/// \return Returns the slot of the backpack item. If not item was found it returns -1.
+		public method hasItemTypeInBackpack takes integer itemTypeId returns integer
 			local integer i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i].itemTypeId() == itemTypeId) then
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i].itemTypeId() == itemTypeId) then
 					return i
 				endif
 				set i = i + 1
@@ -1304,56 +1322,59 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * \return Returns true if an item of type \p itemTypeId is either equipped or in the rucksack.
-		 * \sa hasItemEquipped() hasItemTypeInRucksack()
+		 * \return Returns true if an item of type \p itemTypeId is either equipped or in the backpack.
+		 * \sa hasItemEquipped() hasItemTypeInBackpack()
 		 */
 		public method hasItemType takes integer itemTypeId returns boolean
-			return this.hasItemEquipped(itemTypeId) != -1 or this.hasItemTypeInRucksack(itemTypeId) != -1
+			return this.hasItemEquipped(itemTypeId) != -1 or this.hasItemTypeInBackpack(itemTypeId) != -1
 		endmethod
 
-		private method refreshRucksackItemCharges takes integer index returns nothing
+		private method refreshBackpackItemCharges takes integer index returns nothing
 			local unit whichUnit = null
 			local integer slot = 0
 			local item slotItem = null
 
-			if (this.m_rucksackItemData[index] == 0) then
+			if (this.m_backpackItemData[index] == 0) then
 				return
 			endif
 
-			if (this.m_rucksackItemData[index].charges() <= 0) then // all items have charges starting at least with 1 in rucksack
-				debug call this.print("Clear rucksack item!")
-				call this.clearRucksackItem(index, false)
+			if (this.m_backpackItemData[index].charges() <= 0) then // all items have charges starting at least with 1 in backpack
+				debug call this.print("Clear backpack item!")
+				call this.clearBackpackItem(index, false)
 			// only update charges if item is visible, the item is not visible if a shop is selected!
-			elseif (this.m_rucksackIsEnabled and this.m_rucksackPage == this.itemRucksackPage(index) and this.m_shop == null) then
+			elseif (this.m_backpackIsEnabled and this.m_backpackPage == this.itemBackpackPage(index) and this.m_shop == null) then
 				set whichUnit = this.unit()
-				set slot = this.rucksackItemSlot(index)
+				set slot = this.backpackItemSlot(index)
 				set slotItem = UnitItemInSlot(whichUnit, slot)
 				if (slotItem != null) then
-					call SetItemCharges(slotItem, this.m_rucksackItemData[index].charges())
+					call SetItemCharges(slotItem, this.m_backpackItemData[index].charges())
 					set slotItem = null
 				// item could have been dropped (e. g. in drop trigger action)
 				else
-					debug call Print("Refresh rucksack item")
-					call this.showRucksackItem(index)
+					debug call Print("Refresh backpack item")
+					call this.showBackpackItem(index)
 				endif
 				set whichUnit = null
 			endif
 		endmethod
 
-		public method setRucksackItemCharges takes integer index, integer charges returns integer
-			if (index >= thistype.maxRucksackItems or index < 0 or this.m_rucksackItemData[index] == 0) then
-				debug call this.print("Empty rucksack item at index: " + I2S(index) + ".")
+		public method setBackpackItemCharges takes integer index, integer charges returns integer
+			if (index >= thistype.maxBackpackItems or index < 0 or this.m_backpackItemData[index] == 0) then
+				debug call this.print("Empty backpack item at index: " + I2S(index) + ".")
 				return 0
 			endif
 
 			set charges = IMaxBJ(0, charges)
-			call this.m_rucksackItemData[index].setCharges(charges)
+			call this.m_backpackItemData[index].setCharges(charges)
 			// clears the items if charges are equal to 0
-			call this.refreshRucksackItemCharges(index)
+			call this.refreshBackpackItemCharges(index)
 
 			return charges
 		endmethod
 
+		/**
+		 * Serializes the unit inventory into a gamecache.
+		 */
 		public stub method store takes gamecache cache, string missionKey, string labelPrefix returns nothing
 			local integer i = 0
 			loop
@@ -1366,22 +1387,26 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 			set i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
+				exitwhen (i == thistype.maxBackpackItems)
 				// use a new OpLimit
-				call this.storeRucksackItem.evaluate(cache, missionKey, labelPrefix, i)
+				call this.storeBackpackItem.evaluate(cache, missionKey, labelPrefix, i)
 				set i = i + 1
 			endloop
-			call StoreInteger(cache, missionKey, labelPrefix + "RucksackPage", this.m_rucksackPage)
-			call StoreBoolean(cache, missionKey, labelPrefix + "RucksackIsEnabled", this.m_rucksackIsEnabled)
+			call StoreInteger(cache, missionKey, labelPrefix + "BackpackPage", this.m_backpackPage)
+			call StoreBoolean(cache, missionKey, labelPrefix + "BackpackIsEnabled", this.m_backpackIsEnabled)
 		endmethod
 
-		private method storeRucksackItem takes gamecache cache, string missionKey, string labelPrefix, integer i returns nothing
-			if (this.m_rucksackItemData[i] != 0) then
-				call StoreBoolean(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i) + "Exists", true)
-				call this.m_rucksackItemData[i].store(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i))
+		private method storeBackpackItem takes gamecache cache, string missionKey, string labelPrefix, integer i returns nothing
+			if (this.m_backpackItemData[i] != 0) then
+				call StoreBoolean(cache, missionKey, labelPrefix + "BackpackItemData" + I2S(i) + "Exists", true)
+				call this.m_backpackItemData[i].store(cache, missionKey, labelPrefix + "BackpackItemData" + I2S(i))
 			endif
 		endmethod
 
+		/**
+		 * Deserializes the unit inventory from a gamecache.
+		 * \note Drop all items before.
+		 */
 		public stub method restore takes gamecache cache, string missionKey, string labelPrefix returns nothing
 			local integer i = 0
 			call this.disable()
@@ -1399,23 +1424,23 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 			set i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
+				exitwhen (i == thistype.maxBackpackItems)
 				// use a new OpLimit
-				call this.restoreRucksackItem.evaluate(cache, missionKey, labelPrefix, i)
+				call this.restoreBackpackItem.evaluate(cache, missionKey, labelPrefix, i)
 				set i = i + 1
 			endloop
-			set this.m_rucksackPage = GetStoredInteger(cache, missionKey, labelPrefix + "RucksackPage")
-			set this.m_rucksackIsEnabled = GetStoredBoolean(cache, missionKey, labelPrefix + "RucksackIsEnabled")
+			set this.m_backpackPage = GetStoredInteger(cache, missionKey, labelPrefix + "BackpackPage")
+			set this.m_backpackIsEnabled = GetStoredBoolean(cache, missionKey, labelPrefix + "BackpackIsEnabled")
 			call this.enable()
 		endmethod
 
-		private method restoreRucksackItem takes gamecache cache, string missionKey, string labelPrefix, integer i returns nothing
-			if (this.m_rucksackItemData[i] != 0) then // clear old
-				call this.m_rucksackItemData[i].destroy()
-				set this.m_rucksackItemData[i] = 0
+		private method restoreBackpackItem takes gamecache cache, string missionKey, string labelPrefix, integer i returns nothing
+			if (this.m_backpackItemData[i] != 0) then // clear old
+				call this.m_backpackItemData[i].destroy()
+				set this.m_backpackItemData[i] = 0
 			endif
-			if (HaveStoredBoolean(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i) + "Exists")) then
-				set this.m_rucksackItemData[i] = AUnitInventoryItemData.createRestored(cache, missionKey, labelPrefix + "RucksackItemData" + I2S(i))
+			if (HaveStoredBoolean(cache, missionKey, labelPrefix + "BackpackItemData" + I2S(i) + "Exists")) then
+				set this.m_backpackItemData[i] = AUnitInventoryItemData.createRestored(cache, missionKey, labelPrefix + "BackpackItemData" + I2S(i))
 			endif
 		endmethod
 
@@ -1423,7 +1448,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local AItemType itemType = AItemType.itemTypeOfItemTypeId(inventoryItemData.itemTypeId())
 			set this.m_equipmentItemData[equipmentType] = inventoryItemData
 			if (add and this.m_shop == null) then
-				if (not this.m_rucksackIsEnabled) then
+				if (not this.m_backpackIsEnabled) then
 					call this.hideEquipmentPlaceholder(equipmentType)
 				endif
 				call this.showEquipmentItem(equipmentType)
@@ -1431,17 +1456,17 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			call itemType.onEquipItem.evaluate(this.unit(), equipmentType)
 			debug call Print("After onEquip")
 			// Add permanent abilities afterwards since onEquipItem() might change the unit (transformations etc.). Besides make sure it is still equipped.
-			if ((this.m_rucksackIsEnabled or this.m_shop != null) and this.m_equipmentItemData[equipmentType] == inventoryItemData) then
+			if ((this.m_backpackIsEnabled or this.m_shop != null) and this.m_equipmentItemData[equipmentType] == inventoryItemData) then
 				debug call Print("Adding permanent abilities AFTER transformation.")
-				call itemType.addPermanentAbilities(this.unit())
+				call itemType.addAbilities(this.unit())
 			debug else
-				debug call Print("Either rucksack is not enabled and shop is not null or equipment type has diferent item type")
+				debug call Print("Either backpack is not enabled and shop is not null or equipment type has diferent item type")
 			endif
 		endmethod
 
 		/**
 		 * Sets equipment item of type \p equipmentType to item \p usedItem and removes \p usedItem after that if it has only 0 or 1 charges. Otherwise it reduces its charges.
-		 * \param usedItem This item is expected to be not in the rucksack of the unit.
+		 * \param usedItem This item is expected to be not in the backpack of the unit.
 		 */
 		private method setEquipmentItemByItemOnTheGround takes integer equipmentType, item usedItem, boolean add returns nothing
 			local AUnitInventoryItemData inventoryItemData = AUnitInventoryItemData.create(usedItem, this.unit())
@@ -1462,7 +1487,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local item slotItem = null
 			local AItemType itemType = 0
 
-			if (not this.m_rucksackIsEnabled) then
+			if (not this.m_backpackIsEnabled) then
 				set slotItem = UnitItemInSlot(this.unit(), equipmentType)
 				if (slotItem != null) then
 					call thistype.clearItemIndex(slotItem)
@@ -1483,7 +1508,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				set itemType = AItemType.itemTypeOfItemTypeId(this.m_equipmentItemData[equipmentType].itemTypeId())
 				// equipped items must always have an item type
 				if (itemType != 0) then
-					call itemType.removePermanentAbilities(this.unit())
+					call itemType.removeAbilities(this.unit())
 				debug else
 					debug call this.print("Equipment type " + I2S(equipmentType) + " has no item type which should not be possible.")
 				endif
@@ -1509,10 +1534,10 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 			set i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i].itemTypeId() == itemTypeId) then
-					debug call Print("Setting item type " + GetObjectName(itemTypeId) + " charges " + I2S(this.m_rucksackItemData[i].charges()) + " -1")
-					call this.setRucksackItemCharges(i, this.m_rucksackItemData[i].charges() - 1)
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i].itemTypeId() == itemTypeId) then
+					debug call Print("Setting item type " + GetObjectName(itemTypeId) + " charges " + I2S(this.m_backpackItemData[i].charges()) + " -1")
+					call this.setBackpackItemCharges(i, this.m_backpackItemData[i].charges() - 1)
 
 					return true
 				endif
@@ -1543,35 +1568,35 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		/**
 		 * Allows to disable the equipment completly and to re-enable it later.
-		 * The rucksack can be used as usual.
-		 * \param enableOnly If this value is true, the equipment will disappear and only the rucksack will be available. The player cannot equip any items anymore. If the value is false the equipment will be available again.
+		 * The backpack can be used as usual.
+		 * \param enableOnly If this value is true, the equipment will disappear and only the backpack will be available. The player cannot equip any items anymore. If the value is false the equipment will be available again.
 		 */
-		public method enableOnlyRucksack takes boolean enableOnly returns nothing
-			if (enableOnly == this.m_onlyRucksackIsEnabled) then
+		public method enableOnlyBackpack takes boolean enableOnly returns nothing
+			if (enableOnly == this.m_onlyBackpackIsEnabled) then
 				return
 			endif
 			if (enableOnly) then
-				if (this.rucksackIsEnabled()) then
+				if (this.backpackIsEnabled()) then
 					call this.disableEquipmentAbilities()
 				else
 					call this.disableEquipment(false)
-					call this.enableRucksack()
+					call this.enableBackpack()
 				endif
 				// call the onUnequipItem() methods which might have effects on the unit as well
 				call this.onUnequipForAllEquipment()
-				set this.m_onlyRucksackIsEnabled = true
+				set this.m_onlyBackpackIsEnabled = true
 			else
 				call this.enableEquipmentAbilities()
 				// call the onEquipItem() methods which might have effects on the unit as well
 				call this.onEquipForAllEquipment()
-				set this.m_onlyRucksackIsEnabled = false
+				set this.m_onlyBackpackIsEnabled = false
 			endif
 		endmethod
 
 		/**
 		 * Checks requirements of all equipped items. If some requirements aren't met the checked item is dropped.
 		 * This should be called whenever the unit's attributes which are used for item type requirement change.
-		 * Note: Now it should work while rucksack is opened, too.
+		 * Note: Now it should work while backpack is opened, too.
 		 */
 		private method checkEquipment takes nothing returns nothing
 			local AItemType itemType
@@ -1590,25 +1615,25 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 		endmethod
 
-		private method setRucksackItem takes integer index, AUnitInventoryItemData inventoryItemData, boolean add returns nothing
+		private method setBackpackItem takes integer index, AUnitInventoryItemData inventoryItemData, boolean add returns nothing
 			local boolean refreshOnly = false
-			if (this.m_rucksackItemData[index] == 0) then
-				set this.m_rucksackItemData[index] = inventoryItemData
+			if (this.m_backpackItemData[index] == 0) then
+				set this.m_backpackItemData[index] = inventoryItemData
 			else //same type
-				call this.m_rucksackItemData[index].setCharges(this.m_rucksackItemData[index].charges() + IMaxBJ(inventoryItemData.charges(), 1))
+				call this.m_backpackItemData[index].setCharges(this.m_backpackItemData[index].charges() + IMaxBJ(inventoryItemData.charges(), 1))
 				call inventoryItemData.destroy()
 				set refreshOnly = true
 			endif
 			if (add and this.m_shop == null) then
 				if (not refreshOnly) then
-					call this.showRucksackItem(index)
+					call this.showBackpackItem(index)
 				else
-					call this.refreshRucksackItemCharges(index)
+					call this.refreshBackpackItemCharges(index)
 				endif
 			endif
 		endmethod
 
-		private method setRucksackItemByItem takes integer index, item usedItem, boolean add returns nothing
+		private method setBackpackItemByItem takes integer index, item usedItem, boolean add returns nothing
 			local AUnitInventoryItemData inventoryItemData = AUnitInventoryItemData.create(usedItem, this.unit())
 			if (inventoryItemData.charges() == 0) then
 				call inventoryItemData.setCharges(1)
@@ -1617,7 +1642,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			call RemoveItem(usedItem)
 			call EnableTrigger(this.m_dropTrigger)
 			set usedItem = null
-			call this.setRucksackItem(index, inventoryItemData, add)
+			call this.setBackpackItem(index, inventoryItemData, add)
 		endmethod
 
 		private method dropItemIfCharacterHasIt takes item usedItem returns boolean
@@ -1656,13 +1681,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		/**
 		 * Tries to equip item \p usedItem to the unit.
-		 * \param dontMoveToRucksack If this value is true the item is not tried to be added to the rucksack if the equipment does not succeed.
+		 * \param dontMoveToBackpack If this value is true the item is not tried to be added to the backpack if the equipment does not succeed.
 		 * \param swapWithAlreadyEquipped If this value is true it is equipped even if there is already an item equipped of the same type.
 		 * \param showEquipMessage If this value is true a message is shown to the owner of the unit when the item is equipped successfully.
 		 * \param firstTime If this value is true, the item is added for the first time from the ground or another unit or via code.
-		 * \return Returns true if the item is equipped successfully. Otherwise if not or if it is added to the rucksack instead it returns false.
+		 * \return Returns true if the item is equipped successfully. Otherwise if not or if it is added to the backpack instead it returns false.
 		 */
-		private method equipItem takes item usedItem, boolean dontMoveToRucksack, boolean swapWithAlreadyEquipped, boolean showEquipMessage, boolean firstTime returns boolean
+		private method equipItem takes item usedItem, boolean dontMoveToBackpack, boolean swapWithAlreadyEquipped, boolean showEquipMessage, boolean firstTime returns boolean
 			local AItemType itemType
 			local integer equipmentType
 			local item equippedItem
@@ -1697,12 +1722,12 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 						 */
 						if (swapWithAlreadyEquipped and this.m_equipmentItemData[equipmentType] != 0 and (equipmentType != AItemType.equipmentTypeAmulet or this.m_equipmentItemData[equipmentType + 1] != 0)) then
 							/*
-							 * Drop the equipped item and add it to the rucksack.
+							 * Drop the equipped item and add it to the backpack.
 							 * TODO Do not create a new item but drop the existing item instead.
-							 * TODO maybe add to rucksack AFTER equipping the new item? Not really necessary.
+							 * TODO maybe add to backpack AFTER equipping the new item? Not really necessary.
 							 */
 							set equippedItem = this.m_equipmentItemData[equipmentType].createItem(GetUnitX(this.unit()), GetUnitY(this.unit()))
-							call this.addItemToRucksack.evaluate(equippedItem, true, false, false)
+							call this.addItemToBackpack.evaluate(equippedItem, true, false, false)
 							call this.clearEquipmentItem(equipmentType, false)
 							set equippedItem = null
 						elseif (equipmentType == AItemType.equipmentTypeAmulet and this.m_equipmentItemData[equipmentType] != 0) then
@@ -1710,7 +1735,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 							set equipmentType = equipmentType + 1
 						endif
 						set itemName = GetItemName(usedItem)
-						call this.setEquipmentItemByItemOnTheGround(equipmentType, usedItem, not this.m_rucksackIsEnabled)
+						call this.setEquipmentItemByItemOnTheGround(equipmentType, usedItem, not this.m_backpackIsEnabled)
 						if (showEquipMessage and thistype.m_textEquipItem != null) then
 							call DisplayTimedTextToPlayer(this.player(), 0.0, 0.0, 6.0, Format(thistype.m_textEquipItem).s(itemName).result())
 						endif
@@ -1724,9 +1749,9 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				debug call this.print("Warning: Item \"" + GetItemName(usedItem) + "\" has no custom type.")
 			endif
 
-			// move to rucksack
-			if (not dontMoveToRucksack) then
-				return this.addItemToRucksack.evaluate(usedItem, true, true, firstTime) //if item type is 0 it will be placed in rucksack, too
+			// move to backpack
+			if (not dontMoveToBackpack) then
+				return this.addItemToBackpack.evaluate(usedItem, true, true, firstTime) //if item type is 0 it will be placed in backpack, too
 			elseif (thistype.m_textUnableToEquipItem != null) then
 				call SimError(this.player(), thistype.m_textUnableToEquipItem)
 			endif
@@ -1736,7 +1761,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		/**
 		 * Adds an item to the inventory.
-		 * This tries to equip the item first. If this fails because there is already an item equipped or it is not an equipable item the item will be added to the rucksack.
+		 * This tries to equip the item first. If this fails because there is already an item equipped or it is not an equipable item the item will be added to the backpack.
 		 * \param whichItem The item which is added.
 		 * \return Returns true if the item has been equipped. Otherwise it returns false.
 		 */
@@ -1765,46 +1790,46 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 		endmethod
 
-		public method dropAllRucksack takes real x, real y, boolean owned returns nothing
+		public method dropAllBackpack takes real x, real y, boolean owned returns nothing
 			local item whichItem
 			local integer i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.rucksackItemData(i) != 0) then
-					set whichItem = this.rucksackItemData(i).createItem(x, y)
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.backpackItemData(i) != 0) then
+					set whichItem = this.backpackItemData(i).createItem(x, y)
 					if (owned) then
 						call SetItemPlayer(whichItem, this.player(), true)
 					endif
 					set whichItem = null
-					call this.clearRucksackItem(i, false)
+					call this.clearBackpackItem(i, false)
 				endif
 				set i = i + 1
 			endloop
 		endmethod
 
 		/**
-		 * Drops all items from the equipment and rucksack to the location at \p x, \p y.
+		 * Drops all items from the equipment and backpack to the location at \p x, \p y.
 		 * \param owned If this value is true, the owner of the items stays the owner of the unit. Otherwise the owner is reset.
 		 */
 		public method dropAll takes real x, real y, boolean owned returns nothing
 			call this.dropAllEquipment(x, y, owned)
-			call this.dropAllRucksack(x, y, owned)
+			call this.dropAllBackpack(x, y, owned)
 		endmethod
 
 		/**
-		 * Adds item \p usedItem to the rucksack.
-		 * \param dontMoveToEquipment If this value is true the item won't be moved to the equipment if the rucksack is full.
+		 * Adds item \p usedItem to the backpack.
+		 * \param dontMoveToEquipment If this value is true the item won't be moved to the equipment if the backpack is full.
 		 * \param showAddMessage If this value is true a message will be shown.
 		 * \param firstTime If this value is true, the item is added for the first time from the ground or another unit or via code.
-		 * \return Returns true if the item has been added to the rucksack successfully.
+		 * \return Returns true if the item has been added to the backpack successfully.
 		 */
-		private method addItemToRucksack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage, boolean firstTime returns boolean
+		private method addItemToBackpack takes item usedItem, boolean dontMoveToEquipment, boolean showAddMessage, boolean firstTime returns boolean
 			local integer i = 0
 			local string itemName = ""
 
 			// sometimes null items will be added for example when an item is added which is removed at the same moment
 			if (usedItem == null) then
-				debug call this.print("Error: Used item is null when adding item to rucksack.")
+				debug call this.print("Error: Used item is null when adding item to backpack.")
 				return false
 			endif
 
@@ -1815,19 +1840,19 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endif
 
 			/*
-			 * Now check for a free slot in the rucksack.
+			 * Now check for a free slot in the backpack.
 			 * Besides slots with the same item type are checked since the items are stackable.
 			 */
 			set i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] == 0 or  this.m_rucksackItemData[i].itemTypeId() == GetItemTypeId(usedItem)) then
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i] == 0 or  this.m_backpackItemData[i].itemTypeId() == GetItemTypeId(usedItem)) then
 					set itemName = GetItemName(usedItem)
-					call this.setRucksackItemByItem(i, usedItem, this.m_rucksackIsEnabled and this.itemRucksackPage(i) == this.m_rucksackPage)
-					if (showAddMessage and thistype.m_textAddItemToRucksack != null) then
-						call DisplayTimedTextToPlayer(this.player(), 0.0, 0.0, 6.0, Format(thistype.m_textAddItemToRucksack).s(itemName).result())
+					call this.setBackpackItemByItem(i, usedItem, this.m_backpackIsEnabled and this.itemBackpackPage(i) == this.m_backpackPage)
+					if (showAddMessage and thistype.m_textAddItemToBackpack != null) then
+						call DisplayTimedTextToPlayer(this.player(), 0.0, 0.0, 6.0, Format(thistype.m_textAddItemToBackpack).s(itemName).result())
 					endif
-					call this.onAddRucksackItem.evaluate(i, firstTime)
+					call this.onAddBackpackItem.evaluate(i, firstTime)
 					return true
 				endif
 				set i = i + 1
@@ -1836,27 +1861,27 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			// equip
 			if (not dontMoveToEquipment) then
 				return this.equipItem(usedItem, true, false, true, firstTime)
-			// the rucksack is full and the item should not be equipped, for example when the item was added to the rucksack from the equipment
-			elseif (thistype.m_textUnableToAddRucksackItem != null) then
-				call SimError(this.player(), thistype.m_textUnableToAddRucksackItem)
+			// the backpack is full and the item should not be equipped, for example when the item was added to the backpack from the equipment
+			elseif (thistype.m_textUnableToAddBackpackItem != null) then
+				call SimError(this.player(), thistype.m_textUnableToAddBackpackItem)
 			endif
 
 			return false
 		endmethod
 
-		private method showNextRucksackPage takes nothing returns nothing
-			if (this.m_rucksackPage == thistype.maxRucksackPages - 1) then
-				call this.showRucksackPage(0, false)
+		private method showNextBackpackPage takes nothing returns nothing
+			if (this.m_backpackPage == thistype.maxBackpackPages - 1) then
+				call this.showBackpackPage(0, false)
 			else
-				call this.showRucksackPage(this.m_rucksackPage + 1, false)
+				call this.showBackpackPage(this.m_backpackPage + 1, false)
 			endif
 		endmethod
 
-		private method showPreviousRucksackPage takes nothing returns nothing
-			if (this.m_rucksackPage == 0) then
-				call this.showRucksackPage(thistype.maxRucksackPages - 1, false)
+		private method showPreviousBackpackPage takes nothing returns nothing
+			if (this.m_backpackPage == 0) then
+				call this.showBackpackPage(thistype.maxBackpackPages - 1, false)
 			else
-				call this.showRucksackPage(this.m_rucksackPage - 1, false)
+				call this.showBackpackPage(this.m_backpackPage - 1, false)
 			endif
 		endmethod
 
@@ -1905,15 +1930,15 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * Moves item \p slotItem with all of its charges to the previous or the next rucksack page which means it will only be moved if the previous or next page has a free slot or a lot where the item can be stacked.
+		 * Moves item \p slotItem with all of its charges to the previous or the next backpack page which means it will only be moved if the previous or next page has a free slot or a lot where the item can be stacked.
 		 * If no free slot or stackable item is found the item will remain as it is at its current slot.
-		 * \param slotItem The item which will be moved and must be be part of the rucksack.
+		 * \param slotItem The item which will be moved and must be be part of the backpack.
 		 * \param next If this value is true the item will be moved to the next page. Otherwise it will be moved to the previous page.
 		 * \return Returns true if the item has been moved successfully. Otherwise if the item stays at its current slot it returns false.
 		 */
-		private method moveRucksackItemToPage takes item slotItem, boolean next returns boolean
+		private method moveBackpackItemToPage takes item slotItem, boolean next returns boolean
 			local integer oldIndex = thistype.itemIndex(slotItem)
-			local integer oldPage = this.itemRucksackPage(oldIndex)
+			local integer oldPage = this.itemBackpackPage(oldIndex)
 			local integer i = 0
 			local integer exitValue = 0
 			local boolean result = false
@@ -1926,13 +1951,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				/*
 				 * If it is the last page start with the first.
 				 */
-				if (oldPage == thistype.maxRucksackPages - 1) then
+				if (oldPage == thistype.maxBackpackPages - 1) then
 					debug call this.print("Is last page")
 					set i = 0
-					set exitValue = thistype.maxRucksackItemsPerPage
+					set exitValue = thistype.maxBackpackItemsPerPage
 				else
-					set i = (oldPage + 1) * thistype.maxRucksackItemsPerPage
-					set exitValue = i + thistype.maxRucksackItemsPerPage
+					set i = (oldPage + 1) * thistype.maxBackpackItemsPerPage
+					set exitValue = i + thistype.maxBackpackItemsPerPage
 				endif
 			else
 				/*
@@ -1940,13 +1965,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				 */
 				if (oldPage == 0) then
 					debug call this.print("Is first page")
-					set i = thistype.maxRucksackItems - 1
+					set i = thistype.maxBackpackItems - 1
 					debug call this.print("Starting with index " + I2S(i))
-					set exitValue = thistype.maxRucksackItems - thistype.maxRucksackItemsPerPage
+					set exitValue = thistype.maxBackpackItems - thistype.maxBackpackItemsPerPage
 					debug call this.print("Ending with value " + I2S(exitValue))
 				else
-					set i = oldPage * thistype.maxRucksackItemsPerPage - 1
-					set exitValue = i - thistype.maxRucksackItemsPerPage
+					set i = oldPage * thistype.maxBackpackItemsPerPage - 1
+					set exitValue = i - thistype.maxBackpackItemsPerPage
 				endif
 			endif
 
@@ -1956,26 +1981,26 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				exitwhen (result or i == exitValue)
 
 				// found stack place
-				if (this.m_rucksackItemData[i].itemTypeId() == this.m_rucksackItemData[oldIndex].itemTypeId()) then
-					call this.m_rucksackItemData[i].setCharges(this.m_rucksackItemData[i].charges() + this.m_rucksackItemData[oldIndex].charges())
+				if (this.m_backpackItemData[i].itemTypeId() == this.m_backpackItemData[oldIndex].itemTypeId()) then
+					call this.m_backpackItemData[i].setCharges(this.m_backpackItemData[i].charges() + this.m_backpackItemData[oldIndex].charges())
 
 					/*
 					 * Delete old inventory item data since it is not used anymore.
 					 */
-					call this.clearRucksackSlot(oldIndex)
+					call this.clearBackpackSlot(oldIndex)
 
 					set result = true
 				// found a free place
-				elseif (this.m_rucksackItemData[i] == 0) then
+				elseif (this.m_backpackItemData[i] == 0) then
 					/*
 					 * This assigns the item data to a free slot. Therefore it should not be deleted.
 					 */
-					call this.setRucksackItem(i, this.m_rucksackItemData[oldIndex], this.m_rucksackIsEnabled and this.itemRucksackPage(i) == this.m_rucksackPage)
+					call this.setBackpackItem(i, this.m_backpackItemData[oldIndex], this.m_backpackIsEnabled and this.itemBackpackPage(i) == this.m_backpackPage)
 
 					/*
 					 * Clear the old inventory item data entry but do not delete it since it was assigned to the new index.
 					 */
-					 set this.m_rucksackItemData[oldIndex] = 0
+					 set this.m_backpackItemData[oldIndex] = 0
 
 					set result = true
 				endif
@@ -2006,13 +2031,13 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			return result
 		endmethod
 
-		private method swapRucksackItemData takes item firstItem, item secondItem returns nothing
+		private method swapBackpackItemData takes item firstItem, item secondItem returns nothing
 			local integer firstIndex = thistype.itemIndex(firstItem)
 			local integer secondIndex = thistype.itemIndex(secondItem)
-			local AUnitInventoryItemData itemData = this.m_rucksackItemData[firstIndex]
-			set this.m_rucksackItemData[firstIndex] = this.m_rucksackItemData[secondIndex]
+			local AUnitInventoryItemData itemData = this.m_backpackItemData[firstIndex]
+			set this.m_backpackItemData[firstIndex] = this.m_backpackItemData[secondIndex]
 			call thistype.setItemIndex(firstItem, secondIndex)
-			set this.m_rucksackItemData[secondIndex] = itemData
+			set this.m_backpackItemData[secondIndex] = itemData
 			call thistype.setItemIndex(secondItem, firstIndex)
 		endmethod
 
@@ -2020,20 +2045,20 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 * Reacts to moving item \p movedItem to \p slot. When moved to the same slot again the item is equipped.
 		 * Otherwise it is destacked or fully moved to another slot. If the slot is not empty it is either swapped or stacked with the existing other item.
 		 */
-		private method moveRucksackItem takes item movedItem, integer slot returns nothing
+		private method moveBackpackItem takes item movedItem, integer slot returns nothing
 			local item targetItem = null
 			local integer oldIndex = thistype.itemIndex(movedItem)
-			local integer newIndex = this.slotRucksackIndex(slot)
+			local integer newIndex = this.slotBackpackIndex(slot)
 			// equip
 			if (oldIndex == newIndex) then
 				//debug call this.print("Same index: Equip.")
 
 				if (AItemType.itemTypeOfItem(movedItem) != 0) then
-					if (not this.onlyRucksackIsEnabled()) then
+					if (not this.onlyBackpackIsEnabled()) then
 						//debug call this.print("Creating item at unit's position and trying to equip.")
-						set movedItem = this.m_rucksackItemData[oldIndex].createItem(GetUnitX(this.unit()), GetUnitY(this.unit()))
+						set movedItem = this.m_backpackItemData[oldIndex].createItem(GetUnitX(this.unit()), GetUnitY(this.unit()))
 						call SetItemCharges(movedItem, 0)
-						call this.setRucksackItemCharges(oldIndex, this.m_rucksackItemData[oldIndex].charges() - 1)
+						call this.setBackpackItemCharges(oldIndex, this.m_backpackItemData[oldIndex].charges() - 1)
 						call this.equipItem(movedItem, false, true, true, false) //test
 					else
 						// TODO show different message
@@ -2047,70 +2072,70 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 				return
 			endif
-			set targetItem = UnitItemInSlot(this.unit(), this.rucksackItemSlot(oldIndex))
+			set targetItem = UnitItemInSlot(this.unit(), this.backpackItemSlot(oldIndex))
 			// move
 			if (targetItem == null) then
 				debug call Print("Move")
 				call thistype.setItemIndex(movedItem, newIndex)
 				// destack
-				if (this.m_rucksackItemData[oldIndex].charges() > 1) then
-					call this.m_rucksackItemData[oldIndex].setCharges(this.m_rucksackItemData[oldIndex].charges() - 1)
-					call this.showRucksackItem(oldIndex)
+				if (this.m_backpackItemData[oldIndex].charges() > 1) then
+					call this.m_backpackItemData[oldIndex].setCharges(this.m_backpackItemData[oldIndex].charges() - 1)
+					call this.showBackpackItem(oldIndex)
 
-					set this.m_rucksackItemData[newIndex] = AUnitInventoryItemData.create(movedItem, this.unit())
-					call this.setRucksackItemCharges(newIndex, 1)
+					set this.m_backpackItemData[newIndex] = AUnitInventoryItemData.create(movedItem, this.unit())
+					call this.setBackpackItemCharges(newIndex, 1)
 				// normal movement
 				else
-					set this.m_rucksackItemData[newIndex] = this.m_rucksackItemData[oldIndex]
+					set this.m_backpackItemData[newIndex] = this.m_backpackItemData[oldIndex]
 					// clear old, do not destroy since data was moved to new index!
-					set this.m_rucksackItemData[oldIndex] = 0
+					set this.m_backpackItemData[oldIndex] = 0
 				endif
 			// stack
 			elseif (GetItemTypeId(movedItem) == GetItemTypeId(targetItem)) then
 				debug call Print("Stack, target item id :" + I2S(GetHandleId(targetItem)) + " moved item id: " + I2S(GetHandleId(movedItem)))
 				call thistype.setItemIndex(movedItem, newIndex)
-				call this.m_rucksackItemData[newIndex].addItemDataCharges(this.m_rucksackItemData[oldIndex])
-				call this.refreshRucksackItemCharges(newIndex)
-				call this.clearRucksackItem(oldIndex, false)
+				call this.m_backpackItemData[newIndex].addItemDataCharges(this.m_backpackItemData[oldIndex])
+				call this.refreshBackpackItemCharges(newIndex)
+				call this.clearBackpackItem(oldIndex, false)
 			// swap
 			else
-				call this.swapRucksackItemData(movedItem, targetItem)
+				call this.swapBackpackItemData(movedItem, targetItem)
 			endif
 			set targetItem = null
 		endmethod
 
 		/**
-		 * Opens or closes the rucksack.
-		 * \param rucksackIsEnabled If this value is true the rucksack will be open. Otherwise it will be closed.
+		 * Opens or closes the backpack.
+		 * \param backpackIsEnabled If this value is true the backpack will be open. Otherwise it will be closed.
 		 * \note If the value is equal to the current value nothing happens.
 		 */
-		public method setRucksackIsEnabled takes boolean rucksackIsEnabled returns nothing
-			if (rucksackIsEnabled == this.rucksackIsEnabled()) then
+		public method setBackpackIsEnabled takes boolean backpackIsEnabled returns nothing
+			if (backpackIsEnabled == this.backpackIsEnabled()) then
 				return
 			endif
-			if (not rucksackIsEnabled) then
-				call this.disableRucksack()
+			if (not backpackIsEnabled) then
+				call this.disableBackpack()
 				call this.enableEquipment()
 			else
 				call this.disableEquipment(false)
-				call this.enableRucksack()
+				call this.enableBackpack()
 			endif
 		endmethod
 
 		private static method triggerConditionOpen takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			return this.unit() == GetTriggerUnit() and GetSpellAbilityId() == thistype.m_openRucksackAbilityId
+			return this.unit() == GetTriggerUnit() and GetSpellAbilityId() == thistype.m_openBackpackAbilityId
 		endmethod
 
 		private static method triggerActionOpen takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 
-			call this.setRucksackIsEnabled(not this.rucksackIsEnabled())
+			call this.setBackpackIsEnabled(not this.backpackIsEnabled())
 		endmethod
 
 		/**
-		 * The open trigger registers that the \ref thistype.m_openRucksackAbilityId is being cast and changes to the rucksack if the equipment is shown or to the equipment
-		 * if the rucksack is shown.
+		 * The open trigger registers that the \ref thistype.m_openBackpackAbilityId is being cast and changes to the backpack if the equipment is shown or to the equipment
+		 * if the backpack is shown.
 		 */
 		private method createOpenTrigger takes nothing returns nothing
 			set this.m_openTrigger = CreateTrigger()
@@ -2129,14 +2154,14 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local integer index = thistype.itemIndex(usedItem)
 			local integer charges = 0
 			debug call Print("Drop with all charges.")
-			debug call Print("Rucksack item index: " + I2S(index))
+			debug call Print("Backpack item index: " + I2S(index))
 
 			if (not UnitHasItem(this.unit(), usedItem) or this.unitDropItemPoint(this.unit(), usedItem, GetUnitX(this.unit()), GetUnitY(this.unit()))) then
 				if (index != -1) then
-					debug call Print("Clearing rucksack slot " + I2S(index))
-					set charges = this.m_rucksackItemData[index].charges()
-					call this.clearRucksackSlot(index)
-					debug call Print("After clearing rucksack slot " + I2S(index))
+					debug call Print("Clearing backpack slot " + I2S(index))
+					set charges = this.m_backpackItemData[index].charges()
+					call this.clearBackpackSlot(index)
+					debug call Print("After clearing backpack slot " + I2S(index))
 				endif
 				call thistype.clearItemIndex(usedItem)
 
@@ -2170,8 +2195,8 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 			debug call this.print("Moving item " + GetItemName(usedItem) + " to slot " + I2S(newSlot))
 
-			if (this.rucksackIsEnabled()) then
-				debug call this.print("Rucksack is enabled.")
+			if (this.backpackIsEnabled()) then
+				debug call this.print("Backpack is enabled.")
 				/*
 				 * If a page item is moved it will be reset immediately.
 				 */
@@ -2191,9 +2216,9 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				elseif (GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and newSlot == thistype.previousPageItemSlot) then
 					debug call Print("Move item to previous page")
 					set index = thistype.itemIndex(usedItem)
-					set oldSlot = this.rucksackItemSlot(index)
+					set oldSlot = this.backpackItemSlot(index)
 					if (this.resetItemSlots(newSlot, oldSlot)) then
-						if (not this.moveRucksackItemToPage(usedItem, false)) then
+						if (not this.moveBackpackItemToPage(usedItem, false)) then
 							call SimError(this.player(), thistype.m_textPreviousPageIsFull)
 						endif
 					endif
@@ -2201,20 +2226,20 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				elseif (GetItemTypeId(usedItem) != thistype.m_rightArrowItemType and newSlot == thistype.nextPageItemSlot) then
 					debug call Print("Move item to next page")
 					set index = thistype.itemIndex(usedItem)
-					set oldSlot = this.rucksackItemSlot(index)
+					set oldSlot = this.backpackItemSlot(index)
 					if (this.resetItemSlots(newSlot, oldSlot)) then
-						if (not this.moveRucksackItemToPage(usedItem, true)) then
+						if (not this.moveBackpackItemToPage(usedItem, true)) then
 							call SimError(this.player(), thistype.m_textNextPageIsFull)
 						endif
 					endif
 				// drop with all charges if moved to an unused free slot
-				elseif (newSlot >= thistype.maxRucksackItemsPerPage and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
+				elseif (newSlot >= thistype.maxBackpackItemsPerPage and GetItemTypeId(usedItem) != thistype.m_leftArrowItemType and GetItemTypeId(usedItem) != thistype.m_rightArrowItemType) then
 					debug call Print("Drop with all charges")
 					call this.dropItemWithAllCharges(usedItem)
 				// equip item/stack items/swap items
-				elseif (newSlot >= 0 and newSlot < thistype.maxRucksackItemsPerPage) then
-					debug call Print("Move rucksack item")
-					call this.moveRucksackItem(usedItem, newSlot)
+				elseif (newSlot >= 0 and newSlot < thistype.maxBackpackItemsPerPage) then
+					debug call Print("Move backpack item")
+					call this.moveBackpackItem(usedItem, newSlot)
 				debug else
 					debug call this.print("Nothing!")
 				endif
@@ -2225,11 +2250,11 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				// reset moved equipped items to their positions
 				if (newSlot != oldSlot) then
 					call this.resetItemSlots(newSlot, oldSlot)
-				// old slot, add to rucksack
+				// old slot, add to backpack
 				else
 					call this.clearItemIndex(usedItem)
 					call this.clearEquipmentItem(oldSlot, true)
-					call this.addItemToRucksack(usedItem, true, true, false)
+					call this.addItemToBackpack(usedItem, true, true, false)
 				endif
 			endif
 			set usedItem = null
@@ -2252,7 +2277,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		/*
 		 * Moving the item in the inventory generates an order target event with the unit itself as target.
 		 * This trigger is used for the following actions:
-		 * equip, add to rucksack, move item next, move item previous, stack items, destack item, swap items
+		 * equip, add to backpack, move item next, move item previous, stack items, destack item, swap items
 		 */
 		private method createOrderTrigger takes nothing returns nothing
 			set this.m_orderTrigger = CreateTrigger()
@@ -2288,6 +2313,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		 * This code is directly taken from the system "EasyItemStacknSplit v2.7.4 and allows picking up items even if the inventory is full.
 		 */
 		private static method timerFunctionPickup takes nothing returns nothing
+			local AIntegerListIterator iterator = thistype.inventories().begin()
 			local thistype inventory = 0
 			local thistype this = 0
 			local boolean noTargets = true
@@ -2295,12 +2321,11 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local real x = 0.0
 			local real y = 0.0
 			local integer order = 0
-			local integer i = 0
 			loop
-				exitwhen (i == thistype.inventories().size())
-				set inventory = thistype(thistype.inventories()[i])
+				exitwhen (not iterator.isValid())
+				set inventory = thistype(iterator.data())
 				if (inventory.m_targetItem != null) then
-					set whichUnit = thistype(thistype.inventories()[i]).unit()
+					set whichUnit = inventory.unit()
 					if (GetWidgetLife(whichUnit) > 0.0 and GetWidgetLife(inventory.m_targetItem) > 0.0 and not IsItemOwned(inventory.m_targetItem)) then
 						if (GetUnitCurrentOrder(whichUnit) == 851986) then
 							set x = GetItemX(inventory.m_targetItem) - GetUnitX(whichUnit)
@@ -2324,8 +2349,9 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 						set noTargets = false
 					endif
 				endif
-				set i = i + 1
+				call iterator.next()
 			endloop
+			call iterator.destroy()
 			if (noTargets) then
 				set thistype.m_pickupTimerHasStarted = false
 				call PauseTimer(GetExpiredTimer())
@@ -2335,7 +2361,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		private static method triggerActionPickupOrder takes nothing returns nothing
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
 			set this.m_targetItem = GetOrderTargetItem()
-			// TODO check if there is a stackable or free slot in the rucksack/equipment
+			// TODO check if there is a stackable or free slot in the backpack/equipment
 			if (not thistype.m_pickupTimerHasStarted) then
 				set thistype.m_pickupTimerHasStarted = true
 				call TimerStart(thistype.m_pickupTimer, 0.05, true, function thistype.timerFunctionPickup)
@@ -2363,12 +2389,12 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			set this.m_shop = GetTriggerUnit()
 			debug call Print("Selected shop " + GetUnitName(this.m_shop))
 			// Make sure an empty page is open for one single buy slot, don't allow other players to place items there wrongly
-			if (this.rucksackIsEnabled()) then
+			if (this.backpackIsEnabled()) then
 				set i = 0
 				loop
-					exitwhen (i == thistype.maxRucksackItemsPerPage)
-					if (this.rucksackItemData(this.rucksackItemIndex(i)) != 0) then
-						call this.hideRucksackItem(this.rucksackItemIndex(i))
+					exitwhen (i == thistype.maxBackpackItemsPerPage)
+					if (this.backpackItemData(this.backpackItemIndex(i)) != 0) then
+						call this.hideBackpackItem(this.backpackItemIndex(i))
 					endif
 					set i = i + 1
 				endloop
@@ -2406,12 +2432,12 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local integer i
 			debug call Print("Deselecting shop")
 			set this.m_shop = null
-			if (this.rucksackIsEnabled()) then
+			if (this.backpackIsEnabled()) then
 				set i = 0
 				loop
-					exitwhen (i == thistype.maxRucksackItemsPerPage)
-					if (this.rucksackItemData(this.rucksackItemIndex(i)) != 0) then
-						call this.showRucksackItem(this.rucksackItemIndex(i))
+					exitwhen (i == thistype.maxBackpackItemsPerPage)
+					if (this.backpackItemData(this.backpackItemIndex(i)) != 0) then
+						call this.showBackpackItem(this.backpackItemIndex(i))
 					endif
 					set i = i + 1
 				endloop
@@ -2450,11 +2476,11 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			 * Tests have shown the the unit has the item without any trigger sleep.
 			 * UnitHasItem() returns always true. There is no need of a 0 timer here.
 			 */
-			if (not this.onlyRucksackIsEnabled()) then
+			if (not this.onlyBackpackIsEnabled()) then
 				call this.addItem(GetManipulatedItem())
 			// don't equip items if equipment is disabled
 			else
-				call this.addItemToRucksack(GetManipulatedItem(), true, false, true)
+				call this.addItemToBackpack(GetManipulatedItem(), true, false, true)
 			endif
 		endmethod
 
@@ -2491,7 +2517,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				call this.dropItemWithAllCharges(whichItem)
 			// If the item is NOT pawned however, it has to be cleared since it might have been given to another unit (another unit) which immediately removed the item for readding it
 			elseif (not this.m_pawnedItems.contains(itemHandleId)) then
-				call this.clearRucksackItem(index, false)
+				call this.clearBackpackItem(index, false)
 				debug call this.print("Item is already gone.")
 			// Note that an item which has been created with the free handle ID could be dropped as well but it would take longer than 0 seconds to do that?
 			else
@@ -2532,7 +2558,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			 *
 			 * One solution is to start a 0 timer, not TriggerSleepAction() since it has a low resolution and after the 0 timer has expired to reset the page item.
 			 */
-			if (this.rucksackIsEnabled()) then
+			if (this.backpackIsEnabled()) then
 				// page items
 				if (GetItemTypeId(GetManipulatedItem()) == thistype.m_leftArrowItemType or GetItemTypeId(GetManipulatedItem()) == thistype.m_rightArrowItemType) then
 					debug call Print("Reset page item")
@@ -2549,7 +2575,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 					call AHashTable.global().setHandleInteger(whichTimer, 0, this)
 					call AHashTable.global().setHandleBoolean(whichTimer, 1, left)
 					call TimerStart(whichTimer, 0.0, false, function thistype.timerFunctionShowPageItem)
-				// usual item from the rucksack
+				// usual item from the backpack
 				elseif (index != -1) then
 					/*
 					 * When an item is dropped explicitely the owner should be set to the default item owner, so anyone can pick it up.
@@ -2597,9 +2623,9 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			call AHashTable.global().setHandleInteger(this.m_dropTrigger, 0, this)
 		endmethod
 
-		private static method triggerConditionIsCharacterAndRucksackIsEnabled takes nothing returns boolean
+		private static method triggerConditionIsCharacterAndBackpackIsEnabled takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			return GetTriggerUnit() == this.unit() and this.rucksackIsEnabled()
+			return GetTriggerUnit() == this.unit() and this.backpackIsEnabled()
 		endmethod
 
 		// TODO Check if unit is dead or paused (timer).
@@ -2607,10 +2633,10 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
 			local boolean charged = AHashTable.global().handleBoolean(GetExpiredTimer(), 2)
-			local integer itemTypeId = this.m_rucksackItemData[index].itemTypeId()
-			local integer oldCharges = this.m_rucksackItemData[index].charges()
+			local integer itemTypeId = this.m_backpackItemData[index].itemTypeId()
+			local integer oldCharges = this.m_backpackItemData[index].charges()
 			local integer additionGold = 0
-			call this.clearRucksackSlot(index)
+			call this.clearBackpackSlot(index)
 			// Non-charged (non-usable) items do not show the gold price for all charges but for one. Therefore the remaining gold has to be added manually.
 			if (not charged) then
 				set additionGold = GetItemValue(itemTypeId) * (oldCharges - 1)
@@ -2646,7 +2672,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		private method createPawnTrigger takes nothing returns nothing
 			set this.m_pawnTrigger = CreateTrigger()
 			call TriggerRegisterAnyUnitEventBJ(this.m_pawnTrigger, EVENT_PLAYER_UNIT_PAWN_ITEM)
-			call TriggerAddCondition(this.m_pawnTrigger, Condition(function thistype.triggerConditionIsCharacterAndRucksackIsEnabled))
+			call TriggerAddCondition(this.m_pawnTrigger, Condition(function thistype.triggerConditionIsCharacterAndBackpackIsEnabled))
 			call TriggerAddAction(this.m_pawnTrigger, function thistype.triggerActionPawn)
 			call AHashTable.global().setHandleInteger(this.m_pawnTrigger, 0, this)
 		endmethod
@@ -2670,9 +2696,9 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 			// let the inventory empty if a shop is selected
 			if (this.m_shop == null) then
-				if (this.m_rucksackIsEnabled) then
-					set this.m_rucksackIsEnabled = false // otherwise the following call won't update anything
-					call this.enableRucksack()
+				if (this.m_backpackIsEnabled) then
+					set this.m_backpackIsEnabled = false // otherwise the following call won't update anything
+					call this.enableBackpack()
 				else
 					call this.enableEquipment()
 				endif
@@ -2695,7 +2721,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		private static method triggerConditionUse takes nothing returns boolean
 			local thistype this = AHashTable.global().handleInteger(GetTriggeringTrigger(), 0)
-			return GetTriggerUnit() == this.unit() and this.m_rucksackIsEnabled
+			return GetTriggerUnit() == this.unit() and this.m_backpackIsEnabled
 		endmethod
 
 		// TODO Check if unit is dead or paused (timer).
@@ -2703,7 +2729,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			local thistype this = thistype(AHashTable.global().handleInteger(GetExpiredTimer(), 0))
 			local integer index = AHashTable.global().handleInteger(GetExpiredTimer(), 1)
 			// if an item is used but the unit is being stopped since the spell condition doesn't work, the charges become 0! this refresh prevents this error
-			call this.refreshRucksackItemCharges(index)
+			call this.refreshBackpackItemCharges(index)
 			call PauseTimer(GetExpiredTimer())
 			call AHashTable.global().destroyTimer(GetExpiredTimer())
 		endmethod
@@ -2716,10 +2742,10 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 			// show next page
 			if (itemTypeId == thistype.m_rightArrowItemType) then
-				call this.showNextRucksackPage()
+				call this.showNextBackpackPage()
 			// show previous page
 			elseif (itemTypeId == thistype.m_leftArrowItemType) then
-				call this.showPreviousRucksackPage()
+				call this.showPreviousBackpackPage()
 			// usual item
 			else
 				set index = thistype.itemIndex(GetManipulatedItem())
@@ -2727,7 +2753,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 				if (GetItemType(GetManipulatedItem()) == ITEM_TYPE_CHARGED) then
 					debug call this.print("Used usable item!")
 					// if an item is used by decreasing its number of charges (not to 0!) we have to decrease our number, too
-					call this.m_rucksackItemData[index].setCharges(this.m_rucksackItemData[index].charges() - 1)
+					call this.m_backpackItemData[index].setCharges(this.m_backpackItemData[index].charges() - 1)
 					// use == drop
 					/// Drop action is called when last charge is used!!!
 				endif
@@ -2750,7 +2776,8 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 
 		/**
 		 * Creates a new inventory for \p whichUnit.
-		 * This adds the rucksack ability to the unit.
+		 * This adds the backpack ability to the unit.
+		 * \return Returns a newly created unit inventory.
 		 */
 		public static method create takes unit whichUnit returns thistype
 			local thistype this = thistype.allocate()
@@ -2760,18 +2787,18 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			set this.m_player = GetOwningPlayer(whichUnit)
 			// dynamic members
 			set this.m_onEquipFunctions = AIntegerVector.create()
-			set this.m_onAddToRucksackFunctions = AIntegerVector.create()
+			set this.m_onAddToBackpackFunctions = AIntegerVector.create()
 			// members
-			set this.m_rucksackPage = 0
-			set this.m_rucksackIsEnabled = false
-			set this.m_onlyRucksackIsEnabled = false
+			set this.m_backpackPage = 0
+			set this.m_backpackIsEnabled = false
+			set this.m_onlyBackpackIsEnabled = false
 			set this.m_pawnedItems = AIntegerList.create()
 
 			/*
-			 * Make sure that the unit has the rucksack ability. Otherwise it cannot change to the rucksack.
+			 * Make sure that the unit has the backpack ability. Otherwise it cannot change to the backpack.
 			 */
-			if (this.unit() != null and GetUnitAbilityLevel(this.unit(), thistype.m_openRucksackAbilityId) == 0) then
-				call UnitAddAbility(this.unit(), thistype.m_openRucksackAbilityId)
+			if (this.unit() != null and GetUnitAbilityLevel(this.unit(), thistype.m_openBackpackAbilityId) == 0) then
+				call UnitAddAbility(this.unit(), thistype.m_openBackpackAbilityId)
 			endif
 
 			call this.createOpenTrigger()
@@ -2854,20 +2881,20 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 			endloop
 			set i = 0
 			loop
-				exitwhen (i == thistype.maxRucksackItems)
-				if (this.m_rucksackItemData[i] != 0) then
-					call this.m_rucksackItemData[i].destroy()
-					set this.m_rucksackItemData[i] = 0
+				exitwhen (i == thistype.maxBackpackItems)
+				if (this.m_backpackItemData[i] != 0) then
+					call this.m_backpackItemData[i].destroy()
+					set this.m_backpackItemData[i] = 0
 				endif
 				set i = i + 1
 			endloop
 
 			// dynamic members
 			call this.m_onEquipFunctions.destroy()
-			call this.m_onAddToRucksackFunctions.destroy()
+			call this.m_onAddToBackpackFunctions.destroy()
 
 			call this.m_pawnedItems.destroy()
-			call UnitRemoveAbility(this.unit(), thistype.m_openRucksackAbilityId)
+			call UnitRemoveAbility(this.unit(), thistype.m_openBackpackAbilityId)
 
 			call this.destroyOpenTrigger()
 			call this.destroyOrderTrigger()
@@ -2890,22 +2917,24 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		/**
-		 * \param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in rucksack.
-		 * \param rightArrowItemType The item type ID for the item which must be usable and is used as item to change to the right page in the rucksack.
-		 * \param openRucksackAbilityId This ability is added to the unit automatically when inventory is created. When it is casted rucksack/equipment is opened.
+		 * Initializes the unit inventory system.
+		 * \note This should be done before creating any unit inventory.
+		 * \param leftArrowItemType This value should by the item type id of an item which is usable but not chargable. It will be used for a button item to change to the left page in backpack.
+		 * \param rightArrowItemType The item type ID for the item which must be usable and is used as item to change to the right page in the backpack.
+		 * \param openBackpackAbilityId This ability is added to the unit automatically when inventory is created. When it is casted backpack/equipment is opened.
 		 * \param allowPickingUpFromOthers If this value is true units are allowed to pick up items which are owned by other playing users (human controlled).
 		 */
-		public static method init takes integer leftArrowItemType, integer rightArrowItemType, integer openRucksackAbilityId, boolean allowPickingUpFromOthers, string textUnableToEquipItem, string textEquipItem, string textUnableToAddRucksackItem, string textAddItemToRucksack, string textUnableToMoveRucksackItem, string textDropPageItem, string textMovePageItem, string textOwnedByOther, string textPreviousPageIsFull, string textNextPageIsFull returns nothing
+		public static method init takes integer leftArrowItemType, integer rightArrowItemType, integer openBackpackAbilityId, boolean allowPickingUpFromOthers, string textUnableToEquipItem, string textEquipItem, string textUnableToAddBackpackItem, string textAddItemToBackpack, string textUnableToMoveBackpackItem, string textDropPageItem, string textMovePageItem, string textOwnedByOther, string textPreviousPageIsFull, string textNextPageIsFull returns nothing
 			// static construction members
 			set thistype.m_leftArrowItemType = leftArrowItemType
 			set thistype.m_rightArrowItemType = rightArrowItemType
-			set thistype.m_openRucksackAbilityId = openRucksackAbilityId
+			set thistype.m_openBackpackAbilityId = openBackpackAbilityId
 			set thistype.m_allowPickingUpFromOthers = allowPickingUpFromOthers
 			set thistype.m_textUnableToEquipItem = textUnableToEquipItem
 			set thistype.m_textEquipItem = textEquipItem
-			set thistype.m_textUnableToAddRucksackItem = textUnableToAddRucksackItem
-			set thistype.m_textAddItemToRucksack = textAddItemToRucksack
-			set thistype.m_textUnableToMoveRucksackItem = textUnableToMoveRucksackItem
+			set thistype.m_textUnableToAddBackpackItem = textUnableToAddBackpackItem
+			set thistype.m_textAddItemToBackpack = textAddItemToBackpack
+			set thistype.m_textUnableToMoveBackpackItem = textUnableToMoveBackpackItem
 			set thistype.m_textDropPageItem = textDropPageItem
 			set thistype.m_textMovePageItem = textMovePageItem
 			set thistype.m_textOwnedByOther = textOwnedByOther
@@ -2915,7 +2944,7 @@ library AStructSystemsInventoryUnitInventory requires AStructCoreGeneralHashTabl
 		endmethod
 
 		private static method onInit takes nothing returns nothing
-			set thistype.m_inventories = AIntegerVector.create()
+			set thistype.m_inventories = AIntegerList.create()
 			set thistype.m_pickupTimer = CreateTimer()
 			set thistype.m_pickupTimerHasStarted = false
 		endmethod

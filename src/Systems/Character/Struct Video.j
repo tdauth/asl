@@ -71,10 +71,10 @@ library AStructSystemsCharacterVideo requires optional ALibraryCoreDebugMisc, AS
 			set this.m_actor = CopyUnit(this.unit(), GetUnitX(this.unit()), GetUnitY(this.unit()), GetUnitFacing(this.unit()), bj_UNIT_STATE_METHOD_MAXIMUM)
 			call AHashTable.global().setHandleInteger(this.m_actor, A_HASHTABLE_KEY_ACTOR, this)
 			call PauseUnit(this.m_actor, false) // unpause before adding items!
-			// remove copied items of rucksack and add equipment
-			// TODO would be better performance when not copying items in CopyUnit in case rucksack is displayed
-			// only show equipment if equipment is enabled, not if only rucksack is enabled and not if inventory has been disabled completely
-			if (character != 0 and character.characterInventory() != 0 and character.inventory() != 0 and character.inventory().rucksackIsEnabled() and not character.inventory().onlyRucksackIsEnabled() and ((character.isMovable() and character.characterInventory().isEnabled()) or (not character.isMovable() and character.characterInventory().enableAgain()))) then
+			// remove copied items of backpack and add equipment
+			// TODO would be better performance when not copying items in CopyUnit in case backpack is displayed
+			// only show equipment if equipment is enabled, not if only backpack is enabled and not if inventory has been disabled completely
+			if (character != 0 and character.characterInventory() != 0 and character.inventory() != 0 and character.inventory().backpackIsEnabled() and not character.inventory().onlyBackpackIsEnabled() and ((character.isMovable() and character.characterInventory().isEnabled()) or (not character.isMovable() and character.characterInventory().enableAgain()))) then
 				set i = 0
 				loop
 					exitwhen (i == AUnitInventory.maxEquipmentTypes)

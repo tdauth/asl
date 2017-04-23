@@ -39,7 +39,7 @@ library AStructSystemsCharacterItemType requires AStructSystemsInventoryItemType
 		/**
 		 * Each custom item type is associated with an item type id when it is created.
 		 * Each item type id should only have one custom item type!
-		 * \param equipmentType If this value is -1 (\ref AItemType.equipmentTypeNone) it will always be added to rucksack.
+		 * \param equipmentType If this value is -1 (\ref AItemType.equipmentTypeNone) it will always be added to backpack.
 		 * \param requiredClass If this value is 0 no specific class is required.
 		 */
 		public static method create takes integer itemType, integer equipmentType, integer requiredLevel, integer requiredStrength, integer requiredAgility, integer requiredIntelligence, AClass requiredClass returns thistype
